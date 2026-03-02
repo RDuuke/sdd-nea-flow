@@ -4,14 +4,14 @@
 
 # SSD NEA FLOW
 
-**Agent-Team Orchestration with AI Sub-Agents**
+**Orquestacion de equipos de agentes con sub-agentes IA**
 
-> An orchestrator + specialized sub-agents for structured feature development.
-> Zero dependencies. Pure Markdown. Works everywhere.
+> Un orquestador + sub-agentes especializados para desarrollo estructurado.
+> Cero dependencias. Solo Markdown. Funciona en cualquier lugar.
 
-Quick links: [Uso rapido](#uso-rapido) • [The Problem](#the-problem) • [The Solution](#the-solution) • [Architecture](#architecture) • [Flujo (nea-flow)](#flujo-nea-flow) • [Installation](#installation) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [VS Code](#vs-code)
+Links rapidos: [El Problema](#el-problema) • [La Solucion](#la-solucion) • [Architecture](#architecture) • [Flujo (nea-flow)](#flujo-nea-flow) • [Installation](#installation) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [VS Code](#vs-code)
 
-## The Problem
+## El Problema
 
 Los asistentes de codigo son potentes, pero fallan en features complejas:
 
@@ -20,7 +20,7 @@ Los asistentes de codigo son potentes, pero fallan en features complejas:
 - No review gate: se escribe codigo antes de acordar que se va a construir
 - No memory: las specs viven en el chat y se pierden
 
-## The Solution
+## La Solucion
 
 NEA Flow es un patron de orquestacion de equipos de agentes donde un
 coordinador liviano delega el trabajo a sub-agentes especializados. Cada
@@ -32,16 +32,17 @@ EJEMPLO (nea-flow):
 YOU: "Quiero agregar exportacion CSV"
 
 ORQUESTADOR (solo delega, contexto minimo):
-  -> lanza sub-agente EXPLORER     -> devuelve: analisis del codebase
-  -> muestra resumen, pides aprobacion
-  -> lanza sub-agente PROPOSER     -> devuelve: artefacto proposal
-  -> lanza sub-agente SPEC WRITER  -> devuelve: artefacto spec
-  -> lanza sub-agente DESIGNER     -> devuelve: artefacto design
-  -> lanza sub-agente TASK PLANNER -> devuelve: artefacto tasks
-  -> muestra todo, pides aprobacion
-  -> lanza sub-agente IMPLEMENTER  -> devuelve: codigo implementado, tareas cerradas
-  -> lanza sub-agente VERIFIER     -> devuelve: artefacto verify
-  -> lanza sub-agente ARCHIVER     -> devuelve: cambio archivado
+
+- Lanza sub-agente EXPLORE -> devuelve analisis del codebase
+- Muestra resumen y pide aprobacion
+- Lanza sub-agente PROPOSE -> devuelve artefacto proposal
+- Lanza sub-agente SPEC -> devuelve artefacto spec
+- Lanza sub-agente DESIGN -> devuelve artefacto design
+- Lanza sub-agente TASKS -> devuelve artefacto tasks
+- Muestra todo y pide aprobacion
+- Lanza sub-agente APPLY -> devuelve codigo implementado y tareas cerradas
+- Lanza sub-agente VERIFY -> devuelve artefacto verify
+- Lanza sub-agente ARCHIVE -> devuelve cambio archivado
 
 Insight clave: el orquestador NUNCA hace trabajo de fases directamente. Solo
 coordina sub-agentes, mantiene estado y sintetiza resultados. Esto mantiene el
