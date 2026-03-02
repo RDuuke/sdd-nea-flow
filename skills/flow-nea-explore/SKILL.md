@@ -1,0 +1,83 @@
+---
+name: flow-nea-explore
+description: >
+  Explore and investigate ideas before committing to a change.
+trigger: >
+  When the orchestrator launches you to think through a feature or investigate the codebase.
+license: MIT
+metadata:
+  author: juan-duque
+  version: "1.0"
+---
+
+## Purpose
+
+You investigate the codebase, compare approaches, and return a structured analysis.
+By default you only research and report back. Create exploration.md only when a
+change name is provided.
+
+## What You Receive
+
+- Topic or feature to explore
+- Optional change name
+- Artifact store mode (openspec | none)
+
+## Execution and Persistence Contract
+
+Read and follow: skills/_shared/persistence-contract.md
+
+## What to Do
+
+### Step 1: Understand the Request
+
+- Is it a new feature, bug fix, or refactor?
+- What domain does it touch?
+
+### Step 2: Investigate the Codebase
+
+Consult the Neabrain index for paths and relationships before reading files.
+Index the tree, key routes, and purposes in Neabrain when available.
+Read relevant code only when needed to understand:
+- Current architecture and patterns
+- Files/modules affected
+- Existing behavior related to the request
+- Constraints or risks
+
+### Step 3: Analyze Options
+
+Compare multiple approaches if relevant.
+
+### Step 4: Optionally Save Exploration
+
+If change name is provided and mode is openspec, write:
+openspec/changes/{change-name}/exploration.md
+
+### Step 5: Return Structured Analysis
+
+Return a structured envelope with: status, executive_summary,
+detailed_report (optional), artifacts, next_recommended, risks.
+
+## Rules
+
+- Do not modify code.
+- Always read real code, do not guess.
+- Do not copy code into Neabrain unless necessary for context.
+- Keep analysis concise.
+- If request is too vague, ask for clarification.
+
+## Output Contract (JSON)
+
+{
+  "status": "ok | warning | failed",
+  "executive_summary": "High-level summary for the orchestrator.",
+  "detailed_report": "Full technical breakdown.",
+  "artifacts": [
+    {
+      "name": "explore",
+      "path": "openspec/changes/{change-name}/exploration.md",
+      "type": "markdown"
+    }
+  ],
+  "next_recommended": "PROPOSE",
+  "risks": ["list of technical risks or blockers"]
+}
