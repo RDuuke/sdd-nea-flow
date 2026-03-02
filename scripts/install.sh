@@ -88,7 +88,7 @@ test_source_tree() {
   if [[ $missing -ne 0 ]]; then
     echo ""
     err "Source validation failed. Is this a complete clone of the repository?"
-    echo "  Try: git clone https://github.com/Gentleman-Programming/tdd-nea-flow.git"
+    echo "  Try: git clone https://github.com/RDuuke/sdd-nea-flow.git"
     echo ""
     exit 1
   fi

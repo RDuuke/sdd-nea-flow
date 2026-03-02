@@ -1,4 +1,15 @@
-# tdd-nea-flow
+<p align="center">
+  <img src="assets/logo.png" alt="SSD NEA FLOW logo" width="240" />
+</p>
+
+# SSD NEA FLOW
+
+**Agent-Team Orchestration with AI Sub-Agents**
+
+> An orchestrator + specialized sub-agents for structured feature development.
+> Zero dependencies. Pure Markdown. Works everywhere.
+
+Quick links: [Uso rapido](#uso-rapido) • [The Problem](#the-problem) • [The Solution](#the-solution) • [Architecture](#architecture) • [Flujo (nea-flow)](#flujo-nea-flow) • [Installation](#installation) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [VS Code](#vs-code)
 
 ## The Problem
 
@@ -173,8 +184,8 @@ Por defecto se usa OpenSpec como backend de artefactos.
 1. Instalar las skills
 
 ```bash
-git clone https://github.com/gentleman-programming/tdd-nea-flow.git
-cd tdd-nea-flow
+git clone https://github.com/RDuuke/sdd-nea-flow.git
+cd sdd-nea-flow
 ./scripts/install.sh
 ```
 
@@ -183,9 +194,24 @@ El instalador pregunta que herramienta usas y copia las skills al lugar correcto
 2. Agregar el orquestador a tu agente
 
 Ver la seccion Installation segun tu herramienta:
-https://github.com/Gentleman-Programming/agent-teams-lite/blob/main/README.md#installation
+https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#installation
 Luego ve a:
-https://github.com/Gentleman-Programming/agent-teams-lite/blob/main/README.md#opencode
+https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#opencode
+
+## Installation
+
+Guia de instalacion por herramienta soportada:
+
+- OpenCode — Full sub-agent support via Task tool
+- Amazon Q — Full sub-agent support via Task tool
+- VS Code (Copilot) — Agent mode with context files
+
+Links rapidos:
+- OpenCode: https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#opencode
+- Amazon Q: https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#amazon-q
+- VS Code (Copilot): https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#vs-code
+- Amazon Q — Full sub-agent support via Task tool
+- VS Code (Copilot) — Agent mode with context files
 
 ## OpenCode
 
@@ -244,6 +270,53 @@ Copia el archivo de ejemplo a tu proyecto:
 ```bash
 cp examples/amazonq/agent.js .amazonq/agent.js
 ```
+
+## VS Code
+
+VS Code soporta MCP e instrucciones personalizadas de forma nativa. Las skills
+funcionan con el modo agente de Copilot y cualquier extension compatible con MCP.
+
+1. Copiar las skills al workspace
+
+```bash
+# Por proyecto (recomendado)
+cp -r skills/flow-nea-* ./tu-proyecto/.vscode/skills/
+cp -r skills/_shared ./tu-proyecto/.vscode/skills/
+
+# O usando el instalador
+./scripts/install.sh  # Opcion 3: VS Code
+```
+
+2. Agregar instrucciones del orquestador
+
+Crea un archivo `.instructions.md` en la carpeta de prompts del usuario y
+anexa las instrucciones de `examples/vscode/copilot-instructions.md`.
+
+Ruta recomendada de prompts:
+
+- macOS: `~/Library/Application Support/Code/User/prompts/sdd-orchestrator.instructions.md`
+- Linux: `~/.config/Code/User/prompts/sdd-orchestrator.instructions.md`
+- Windows: `%APPDATA%\Code\User\prompts\sdd-orchestrator.instructions.md`
+
+Alternativa con Custom Instructions:
+
+- Abre Settings (Cmd+, / Ctrl+,)
+- Busca `github.copilot.chat.codeGeneration.instructions`
+- Agrega las instrucciones del orquestador
+
+Si tambien configuras MCP a nivel usuario:
+
+- macOS: `~/Library/Application Support/Code/User/mcp.json`
+- Linux: `~/.config/Code/User/mcp.json`
+- Windows: `%APPDATA%\Code\User\mcp.json`
+
+3. Verificar
+
+Abre VS Code, abre el Chat (Ctrl+Cmd+I / Ctrl+Alt+I) y ejecuta `/flow-nea-init`.
+
+Nota: VS Code Copilot soporta modo agente con tool use. Las skills funcionan
+como archivos de contexto. Para delegacion real de sub-agentes con contexto
+fresco, usa OpenCode.
 
 ## Artifact Persistence (Default)
 
