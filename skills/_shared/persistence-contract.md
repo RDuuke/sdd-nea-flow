@@ -37,6 +37,7 @@ Path: openspec/changes/.status.yaml
 Template:
 
 ```yaml
+schema_version: "1.3"
 phase: INIT
 change: null
 awaiting_approval: false
@@ -50,6 +51,8 @@ Rules:
 - If .status.yaml is missing, infer phase from existing artifacts (see flow-nea-continue rules) and create the file before proceeding.
 - If legacy .status.json exists, read it, migrate values to .status.yaml, and delete the .json file.
 - Never block a phase solely because .status.yaml is missing; always recover by inference.
+- If any field is absent (older schema), treat it as its default value: `pending_tasks: []`, `modified_artifacts: []`, `notes: ""`, `schema_version: "1.0"`.
+- Do not fail or block due to missing fields; fill defaults silently.
 
 ## Out-of-Flow Artifact Modification
 

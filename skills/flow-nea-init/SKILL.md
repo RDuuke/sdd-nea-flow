@@ -84,6 +84,7 @@ experimental:
 - Save detected context into openspec/config.yaml.
 - Write openspec/changes/.status.yaml:
   ```yaml
+  schema_version: "1.3"
   phase: INIT
   change: null
   awaiting_approval: false

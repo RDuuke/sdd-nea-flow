@@ -27,9 +27,10 @@ Read and follow: skills/_shared/persistence-contract.md
 Primary source: read openspec/changes/.status.yaml
 - Use `phase` and `change` fields directly.
 - If `awaiting_approval: true` in status, stop and tell the user: "La propuesta está lista. Por favor revísala en openspec/changes/{change-name}/proposal.md y confirma para continuar a SPEC."
+- If any field is missing (`pending_tasks`, `modified_artifacts`, `notes`, `schema_version`), fill with defaults and rewrite the file with the full template before continuing.
 
 If .status.yaml is missing, check for legacy .status.json:
-- If found, migrate values to .status.yaml, delete .status.json, and continue.
+- If found, migrate values to .status.yaml with full template (including new fields), delete .status.json, and continue.
 
 Fallback (if neither file exists), infer from files (first match wins):
 
