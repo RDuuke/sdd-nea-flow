@@ -154,6 +154,12 @@ install_amazonq_prompt() {
 
   mkdir -p "$amazonq_prompts_dir"
   cp "$prompt_src" "$prompt_target"
+
+  if [[ ! -f "$prompt_target" ]]; then
+    warn "No se pudo verificar el prompt de Amazon Q"
+    return
+  fi
+
   ok "amazonq prompt (amazon-instructions.md)"
 }
 
@@ -174,8 +180,9 @@ install_for_agent() {
       install_skills ".amazonq/rules" "Amazon Q"
       install_amazonq_prompt
       echo ""
-      warn "Skills installed in .amazonq/rules/"
-      warn "Prompt installed in ~/.aws/amazonq/prompts/amazon-instructions.md"
+      warn "Skills instaladas en .amazonq/rules/"
+      warn "Prompt instalado en ~/.aws/amazonq/prompts/amazon-instructions.md"
+      echo "Siguiente paso: abre Amazon Q y ejecuta /flow-nea-init"
       ;;
     vscode)
       install_skills ".vscode/skills" "VS Code (Copilot)"

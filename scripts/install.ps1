@@ -201,6 +201,12 @@ function Install-AmazonQPrompt {
 
     New-Item -ItemType Directory -Path $amazonqPromptsDir -Force | Out-Null
     Copy-Item -Path $promptSrc -Destination $promptTarget -Force
+
+    if (-not (Test-Path $promptTarget)) {
+        Write-Warn 'No se pudo verificar el prompt de Amazon Q'
+        return
+    }
+
     Write-Skill 'amazonq prompt (amazon-instructions.md)'
 }
 
@@ -228,8 +234,9 @@ function Install-ForAgent {
             Install-Skills -TargetDir $ToolPaths['amazonq'] -ToolName 'Amazon Q'
             Install-AmazonQPrompt
             Write-Host ''
-            Write-Warn 'Skills installed in .amazonq\rules\'
-            Write-Warn 'Prompt installed in %USERPROFILE%\.aws\amazonq\prompts\amazon-instructions.md'
+            Write-Warn 'Skills instaladas en .amazonq\rules\'
+            Write-Warn 'Prompt instalado en %USERPROFILE%\.aws\amazonq\prompts\amazon-instructions.md'
+            Write-Host 'Siguiente paso: abre Amazon Q y ejecuta /flow-nea-init' -ForegroundColor Yellow
         }
         'vscode' {
             Install-Skills -TargetDir $ToolPaths['vscode'] -ToolName 'VS Code (Copilot)'

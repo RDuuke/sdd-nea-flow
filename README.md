@@ -11,28 +11,29 @@
 
 Version: 1.0.2
 
-Links rapidos: [El Problema](#el-problema) • [La Solucion](#la-solucion) • [Arquitectura](#arquitectura) • [Flujo nea-flow](#flujo-nea-flow) • [Instalacion](#instalacion) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [VS Code](#vs-code)
+Links rapidos: [Indice](#indice) • [Instalacion](#instalacion) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [VS Code](#vs-code)
 
 ## Indice
 
 - [El Problema](#el-problema)
 - [La Solucion](#la-solucion)
-- [Arquitectura](#arquitectura)
 - [Que es](#que-es)
+- [Arquitectura](#arquitectura)
 - [Flujo nea-flow](#flujo-nea-flow)
-- [Dependencias](#dependencias)
+- [Requisitos](#requisitos)
 - [Estructura del repo](#estructura-del-repo)
-- [Uso rapido](#uso-rapido)
 - [Instalacion](#instalacion)
+- [Instalacion por herramienta](#instalacion-por-herramienta)
 - [OpenCode](#opencode)
 - [Amazon Q](#amazon-q)
 - [VS Code](#vs-code)
-- [Artifact Persistence (Default)](#artifact-persistence-default)
-- [Delta Specs](#delta-specs)
-- [RFC 2119 Keywords](#rfc-2119-keywords)
-- [The Archive Cycle](#the-archive-cycle)
+- [Persistencia de artefactos](#persistencia-de-artefactos)
+- [Especificaciones delta](#especificaciones-delta)
+- [Palabras clave RFC 2119](#palabras-clave-rfc-2119)
+- [Ciclo de archivo](#ciclo-de-archivo)
 - [Contrato de respuesta de sub-agentes](#contrato-de-respuesta-de-sub-agentes)
-- [Contributing](#contributing)
+- [Glosario](#glosario)
+- [Contribuir](#contribuir)
 - [Notas](#notas)
 
 ## El Problema
@@ -72,20 +73,27 @@ Insight clave: el orquestador NUNCA hace trabajo de fases directamente. Solo
 coordina sub-agentes, mantiene estado y sintetiza resultados. Esto mantiene el
 hilo principal estable y con contexto pequeno.
 
+## Que es
+
+Plantilla base agnostica de editor para operar un flujo SDD (Spec-Driven
+Development) con skills de nea-flow y artefactos OpenSpec. Incluye orquestador,
+ejemplos por editor y scripts de integracion para incorporar el flujo en otros
+proyectos.
+
 ## Arquitectura
 
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  ORCHESTRATOR (agente principal)                          │
 │                                                          │
-│  Responsibilities:                                       │
-│  • Detect when SDD is needed                             │
-│  • Launch sub-agents via Task tool                       │
-│  • Show summaries to user                                │
-│  • Ask for approval between phases                       │
-│  • Track state: which artifacts exist, what's next       │
+│  Responsabilidades:                                      │
+│  • Detectar cuando SDD es necesario                      │
+│  • Lanzar sub-agentes via Task tool                      │
+│  • Mostrar resumenes al usuario                          │
+│  • Pedir aprobacion entre fases                          │
+│  • Mantener estado de artefactos                         │
 │                                                          │
-│  Context usage: MINIMAL (only state + summaries)         │
+│  Uso de contexto: MINIMO (solo estado + resumenes)       │
 └──────────────┬───────────────────────────────────────────┘
                │
                │ Task(subagent_type: 'general', prompt: 'Read skill...')
@@ -101,50 +109,43 @@ hilo principal estable y con contexto pequeno.
 └────────┘└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘
 ```
 
-The Dependency Graph
+Grafo de dependencias
 
 ```
                     proposal
-                   (root node)
+                   (nodo raiz)
                        │
          ┌─────────────┴─────────────┐
          │                           │
          ▼                           ▼
       specs                       design
-   (requirements                (technical
-    + scenarios)                 approach)
+   (requisitos                 (enfoque
+    + escenarios)               tecnico)
          │                           │
          └─────────────┬─────────────┘
                        │
                        ▼
                     tasks
-                (implementation
-                  checklist)
+                (checklist de
+                 implementacion)
                        │
                        ▼
                     apply
-                (write code)
+                (escribir codigo)
                        │
                        ▼
                     verify
-               (quality gate)
+               (puerta de calidad)
                        │
                        ▼
                    archive
-              (merge specs,
-               close change)
+               (fusionar specs,
+                cerrar cambio)
 ```
-
-## Que es
-
-Plantilla base agnostica de editor para operar un flujo SDD (Spec-Driven
-Development) con skills de nea-flow y artefactos OpenSpec. Incluye orquestador,
-ejemplos por editor y scripts de integracion para incorporar el flujo en otros
-proyectos.
 
 ## Flujo nea-flow
 
-Los comandos del flujo son:
+Comandos del flujo:
 
 - /flow-nea-init
 - /flow-nea-explore <topic>
@@ -158,11 +159,11 @@ Los comandos del flujo son:
 
 No hay alias del flujo anterior. El unico flujo soportado es nea-flow.
 
-## Dependencias
+## Requisitos
 
 - OpenCode o Amazon Q
-- Plugin o integracion de cada editor para orquestacion de skills
-- PowerShell (para scripts de integracion)
+- Integracion del editor para orquestacion de skills
+- PowerShell (para scripts de integracion en Windows)
 
 ## Estructura del repo
 
@@ -172,9 +173,9 @@ No hay alias del flujo anterior. El unico flujo soportado es nea-flow.
 - examples/vscode/: configuracion base para VS Code
 - scripts/: instalacion automatizada
 
-## Uso rapido
+## Instalacion
 
-1. Instalar las skills
+Instalacion rapida (recomendada):
 
 ```bash
 git clone https://github.com/RDuuke/sdd-nea-flow.git
@@ -184,19 +185,15 @@ cd sdd-nea-flow
 
 El instalador pregunta que herramienta usas y copia las skills al lugar correcto.
 
-2. Agregar el orquestador a tu agente
+Siguiente paso: ve a [Instalacion por herramienta](#instalacion-por-herramienta).
 
-Ver la seccion [Instalacion](#instalacion) segun tu herramienta.
+## Instalacion por herramienta
 
-Luego ve a: [OpenCode](#opencode)
+Guia por herramienta soportada:
 
-## Instalacion
-
-Guia de instalacion por herramienta soportada:
-
-- OpenCode — Full sub-agent support via Task tool
-- Amazon Q — Full sub-agent support via Task tool
-- VS Code (Copilot) — Agent mode with context files
+- OpenCode — Soporta sub-agentes via Task tool
+- Amazon Q — Soporta sub-agentes via Task tool
+- VS Code (Copilot) — Modo agente con archivos de contexto
 
 Links rapidos:
 - [OpenCode](#opencode)
@@ -242,7 +239,7 @@ Como usar en OpenCode:
 
 ## Amazon Q
 
-1. Copiar las skills
+1. Copiar las skills (proyecto)
 
 ```bash
 # Usando el instalador
@@ -254,14 +251,22 @@ cp -r skills/flow-nea-* .amazonq/rules/
 cp -r skills/_shared .amazonq/rules/
 ```
 
-2. Agregar el prompt
-
-Copia el archivo de prompt a la ruta de Amazon Q en tu perfil:
+2. Agregar el prompt (perfil del usuario)
 
 ```bash
 mkdir -p ~/.aws/amazonq/prompts
 cp examples/amazonq/amazon-instructions.md ~/.aws/amazonq/prompts/amazon-instructions.md
 ```
+
+Rutas por sistema operativo:
+
+- macOS: `~/.aws/amazonq/prompts/amazon-instructions.md`
+- Linux: `~/.aws/amazonq/prompts/amazon-instructions.md`
+- Windows: `%USERPROFILE%\.aws\amazonq\prompts\amazon-instructions.md`
+
+3. Verificar
+
+Abre Amazon Q y ejecuta `/flow-nea-init`.
 
 ## VS Code
 
@@ -290,7 +295,7 @@ Ruta recomendada de prompts:
 - Linux: `~/.config/Code/User/prompts/sdd-orchestrator.instructions.md`
 - Windows: `%APPDATA%\Code\User\prompts\sdd-orchestrator.instructions.md`
 
-Alternativa con Custom Instructions:
+Alternativa con instrucciones personalizadas:
 
 - Abre Settings (Cmd+, / Ctrl+,)
 - Busca `github.copilot.chat.codeGeneration.instructions`
@@ -310,7 +315,7 @@ Nota: VS Code Copilot soporta modo agente con tool use. Las skills funcionan
 como archivos de contexto. Para delegacion real de sub-agentes con contexto
 fresco, usa OpenCode.
 
-## Artifact Persistence (Default)
+## Persistencia de artefactos
 
 OpenSpec es el mecanismo por defecto. Cada cambio produce un folder
 auto-contenido:
@@ -335,7 +340,7 @@ openspec/
         └── 2026-02-16-fix-auth/
 ```
 
-## Delta Specs
+## Especificaciones delta
 
 En lugar de reescribir specs completas, cada cambio describe solo la diferencia:
 
@@ -361,7 +366,7 @@ The system SHALL support multiple export formats.
 Cuando el cambio se archiva, estos deltas se fusionan automaticamente con las
 specs principales.
 
-## RFC 2119 Keywords
+## Palabras clave RFC 2119
 
 Las specs usan un lenguaje estandarizado para la fuerza de cada requerimiento:
 
@@ -371,7 +376,7 @@ MUST / SHALL | Absolute requirement
 SHOULD | Recommended, exceptions may exist
 MAY | Optional
 
-## The Archive Cycle
+## Ciclo de archivo
 
 1. Specs describen el comportamiento actual
 2. Los cambios proponen modificaciones (como deltas)
@@ -405,7 +410,19 @@ segun la complejidad, pero siempre mantiene esta forma base:
 `executive_summary` es intencionalmente breve. `detailed_report` se usa cuando
 el analisis es complejo o requiere contexto adicional.
 
-## Contributing
+## Glosario
+
+- Orquestador: agente principal que coordina fases sin implementar directamente.
+- Sub-agente: agente especializado que ejecuta una fase con contexto fresco.
+- Prompt: instrucciones que guian el comportamiento del agente.
+- Skills: paquetes de instrucciones y reglas por fase.
+- Artefactos: archivos generados por el flujo (proposal, specs, design, tasks).
+- Especificaciones delta: cambios parciales que se fusionan con las specs base.
+- OpenSpec: backend de artefactos y estructura de cambios.
+- Task tool: herramienta para lanzar sub-agentes en paralelo o por fases.
+- MCP: protocolo para integrar herramientas externas con el agente.
+
+## Contribuir
 
 PRs bienvenidos. Las skills son Markdown y faciles de mejorar.
 
