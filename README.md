@@ -9,7 +9,7 @@
 > Un orquestador + sub-agentes especializados para desarrollo estructurado.
 > Cero dependencias. Solo Markdown. Funciona en cualquier lugar.
 
-Version: 1.1.2
+Version: 1.2.0
 
 Links rapidos: [Indice](#indice) • [Instalacion](#instalacion) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [Gemini CLI](#gemini-cli) • [Codex](#codex) • [VS Code](#vs-code)
 
