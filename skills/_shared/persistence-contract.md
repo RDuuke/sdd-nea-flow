@@ -48,6 +48,23 @@ Rules:
 - If legacy .status.json exists, read it, migrate values to .status.yaml, and delete the .json file.
 - Never block a phase solely because .status.yaml is missing; always recover by inference.
 
+## File Access Rules
+
+- Always use direct relative paths from the project root (e.g. `openspec/changes/{change-name}/design.md`).
+- Never use glob patterns to locate OpenSpec files; paths are deterministic and known.
+- Never search for `openspec/` using recursive glob; assume it lives at the project root.
+- If a file does not exist at the expected path, report it as missing — do not search elsewhere.
+
+## Experimental Features
+
+Optional features controlled via `openspec/config.yaml` under the `experimental` key.
+If the key is absent or false, the feature is disabled.
+
+```yaml
+experimental:
+  neabrain: false  # Set to true to enable Neabrain index for path/relationship lookup
+```
+
 ## Common Rules
 
 - If mode is none, do not create or modify any project files.

@@ -76,6 +76,9 @@ rules:
   archive:
     - Warn before destructive merges
 
+experimental:
+  neabrain: false
+
 ### Step 4: Persist Context (openspec mode only)
 
 - Save detected context into openspec/config.yaml.

@@ -29,7 +29,9 @@ Read and follow: skills/_shared/persistence-contract.md
 
 ### Step 1: Analyze the Design
 
-Consult the Neabrain index for paths and relationships before reading files.
+Check `openspec/config.yaml` for `experimental.neabrain: true`.
+If enabled, consult the Neabrain index for paths and relationships before reading files.
+Otherwise, use direct relative paths from the project root.
 Read file bodies only when needed.
 Identify files to create/modify/delete and dependency order.
 

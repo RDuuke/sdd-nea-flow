@@ -29,7 +29,9 @@ Read and follow: skills/_shared/persistence-contract.md
 
 ### Step 1: Read the Codebase
 
-Consult the Neabrain index for paths and relationships before reading files.
+Check `openspec/config.yaml` for `experimental.neabrain: true`.
+If enabled, consult the Neabrain index for paths and relationships before reading files.
+Otherwise, use direct relative paths from the project root.
 Read file bodies only when needed.
 Identify patterns, entry points, and dependencies relevant to the change.
 

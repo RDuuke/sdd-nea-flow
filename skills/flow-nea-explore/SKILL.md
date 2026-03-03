@@ -36,8 +36,9 @@ Read and follow: skills/_shared/persistence-contract.md
 
 ### Step 2: Investigate the Codebase
 
-Consult the Neabrain index for paths and relationships before reading files.
-Index the tree, key routes, and purposes in Neabrain when available.
+Check `openspec/config.yaml` for `experimental.neabrain: true`.
+If enabled, consult the Neabrain index for paths and relationships before reading files.
+Otherwise, use direct relative paths from the project root.
 Read relevant code only when needed to understand:
 - Current architecture and patterns
 - Files/modules affected
@@ -71,7 +72,6 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 - Do not modify code.
 - Always read real code, do not guess.
-- Do not copy code into Neabrain unless necessary for context.
 - Keep analysis concise.
 - If request is too vague, ask for clarification.
 - All artifact content MUST be written in Spanish.
