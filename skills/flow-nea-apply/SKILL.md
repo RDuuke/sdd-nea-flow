@@ -54,9 +54,10 @@ Default: standard mode
 
 If TDD is active, use RED -> GREEN -> REFACTOR.
 
-### Step 2.5: Load Coding Skills
+### Step 2.5: Load Coding Skills (autonomous)
 
-Based on files to be modified, read the corresponding skill before implementing:
+Based on files to be modified, load the corresponding skill before implementing.
+Do not wait for the orchestrator to specify them — this is the sub-agent's responsibility:
 - .ts files -> read skills/typescript-general/SKILL.md
 - *.test.ts files -> read skills/testing/SKILL.md
 - Form/input components -> read skills/form-controls/SKILL.md
@@ -86,7 +87,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Rules
 
-- Never implement tasks not assigned.
+- Load coding skills autonomously based on files to be modified; do not wait for the orchestrator to specify them.
 - Always follow design decisions.
 - Use OpenSpec as the source of truth; do not copy code unless needed.
 - If blocked, stop and report.
