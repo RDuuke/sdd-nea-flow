@@ -8,6 +8,8 @@ license: MIT
 metadata:
   author: juan-duque
   version: "1.0"
+  scope: [root]
+  invoker: flow-nea-orchestrator
 ---
 
 ## Purpose
@@ -72,6 +74,13 @@ Rationale: ...
 ### Step 3: Persist (openspec mode)
 
 - Save design to openspec/changes/{change-name}/design.md
+- Update openspec/changes/.status.yaml:
+  ```yaml
+  phase: DESIGN
+  change: "{change-name}"
+  awaiting_approval: false
+  completed: false
+  ```
 
 ### Step 4: Return Summary
 
@@ -85,6 +94,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Every decision must include rationale.
 - Use concrete file paths.
 - Follow existing patterns unless the change is about refactoring them.
+- All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
 

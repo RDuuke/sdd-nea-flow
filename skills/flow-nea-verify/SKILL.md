@@ -8,7 +8,13 @@ license: MIT
 metadata:
   author: juan-duque
   version: "1.0"
+  scope: [root]
+  invoker: flow-nea-orchestrator
 ---
+
+## Related Skills
+
+- **testing** - Test execution and structure validation
 
 ## Purpose
 
@@ -63,6 +69,13 @@ Each scenario is compliant only if a test exists and passes.
 ### Step 7: Persist Report
 
 - If openspec mode, write openspec/changes/{change-name}/verify-report.md
+- Update openspec/changes/.status.yaml:
+  ```yaml
+  phase: VERIFY
+  change: "{change-name}"
+  awaiting_approval: false
+  completed: false
+  ```
 
 ### Step 8: Return Summary
 
@@ -74,6 +87,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Always execute tests; static analysis is not enough.
 - If tests or build fail, mark as critical.
 - Do not fix issues; only report.
+- All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
 

@@ -8,6 +8,8 @@ license: MIT
 metadata:
   author: juan-duque
   version: "1.0"
+  scope: [root]
+  invoker: flow-nea-orchestrator
 ---
 
 ## Purpose
@@ -73,6 +75,13 @@ Format:
 ### Step 3: Persist (openspec mode)
 
 - Save proposal to openspec/changes/{change-name}/proposal.md
+- Update openspec/changes/.status.yaml:
+  ```yaml
+  phase: PROPOSE
+  change: "{change-name}"
+  awaiting_approval: true
+  completed: false
+  ```
 
 ### Step 4: Return Summary
 
@@ -84,6 +93,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Always include rollback plan and success criteria.
 - Keep proposal concise.
 - Use concrete file paths in Affected Areas when possible.
+- All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
 

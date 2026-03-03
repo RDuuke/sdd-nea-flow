@@ -8,7 +8,16 @@ license: MIT
 metadata:
   author: juan-duque
   version: "1.0"
+  scope: [root]
+  invoker: flow-nea-orchestrator
 ---
+
+## Related Skills
+
+- **typescript-general** - Type safety and code organization (load for .ts files)
+- **testing** - Test structure and TDD patterns (load for *.test.ts files)
+- **form-controls** - Form component patterns (load for form/input components)
+- **scss** - Styling tokens and patterns (load for .scss files)
 
 ## Purpose
 
@@ -39,11 +48,19 @@ Read and follow: skills/_shared/persistence-contract.md
 
 Detect TDD from (priority order):
 1) openspec/config.yaml -> rules.apply.tdd
-2) Installed coding skills (tdd)
+2) skills/testing/SKILL.md (if present, TDD patterns apply)
 3) Existing test patterns
 Default: standard mode
 
 If TDD is active, use RED -> GREEN -> REFACTOR.
+
+### Step 2.5: Load Coding Skills
+
+Based on files to be modified, read the corresponding skill before implementing:
+- .ts files -> read skills/typescript-general/SKILL.md
+- *.test.ts files -> read skills/testing/SKILL.md
+- Form/input components -> read skills/form-controls/SKILL.md
+- .scss files -> read skills/scss/SKILL.md
 
 ### Step 3: Implement Tasks
 
@@ -54,6 +71,13 @@ If TDD is active, use RED -> GREEN -> REFACTOR.
 ### Step 4: Mark Tasks Complete
 
 - If openspec mode, update openspec/changes/{change-name}/tasks.md
+- Update openspec/changes/.status.yaml:
+  ```yaml
+  phase: APPLY
+  change: "{change-name}"
+  awaiting_approval: false
+  completed: false
+  ```
 
 ### Step 5: Return Summary
 
@@ -67,6 +91,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Use OpenSpec as the source of truth; do not copy code unless needed.
 - If blocked, stop and report.
 - In TDD mode, always write failing test first.
+- All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
 

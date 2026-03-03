@@ -8,6 +8,8 @@ license: MIT
 metadata:
   author: juan-duque
   version: "1.0"
+  scope: [root]
+  invoker: flow-nea-orchestrator
 ---
 
 ## Purpose
@@ -58,6 +60,13 @@ Format:
 ### Step 3: Persist (openspec mode)
 
 - Save tasks to openspec/changes/{change-name}/tasks.md
+- Update openspec/changes/.status.yaml:
+  ```yaml
+  phase: TASKS
+  change: "{change-name}"
+  awaiting_approval: false
+  completed: false
+  ```
 
 ### Step 4: Return Summary
 
@@ -71,6 +80,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Each task must be small enough for one session.
 - Use hierarchical numbering (1.1, 1.2, etc.).
 - If the project uses TDD, include RED -> GREEN -> REFACTOR tasks.
+- All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
 

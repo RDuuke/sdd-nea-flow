@@ -8,13 +8,14 @@ license: MIT
 metadata:
   author: juan-duque
   version: "1.0"
+  scope: [root]
+  invoker: flow-nea-orchestrator
 ---
 
 ## Purpose
 
 You investigate the codebase, compare approaches, and return a structured analysis.
-By default you only research and report back. Create exploration.md only when a
-change name is provided.
+By default you research, report back, and persist the analysis when a change name is provided.
 
 ## What You Receive
 
@@ -47,10 +48,19 @@ Read relevant code only when needed to understand:
 
 Compare multiple approaches if relevant.
 
-### Step 4: Optionally Save Exploration
+### Step 4: Save Exploration (openspec mode)
 
-If change name is provided and mode is openspec, write:
+If change name is provided, write:
 openspec/changes/{change-name}/exploration.md
+- Update openspec/changes/.status.yaml:
+  ```yaml
+  phase: EXPLORE
+  change: "{change-name}"
+  awaiting_approval: false
+  completed: false
+  ```
+
+If no change name is provided, return analysis inline only (no artifact).
 
 ### Step 5: Return Structured Analysis
 
@@ -64,6 +74,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Do not copy code into Neabrain unless necessary for context.
 - Keep analysis concise.
 - If request is too vague, ask for clarification.
+- All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
 
