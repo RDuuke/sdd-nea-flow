@@ -396,6 +396,9 @@ fresco, usa OpenCode.
 OpenSpec es el mecanismo por defecto. Cada cambio produce un folder
 auto-contenido:
 
+Nota: el contenido de todos los artefactos debe estar en espanol. Los nombres
+de archivos y rutas se mantienen en ingles.
+
 ```
 openspec/
 ├── config.yaml                        <- Project context (stack, conventions)

@@ -36,3 +36,4 @@ openspec/changes/{change-name}/
 - If mode is openspec, write files ONLY under openspec/.
 - When falling back to none, recommend enabling openspec for persistence.
 - Always verify path existence before reading or writing.
+- All artifact content must be written in espanol. Keep filenames and paths in English.
