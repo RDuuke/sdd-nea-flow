@@ -284,10 +284,15 @@ Abre Amazon Q y ejecuta `/flow-nea-init`.
 # Usando el instalador
 ./scripts/install.sh  # Opcion Gemini CLI
 
-# O manualmente
+# O manualmente (global)
 mkdir -p ~/.gemini/skills
 cp -r skills/flow-nea-* ~/.gemini/skills/
 cp -r skills/_shared ~/.gemini/skills/
+
+# O manualmente (local al proyecto)
+mkdir -p ./.gemini/skills
+cp -r skills/flow-nea-* ./.gemini/skills/
+cp -r skills/_shared ./.gemini/skills/
 ```
 
 2. Agregar el orquestador a `~/.gemini/GEMINI.md`
@@ -296,6 +301,8 @@ Anexa el contenido de `examples/gemini-cli/GEMINI.md` al archivo de prompt del s
 (crealo si no existe).
 
 Asegurate de tener `GEMINI_SYSTEM_MD=1` en `~/.gemini/.env` para que Gemini cargue el prompt.
+
+Nota: el prompt es global (usuario), aunque las skills pueden ser locales.
 
 3. Verificar
 
@@ -312,16 +319,23 @@ se ejecutan inline y el orquestador las lee directamente.
 # Usando el instalador
 ./scripts/install.sh  # Opcion Codex
 
-# O manualmente
+# O manualmente (global)
 mkdir -p ~/.codex/skills
 cp -r skills/flow-nea-* ~/.codex/skills/
 cp -r skills/_shared ~/.codex/skills/
+
+# O manualmente (local al proyecto)
+mkdir -p ./.codex/skills
+cp -r skills/flow-nea-* ./.codex/skills/
+cp -r skills/_shared ./.codex/skills/
 ```
 
 2. Agregar instrucciones del orquestador
 
 Agrega el contenido de `examples/codex/agents.md` a `~/.codex/agents.md`
 (o a tu `model_instructions_file` si lo configuraste).
+
+Nota: el prompt es global (usuario), aunque las skills pueden ser locales.
 
 3. Verificar
 

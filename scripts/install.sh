@@ -8,6 +8,7 @@ Usage: ./install.sh [OPTIONS]
 Options:
   -a, --agent NAME   Install for a specific agent (non-interactive)
                      Valid: opencode, amazonq, gemini-cli, codex, vscode, project-local, all-global, custom
+  -s, --scope SCOPE  Scope for gemini-cli/codex (local or global)
   -p, --path DIR     Custom install path (use with --agent custom)
   -h, --help         Show help
 
@@ -26,11 +27,16 @@ OPENCODE_SKILLS_DIR=".opencode/skills"
 
 TARGET_AGENT=""
 CUSTOM_PATH=""
+SCOPE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -a|--agent)
       TARGET_AGENT="$2"
+      shift 2
+      ;;
+    -s|--scope)
+      SCOPE="$2"
       shift 2
       ;;
     -p|--path)
@@ -229,6 +235,24 @@ install_codex_prompt() {
   ok "codex prompt (agents.md)"
 }
 
+resolve_gemini_skills_dir() {
+  local scope="$1"
+  if [[ "$scope" == "local" ]]; then
+    echo "./.gemini/skills"
+    return
+  fi
+  echo "${HOME}/.gemini/skills"
+}
+
+resolve_codex_skills_dir() {
+  local scope="$1"
+  if [[ "$scope" == "local" ]]; then
+    echo "./.codex/skills"
+    return
+  fi
+  echo "${HOME}/.codex/skills"
+}
+
 install_for_agent() {
   local agent="$1"
   case "$agent" in
@@ -251,19 +275,35 @@ install_for_agent() {
       echo "Siguiente paso: abre Amazon Q y ejecuta /flow-nea-init"
       ;;
     gemini-cli)
-      install_skills "${HOME}/.gemini/skills" "Gemini CLI"
+      if [[ -z "$SCOPE" ]]; then
+        read -r -p "Scope (local/global): " SCOPE
+      fi
+      if [[ "$SCOPE" != "local" && "$SCOPE" != "global" ]]; then
+        err "Scope invalido. Usa local o global."
+        exit 1
+      fi
+      gemini_dir="$(resolve_gemini_skills_dir "$SCOPE")"
+      install_skills "$gemini_dir" "Gemini CLI"
       install_gemini_prompt
       echo ""
-      warn "Skills instaladas en ~/.gemini/skills"
+      warn "Skills instaladas en ${gemini_dir}"
       warn "Prompt instalado en ~/.gemini/GEMINI.md"
       warn "Asegura GEMINI_SYSTEM_MD=1 en ~/.gemini/.env"
       echo "Siguiente paso: abre Gemini CLI y ejecuta /flow-nea-init"
       ;;
     codex)
-      install_skills "${HOME}/.codex/skills" "Codex"
+      if [[ -z "$SCOPE" ]]; then
+        read -r -p "Scope (local/global): " SCOPE
+      fi
+      if [[ "$SCOPE" != "local" && "$SCOPE" != "global" ]]; then
+        err "Scope invalido. Usa local o global."
+        exit 1
+      fi
+      codex_dir="$(resolve_codex_skills_dir "$SCOPE")"
+      install_skills "$codex_dir" "Codex"
       install_codex_prompt
       echo ""
-      warn "Skills instaladas en ~/.codex/skills"
+      warn "Skills instaladas en ${codex_dir}"
       warn "Prompt instalado en ~/.codex/agents.md"
       echo "Siguiente paso: abre Codex y ejecuta /flow-nea-init"
       ;;
@@ -306,8 +346,8 @@ show_menu() {
   echo ""
   echo "  1) OpenCode       (${OPENCODE_SKILLS_DIR})"
   echo "  2) Amazon Q       (.amazonq/rules)"
-  echo "  3) Gemini CLI     (~/.gemini/skills)"
-  echo "  4) Codex          (~/.codex/skills)"
+  echo "  3) Gemini CLI     (local o global)"
+  echo "  4) Codex          (local o global)"
   echo "  5) VS Code        (.vscode/skills)"
   echo "  6) Project-local  (./skills)"
   echo "  7) All global     (OpenCode)"

@@ -24,6 +24,8 @@
 param(
     [ValidateSet('opencode', 'amazonq', 'gemini-cli', 'codex', 'vscode', 'project-local', 'all-global', 'custom')]
     [string]$Agent,
+    [ValidateSet('local', 'global')]
+    [string]$Scope,
     [string]$Path,
     [switch]$Help
 )
@@ -102,6 +104,7 @@ function Show-Usage {
     Write-Host 'Options:'
     Write-Host '  -Agent NAME    Install for a specific agent (non-interactive)'
     Write-Host '  -Path DIR      Custom install path (use with -Agent custom)'
+    Write-Host '  -Scope SCOPE   Scope for gemini-cli/codex (local or global)'
     Write-Host '  -Help          Show this help'
     Write-Host ''
     Write-Host 'Agents: opencode, amazonq, gemini-cli, codex, vscode, project-local, all-global, custom'
@@ -278,6 +281,22 @@ function Install-CodexPrompt {
     Write-Skill 'codex prompt (agents.md)'
 }
 
+function Resolve-GeminiSkillsDir {
+    param([string]$InstallScope)
+    if ($InstallScope -eq 'local') {
+        return Join-Path (Get-Location) '.gemini\skills'
+    }
+    return Join-Path $env:USERPROFILE '.gemini\skills'
+}
+
+function Resolve-CodexSkillsDir {
+    param([string]$InstallScope)
+    if ($InstallScope -eq 'local') {
+        return Join-Path (Get-Location) '.codex\skills'
+    }
+    return Join-Path $env:USERPROFILE '.codex\skills'
+}
+
 # ============================================================================
 # Agent Install Dispatcher
 # ============================================================================
@@ -307,19 +326,37 @@ function Install-ForAgent {
             Write-Host 'Siguiente paso: abre Amazon Q y ejecuta /flow-nea-init' -ForegroundColor Yellow
         }
         'gemini-cli' {
-            Install-Skills -TargetDir $ToolPaths['gemini-cli'] -ToolName 'Gemini CLI'
+            $installScope = $Scope
+            if (-not $installScope) {
+                $installScope = Read-Host 'Scope (local/global)'
+            }
+            if ($installScope -ne 'local' -and $installScope -ne 'global') {
+                Write-Err 'Scope invalido. Usa local o global.'
+                exit 1
+            }
+            $targetDir = Resolve-GeminiSkillsDir -InstallScope $installScope
+            Install-Skills -TargetDir $targetDir -ToolName 'Gemini CLI'
             Install-GeminiPrompt
             Write-Host ''
-            Write-Warn 'Skills instaladas en %USERPROFILE%\.gemini\skills'
+            Write-Warn "Skills instaladas en $targetDir"
             Write-Warn 'Prompt instalado en %USERPROFILE%\.gemini\GEMINI.md'
             Write-Warn 'Asegura GEMINI_SYSTEM_MD=1 en %USERPROFILE%\.gemini\.env'
             Write-Host 'Siguiente paso: abre Gemini CLI y ejecuta /flow-nea-init' -ForegroundColor Yellow
         }
         'codex' {
-            Install-Skills -TargetDir $ToolPaths['codex'] -ToolName 'Codex'
+            $installScope = $Scope
+            if (-not $installScope) {
+                $installScope = Read-Host 'Scope (local/global)'
+            }
+            if ($installScope -ne 'local' -and $installScope -ne 'global') {
+                Write-Err 'Scope invalido. Usa local o global.'
+                exit 1
+            }
+            $targetDir = Resolve-CodexSkillsDir -InstallScope $installScope
+            Install-Skills -TargetDir $targetDir -ToolName 'Codex'
             Install-CodexPrompt
             Write-Host ''
-            Write-Warn 'Skills instaladas en %USERPROFILE%\.codex\skills'
+            Write-Warn "Skills instaladas en $targetDir"
             Write-Warn 'Prompt instalado en %USERPROFILE%\.codex\agents.md'
             Write-Host 'Siguiente paso: abre Codex y ejecuta /flow-nea-init' -ForegroundColor Yellow
         }
@@ -370,8 +407,8 @@ function Show-Menu {
     Write-Host ''
     Write-Host "   1) OpenCode       ($($ToolPaths['opencode']))"
     Write-Host "   2) Amazon Q       (.amazonq\rules)"
-    Write-Host "   3) Gemini CLI     ($($ToolPaths['gemini-cli']))"
-    Write-Host "   4) Codex          ($($ToolPaths['codex']))"
+    Write-Host "   3) Gemini CLI     (local o global)"
+    Write-Host "   4) Codex          (local o global)"
     Write-Host "   5) VS Code        ($($ToolPaths['vscode']))"
     Write-Host "   6) Project-local  ($($ToolPaths['project-local']))"
     Write-Host '   7) All global     (OpenCode)'
