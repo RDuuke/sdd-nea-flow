@@ -9,7 +9,7 @@
 > Un orquestador + sub-agentes especializados para desarrollo estructurado.
 > Cero dependencias. Solo Markdown. Funciona en cualquier lugar.
 
-Version: 1.0.2
+Version: 1.0.3
 
 Links rapidos: [Indice](#indice) • [Instalacion](#instalacion) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [VS Code](#vs-code)
 
