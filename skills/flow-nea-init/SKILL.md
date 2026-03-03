@@ -9,6 +9,8 @@ license: MIT
 metadata:
   author: juan-duque
   version: "1.0"
+  scope: [root]
+  invoker: flow-nea-orchestrator
 ---
 
 ## Purpose
@@ -77,6 +79,13 @@ rules:
 ### Step 4: Persist Context (openspec mode only)
 
 - Save detected context into openspec/config.yaml.
+- Write openspec/changes/.status.yaml:
+  ```yaml
+  phase: INIT
+  change: null
+  awaiting_approval: false
+  completed: false
+  ```
 
 ### Step 5: Return Summary
 
@@ -90,6 +99,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - If openspec/ already exists, report what exists before writing config.
 - If config.yaml exists, update only the context block; preserve rules.
 - Keep config.yaml context concise (no more than 10 lines).
+- All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
 

@@ -30,6 +30,24 @@ openspec/
 Change folders live at:
 openspec/changes/{change-name}/
 
+## Status File
+
+Path: openspec/changes/.status.yaml
+
+Template:
+
+```yaml
+phase: INIT
+change: null
+awaiting_approval: false
+completed: false
+```
+
+Rules:
+- If .status.yaml is missing, infer phase from existing artifacts (see flow-nea-continue rules) and create the file before proceeding.
+- If legacy .status.json exists, read it, migrate values to .status.yaml, and delete the .json file.
+- Never block a phase solely because .status.yaml is missing; always recover by inference.
+
 ## Common Rules
 
 - If mode is none, do not create or modify any project files.

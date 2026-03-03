@@ -8,6 +8,8 @@ license: MIT
 metadata:
   author: juan-duque
   version: "1.0"
+  scope: [root]
+  invoker: flow-nea-orchestrator
 ---
 
 ## Purpose
@@ -68,6 +70,13 @@ If no existing spec exists, write a FULL spec instead of delta.
 ### Step 4: Persist (openspec mode)
 
 - Save delta specs under openspec/changes/{change-name}/specs/{domain}/spec.md
+- Update openspec/changes/.status.yaml:
+  ```yaml
+  phase: SPEC
+  change: "{change-name}"
+  awaiting_approval: false
+  completed: false
+  ```
 
 ### Step 5: Return Summary
 
@@ -81,6 +90,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Every requirement must have at least one scenario.
 - Include both happy path and edge case scenarios.
 - Do not include implementation details.
+- All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
 
