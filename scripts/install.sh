@@ -142,19 +142,19 @@ install_skills() {
   echo "  ${count} skills installed -> ${target_dir}"
 }
 
-install_amazonq_agent() {
-  local amazonq_dir=".amazonq"
-  local agent_src="${REPO_DIR}/examples/amazonq/agent.js"
-  local agent_target="${amazonq_dir}/agent.js"
+install_amazonq_prompt() {
+  local amazonq_prompts_dir="${HOME}/.aws/amazonq/prompts"
+  local prompt_src="${REPO_DIR}/examples/amazonq/amazon-instructions.md"
+  local prompt_target="${amazonq_prompts_dir}/amazon-instructions.md"
 
-  if [[ ! -f "$agent_src" ]]; then
-    err "Missing examples/amazonq/agent.js"
+  if [[ ! -f "$prompt_src" ]]; then
+    err "Missing examples/amazonq/amazon-instructions.md"
     exit 1
   fi
 
-  mkdir -p "$amazonq_dir"
-  cp "$agent_src" "$agent_target"
-  ok "amazonq agent.js"
+  mkdir -p "$amazonq_prompts_dir"
+  cp "$prompt_src" "$prompt_target"
+  ok "amazonq prompt (amazon-instructions.md)"
 }
 
 install_for_agent() {
@@ -172,9 +172,10 @@ install_for_agent() {
       ;;
     amazonq)
       install_skills ".amazonq/rules" "Amazon Q"
-      install_amazonq_agent
+      install_amazonq_prompt
       echo ""
       warn "Skills installed in .amazonq/rules/"
+      warn "Prompt installed in ~/.aws/amazonq/prompts/amazon-instructions.md"
       ;;
     vscode)
       install_skills ".vscode/skills" "VS Code (Copilot)"

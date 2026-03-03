@@ -9,7 +9,31 @@
 > Un orquestador + sub-agentes especializados para desarrollo estructurado.
 > Cero dependencias. Solo Markdown. Funciona en cualquier lugar.
 
-Links rapidos: [El Problema](#el-problema) • [La Solucion](#la-solucion) • [Architecture](#architecture) • [Flujo (nea-flow)](#flujo-nea-flow) • [Installation](#installation) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [VS Code](#vs-code)
+Version: 1.0.2
+
+Links rapidos: [El Problema](#el-problema) • [La Solucion](#la-solucion) • [Arquitectura](#arquitectura) • [Flujo nea-flow](#flujo-nea-flow) • [Instalacion](#instalacion) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [VS Code](#vs-code)
+
+## Indice
+
+- [El Problema](#el-problema)
+- [La Solucion](#la-solucion)
+- [Arquitectura](#arquitectura)
+- [Que es](#que-es)
+- [Flujo nea-flow](#flujo-nea-flow)
+- [Dependencias](#dependencias)
+- [Estructura del repo](#estructura-del-repo)
+- [Uso rapido](#uso-rapido)
+- [Instalacion](#instalacion)
+- [OpenCode](#opencode)
+- [Amazon Q](#amazon-q)
+- [VS Code](#vs-code)
+- [Artifact Persistence (Default)](#artifact-persistence-default)
+- [Delta Specs](#delta-specs)
+- [RFC 2119 Keywords](#rfc-2119-keywords)
+- [The Archive Cycle](#the-archive-cycle)
+- [Contrato de respuesta de sub-agentes](#contrato-de-respuesta-de-sub-agentes)
+- [Contributing](#contributing)
+- [Notas](#notas)
 
 ## El Problema
 
@@ -27,7 +51,7 @@ coordinador liviano delega el trabajo a sub-agentes especializados. Cada
 sub-agente inicia con contexto fresco, ejecuta una tarea puntual y devuelve
 un resultado estructurado.
 
-EJEMPLO (nea-flow):
+Ejemplo (nea-flow):
 
 YOU: "Quiero agregar exportacion CSV"
 
@@ -48,7 +72,7 @@ Insight clave: el orquestador NUNCA hace trabajo de fases directamente. Solo
 coordina sub-agentes, mantiene estado y sintetiza resultados. Esto mantiene el
 hilo principal estable y con contexto pequeno.
 
-## Architecture
+## Arquitectura
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -111,30 +135,14 @@ The Dependency Graph
                close change)
 ```
 
+## Que es
+
 Plantilla base agnostica de editor para operar un flujo SDD (Spec-Driven
 Development) con skills de nea-flow y artefactos OpenSpec. Incluye orquestador,
 ejemplos por editor y scripts de integracion para incorporar el flujo en otros
 proyectos.
 
-Version: 1.0.1
-
-## Que es
-
-Este repo empaqueta un flujo completo de trabajo con agentes y una base
-agnostica de editor para:
-
-- Explorar un cambio
-- Proponer el alcance
-- Definir especificaciones
-- Disenar la solucion
-- Planificar tareas
-- Implementar
-- Verificar
-- Archivar
-
-El objetivo es mantener trazabilidad y consistencia entre idea, specs y codigo.
-
-## Flujo (nea-flow)
+## Flujo nea-flow
 
 Los comandos del flujo son:
 
@@ -155,19 +163,6 @@ No hay alias del flujo anterior. El unico flujo soportado es nea-flow.
 - OpenCode o Amazon Q
 - Plugin o integracion de cada editor para orquestacion de skills
 - PowerShell (para scripts de integracion)
-
-## Arquitectura
-
-La plantilla se organiza en capas:
-
-- Orquestacion: reglas del flujo y comandos por editor
-- Skills: fases del flujo y utilidades compartidas
-- Artefactos: OpenSpec con specs, cambios y archivos de soporte
-- Integracion: scripts para instalar la plantilla en un proyecto objetivo
-
-## Backend de artefactos
-
-Por defecto se usa OpenSpec como backend de artefactos.
 
 ## Estructura del repo
 
@@ -191,12 +186,11 @@ El instalador pregunta que herramienta usas y copia las skills al lugar correcto
 
 2. Agregar el orquestador a tu agente
 
-Ver la seccion Installation segun tu herramienta:
-https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#installation
-Luego ve a:
-https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#opencode
+Ver la seccion [Instalacion](#instalacion) segun tu herramienta.
 
-## Installation
+Luego ve a: [OpenCode](#opencode)
+
+## Instalacion
 
 Guia de instalacion por herramienta soportada:
 
@@ -205,11 +199,9 @@ Guia de instalacion por herramienta soportada:
 - VS Code (Copilot) — Agent mode with context files
 
 Links rapidos:
-- OpenCode: https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#opencode
-- Amazon Q: https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#amazon-q
-- VS Code (Copilot): https://github.com/RDuuke/sdd-nea-flow/blob/main/README.md#vs-code
-- Amazon Q — Full sub-agent support via Task tool
-- VS Code (Copilot) — Agent mode with context files
+- [OpenCode](#opencode)
+- [Amazon Q](#amazon-q)
+- [VS Code (Copilot)](#vs-code)
 
 ## OpenCode
 
@@ -262,12 +254,13 @@ cp -r skills/flow-nea-* .amazonq/rules/
 cp -r skills/_shared .amazonq/rules/
 ```
 
-2. Agregar el agente
+2. Agregar el prompt
 
-Copia el archivo de ejemplo a tu proyecto:
+Copia el archivo de prompt a la ruta de Amazon Q en tu perfil:
 
 ```bash
-cp examples/amazonq/agent.js .amazonq/agent.js
+mkdir -p ~/.aws/amazonq/prompts
+cp examples/amazonq/amazon-instructions.md ~/.aws/amazonq/prompts/amazon-instructions.md
 ```
 
 ## VS Code

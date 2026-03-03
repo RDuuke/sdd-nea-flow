@@ -189,19 +189,19 @@ function Install-Skills {
     Write-Host " -> $TargetDir"
 }
 
-function Install-AmazonQAgent {
-    $amazonqDir = Join-Path '.' '.amazonq'
-    $agentSrc = Join-Path $RepoDir 'examples\amazonq\agent.js'
-    $agentTarget = Join-Path $amazonqDir 'agent.js'
+function Install-AmazonQPrompt {
+    $amazonqPromptsDir = Join-Path $env:USERPROFILE '.aws\amazonq\prompts'
+    $promptSrc = Join-Path $RepoDir 'examples\amazonq\amazon-instructions.md'
+    $promptTarget = Join-Path $amazonqPromptsDir 'amazon-instructions.md'
 
-    if (-not (Test-Path $agentSrc)) {
-        Write-Err 'Missing examples\amazonq\agent.js'
+    if (-not (Test-Path $promptSrc)) {
+        Write-Err 'Missing examples\amazonq\amazon-instructions.md'
         exit 1
     }
 
-    New-Item -ItemType Directory -Path $amazonqDir -Force | Out-Null
-    Copy-Item -Path $agentSrc -Destination $agentTarget -Force
-    Write-Skill 'amazonq agent.js'
+    New-Item -ItemType Directory -Path $amazonqPromptsDir -Force | Out-Null
+    Copy-Item -Path $promptSrc -Destination $promptTarget -Force
+    Write-Skill 'amazonq prompt (amazon-instructions.md)'
 }
 
 # ============================================================================
@@ -226,9 +226,10 @@ function Install-ForAgent {
         }
         'amazonq' {
             Install-Skills -TargetDir $ToolPaths['amazonq'] -ToolName 'Amazon Q'
-            Install-AmazonQAgent
+            Install-AmazonQPrompt
             Write-Host ''
             Write-Warn 'Skills installed in .amazonq\rules\'
+            Write-Warn 'Prompt installed in %USERPROFILE%\.aws\amazonq\prompts\amazon-instructions.md'
         }
         'vscode' {
             Install-Skills -TargetDir $ToolPaths['vscode'] -ToolName 'VS Code (Copilot)'
