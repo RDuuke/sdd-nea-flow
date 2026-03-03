@@ -59,6 +59,9 @@ openspec/changes/{change-name}/ -> openspec/changes/archive/YYYY-MM-DD-{change-n
   change: "{change-name}"
   awaiting_approval: false
   completed: true
+  pending_tasks: []
+  modified_artifacts: []
+  notes: ""
   ```
 
 ### Step 4: Return Summary

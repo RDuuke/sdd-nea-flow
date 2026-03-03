@@ -59,6 +59,9 @@ openspec/changes/{change-name}/exploration.md
   change: "{change-name}"
   awaiting_approval: false
   completed: false
+  pending_tasks: []
+  modified_artifacts: []
+  notes: ""
   ```
 
 If no change name is provided, return analysis inline only (no artifact).

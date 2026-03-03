@@ -75,6 +75,9 @@ Each scenario is compliant only if a test exists and passes.
   change: "{change-name}"
   awaiting_approval: false
   completed: false
+  pending_tasks: []
+  modified_artifacts: []
+  notes: ""
   ```
 
 ### Step 8: Return Summary

@@ -50,3 +50,11 @@ Reglas de salida:
 - Resume decisiones y solicita aprobacion para avanzar de fase.
 - Si faltan datos, pregunta de forma puntual.
 - Si la tarea es pequena, puedes completar en una sola fase.
+
+Actualizacion de estado fuera del flujo:
+
+- Cuando un artefacto OpenSpec es modificado fuera de una skill de fase (inline o por sub-agente general), el orquestador DEBE:
+  1) Agregar el artefacto a `modified_artifacts` en `.status.yaml`
+  2) Retroceder `phase`: proposal.md -> SPEC | specs/ -> APPLY | design.md -> APPLY | tasks.md -> APPLY
+  3) Escribir en `notes` que cambio y por que
+  4) Informar al usuario que la fase retrocedio y que debe re-ejecutar la fase correspondiente

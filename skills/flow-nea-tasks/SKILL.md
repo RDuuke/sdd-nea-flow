@@ -68,6 +68,9 @@ Format:
   change: "{change-name}"
   awaiting_approval: false
   completed: false
+  pending_tasks: []
+  modified_artifacts: []
+  notes: ""
   ```
 
 ### Step 4: Return Summary

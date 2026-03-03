@@ -88,6 +88,9 @@ experimental:
   change: null
   awaiting_approval: false
   completed: false
+  pending_tasks: []
+  modified_artifacts: []
+  notes: ""
   ```
 
 ### Step 5: Return Summary

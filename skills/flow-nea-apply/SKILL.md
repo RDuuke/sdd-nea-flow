@@ -80,6 +80,9 @@ Do not wait for the orchestrator to specify them — this is the sub-agent's res
   change: "{change-name}"
   awaiting_approval: false
   completed: false
+  pending_tasks: ["list of unchecked task ids"]
+  modified_artifacts: []
+  notes: ""
   ```
 
 ### Step 5: Return Summary

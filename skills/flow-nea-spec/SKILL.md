@@ -76,6 +76,9 @@ If no existing spec exists, write a FULL spec instead of delta.
   change: "{change-name}"
   awaiting_approval: false
   completed: false
+  pending_tasks: []
+  modified_artifacts: []
+  notes: ""
   ```
 
 ### Step 5: Return Summary

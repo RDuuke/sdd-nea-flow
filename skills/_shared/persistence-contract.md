@@ -41,12 +41,31 @@ phase: INIT
 change: null
 awaiting_approval: false
 completed: false
+pending_tasks: []
+modified_artifacts: []
+notes: ""
 ```
 
 Rules:
 - If .status.yaml is missing, infer phase from existing artifacts (see flow-nea-continue rules) and create the file before proceeding.
 - If legacy .status.json exists, read it, migrate values to .status.yaml, and delete the .json file.
 - Never block a phase solely because .status.yaml is missing; always recover by inference.
+
+## Out-of-Flow Artifact Modification
+
+When an OpenSpec artifact is modified outside a phase skill (by the orchestrator inline or a general sub-agent), the orchestrator MUST:
+1. Add the artifact to `modified_artifacts` in `.status.yaml`.
+2. Regress `phase` according to this table:
+
+| Modified artifact | Regress phase to |
+|---|---|
+| `proposal.md` | SPEC |
+| `specs/` | APPLY |
+| `design.md` | APPLY |
+| `tasks.md` | APPLY |
+
+3. Set `notes` with a brief description of what changed and why.
+4. Inform the user that the phase was regressed and which tasks need to be re-run.
 
 ## File Access Rules
 
