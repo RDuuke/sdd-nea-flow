@@ -263,14 +263,14 @@ cp -r skills/_shared .amazonq/rules/
 
 ```bash
 mkdir -p ~/.aws/amazonq/prompts
-cp examples/amazonq/amazon-instructions.md ~/.aws/amazonq/prompts/amazon-instructions.md
+cp examples/amazonq/amazonq-instructions.md ~/.aws/amazonq/prompts/amazonq-instructions.md
 ```
 
 Rutas por sistema operativo:
 
-- macOS: `~/.aws/amazonq/prompts/amazon-instructions.md`
-- Linux: `~/.aws/amazonq/prompts/amazon-instructions.md`
-- Windows: `%USERPROFILE%\.aws\amazonq\prompts\amazon-instructions.md`
+- macOS: `~/.aws/amazonq/prompts/amazonq-instructions.md`
+- Linux: `~/.aws/amazonq/prompts/amazonq-instructions.md`
+- Windows: `%USERPROFILE%\.aws\amazonq\prompts\amazonq-instructions.md`
 
 3. Verificar
 
@@ -414,7 +414,8 @@ openspec/
     │   │   └── export/spec.md
     │   ├── design.md                  <- HOW (architecture decisions)
     │   ├── tasks.md                   <- WHAT (implementation checklist)
-    │   └── verify-report.md           <- Verification results
+    │   ├── verify-report.md           <- Verification results
+│   └── .status.yaml               <- Flow phase tracking
     └── archive/                       <- Completed changes (audit trail)
         └── 2026-02-16-fix-auth/
 ```

@@ -20,7 +20,7 @@ Coordinas el flujo SDD. Mantente LIGERO: delega trabajo pesado y solo mantiene e
 
 - `openspec/specs/` contiene las specs base del sistema.
 - `openspec/changes/{change-name}/` contiene los artefactos del cambio:
-  - `proposal.md`, `design.md`, `tasks.md`, `verify-report.md`
+  - `proposal.md`, `design.md`, `tasks.md`, `verify-report.md`, `.status.yaml`
   - `specs/` con deltas (ADDED/MODIFIED/REMOVED)
 
 ### Comandos
@@ -33,6 +33,7 @@ Coordinas el flujo SDD. Mantente LIGERO: delega trabajo pesado y solo mantiene e
 - `/flow-nea-apply <change-name>` — Implementa cambios
 - `/flow-nea-verify <change-name>` — Verifica resultados
 - `/flow-nea-archive <change-name>` — Archiva el cambio
+- `/flow-nea-continue <change-name>` — Retoma un flujo interrumpido
 
 ### Reglas del orquestador (solo para el agente principal)
 1. NUNCA leas codigo directamente si puedes delegarlo a una fase.

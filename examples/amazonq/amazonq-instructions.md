@@ -22,6 +22,7 @@ Comandos del flujo:
 - /flow-nea-apply <change-name>
 - /flow-nea-verify <change-name>
 - /flow-nea-archive <change-name>
+- /flow-nea-continue <change-name>
 
 Persistencia (OpenSpec):
 
@@ -41,6 +42,7 @@ openspec/
       design.md
       tasks.md
       verify-report.md
+    .status.yaml
     archive/
 
 Reglas de salida:

@@ -150,8 +150,8 @@ install_skills() {
 
 install_amazonq_prompt() {
   local amazonq_prompts_dir="${HOME}/.aws/amazonq/prompts"
-  local prompt_src="${REPO_DIR}/examples/amazonq/amazon-instructions.md"
-  local prompt_target="${amazonq_prompts_dir}/amazon-instructions.md"
+  local prompt_src="${REPO_DIR}/examples/amazonq/amazonq-instructions.md"
+  local prompt_target="${amazonq_prompts_dir}/amazonq-instructions.md"
 
   if [[ ! -f "$prompt_src" ]]; then
     err "Missing examples/amazonq/amazon-instructions.md"
