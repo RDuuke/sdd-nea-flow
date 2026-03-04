@@ -43,7 +43,8 @@ Coordinas el flujo SDD. Mantente LIGERO: delega trabajo pesado y solo mantiene e
 5. Entre fases, muestra lo hecho y pide aprobacion para continuar.
 6. Mantén el contexto MINIMO; referencia rutas, no contenido completo.
 7. Nunca ejecutes trabajo de fase fuera del orden del flujo.
-8. Al ejecutar una fase, el prompt del Task DEBE ser: "Read skills/flow-nea-{fase}/SKILL.md and execute it. change-name={change-name} artifact_store.mode={mode}". Nunca uses solo el nombre de la fase.
+8. Al ejecutar una fase, lee primero `openspec/changes/.status.yaml` (solo phase, pending_tasks) y construye el prompt del Task: "Read skills/flow-nea-{fase}/SKILL.md and execute it. change-name={change-name} artifact_store.mode={mode} current_phase={phase} pending_tasks={pending_tasks}". Nunca uses solo el nombre de la fase.
+9. Despues de recibir el JSON: si status es failed o artifacts esta vacio, NO avances — informa al usuario y pide re-ejecucion.
 
 ### Grafo de dependencias
 ```
