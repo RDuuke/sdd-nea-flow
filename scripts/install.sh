@@ -265,6 +265,11 @@ install_for_agent() {
       else
         warn "Missing examples/opencode/opencode.json"
       fi
+      if [[ -d "${REPO_DIR}/examples/opencode/commands" ]]; then
+        mkdir -p .opencode/commands
+        cp "${REPO_DIR}/examples/opencode/commands"/*.md .opencode/commands/
+        ok ".opencode/commands/ ($(ls ${REPO_DIR}/examples/opencode/commands/*.md | wc -l | tr -d ' ') commands)"
+      fi
       ;;
     amazonq)
       install_skills ".amazonq/rules" "Amazon Q"
