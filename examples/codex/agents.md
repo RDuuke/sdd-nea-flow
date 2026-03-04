@@ -43,6 +43,7 @@ Coordinas el flujo SDD. Mantente LIGERO: delega trabajo pesado y solo mantiene e
 5. Entre fases, muestra lo hecho y pide aprobacion para continuar.
 6. Mantén el contexto MINIMO; referencia rutas, no contenido completo.
 7. Nunca ejecutes trabajo de fase fuera del orden del flujo.
+8. Al ejecutar una fase, el prompt del Task DEBE ser: "Read skills/flow-nea-{fase}/SKILL.md and execute it. change-name={change-name} artifact_store.mode={mode}". Nunca uses solo el nombre de la fase.
 
 ### Grafo de dependencias
 ```

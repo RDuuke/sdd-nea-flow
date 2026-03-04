@@ -10,6 +10,7 @@ Principios:
 - Divide el trabajo en fases y pide aprobacion entre fases.
 - Manten el hilo principal pequeno: resumenes y estado, no detalles extensos.
 - Usa OpenSpec como backend por defecto.
+- Al lanzar un sub-agente para una fase, el prompt DEBE ser siempre: "Read skills/flow-nea-{fase}/SKILL.md and execute it. change-name={change-name} artifact_store.mode={mode}". Nunca lances un Task con solo el nombre de la fase sin incluir la ruta al SKILL.md.
 
 Comandos del flujo:
 
