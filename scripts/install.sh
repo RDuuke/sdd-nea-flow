@@ -235,6 +235,25 @@ install_codex_prompt() {
   ok "codex prompt (agents.md)"
 }
 
+resolve_user_home() {
+  if [[ -n "${HOME:-}" ]]; then
+    echo "${HOME}"
+    return
+  fi
+  if [[ -n "${USERPROFILE:-}" ]]; then
+    echo "${USERPROFILE}"
+    return
+  fi
+  err "Unable to determine the user home directory. Set HOME or USERPROFILE."
+  exit 1
+}
+
+resolve_all_global_opencode_dir() {
+  local user_home
+  user_home="$(resolve_user_home)"
+  echo "${user_home}/.opencode/skills"
+}
+
 resolve_gemini_skills_dir() {
   local scope="$1"
   if [[ "$scope" == "local" ]]; then
@@ -326,7 +345,31 @@ install_for_agent() {
       warn "Skills installed in ./skills - relative to this project"
       ;;
     all-global)
-      install_skills "$OPENCODE_SKILLS_DIR" "OpenCode"
+      local user_home
+      user_home="$(resolve_user_home)"
+      local global_opencode_dir="${user_home}/.opencode"
+      local global_skills_dir="${global_opencode_dir}/skills"
+
+      install_skills "$global_skills_dir" "OpenCode (global)"
+
+      if [[ -f "${REPO_DIR}/examples/opencode/opencode.json" ]]; then
+        mkdir -p "$global_opencode_dir"
+        cp "${REPO_DIR}/examples/opencode/opencode.json" "${global_opencode_dir}/opencode.json"
+        ok "${global_opencode_dir}/opencode.json"
+      else
+        warn "Missing examples/opencode/opencode.json"
+      fi
+
+      if [[ -d "${REPO_DIR}/examples/opencode/commands" ]]; then
+        mkdir -p "${global_opencode_dir}/commands"
+        cp "${REPO_DIR}/examples/opencode/commands"/*.md "${global_opencode_dir}/commands/"
+        local cmd_count
+        cmd_count=$(find "${REPO_DIR}/examples/opencode/commands" -type f -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+        ok "${global_opencode_dir}/commands/ (${cmd_count} commands)"
+      fi
+
+      warn "Skills installed globally for OpenCode in ${global_skills_dir}"
+      warn "OpenCode assets stored in ${global_opencode_dir}"
       ;;
     custom)
       if [[ -z "$CUSTOM_PATH" ]]; then
@@ -347,6 +390,9 @@ install_for_agent() {
 }
 
 show_menu() {
+  local all_global_dir
+  all_global_dir="$(resolve_all_global_opencode_dir)"
+
   echo "Select your AI coding assistant:"
   echo ""
   echo "  1) OpenCode       (${OPENCODE_SKILLS_DIR})"
@@ -355,7 +401,7 @@ show_menu() {
   echo "  4) Codex          (local o global)"
   echo "  5) VS Code        (.vscode/skills)"
   echo "  6) Project-local  (./skills)"
-  echo "  7) All global     (OpenCode)"
+  echo "  7) All global     (${all_global_dir})"
   echo "  8) Custom path"
   echo ""
 
