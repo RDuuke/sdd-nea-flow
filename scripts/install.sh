@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+
+trap 'log_error "Unhandled error on line $LINENO in ${FUNCNAME[0]} (exit code $?)"' ERR
+trap 'cleanup' EXIT
+
+cleanup() {
+  return 0
+}
+
 
 usage() {
-  cat <<'EOF'
-Usage: ./install.sh [OPTIONS]
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS]
 
 Options:
   -a, --agent NAME   Install for a specific agent (non-interactive)
@@ -17,6 +25,7 @@ Examples:
   ./install.sh --agent opencode
   ./install.sh --agent custom --path /tmp/skills
 EOF
+  exit "${1:-0}"
 }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -48,7 +57,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "[ERR] Unknown argument: $1" >&2
+      log_error "Unknown argument: $1"
       usage
       exit 1
       ;;
@@ -56,27 +65,58 @@ while [[ $# -gt 0 ]]; do
 done
 
 header() {
-  echo ""
-  echo "========================================"
-  echo "     NEA Flow - Installer (Unix)        "
-  echo "  Spec-Driven Development for AI Agents "
-  echo "========================================"
-  echo ""
+  printf "\n"
+  printf "========================================\n"
+  printf "     NEA Flow - Installer (Unix)        \n"
+  printf "  Spec-Driven Development for AI Agents \n"
+  printf "========================================\n"
+  printf "\n"
 }
 
-warn() { echo "[WARN] $1"; }
-err() { echo "[ERR] $1" >&2; }
-ok() { echo "[OK] $1"; }
+log_info() {
+  printf "INFO: %s\n" "$*" >&2
+}
+
+log_warn() {
+  printf "WARN: %s\n" "$*" >&2
+}
+
+log_error() {
+  printf "ERROR: %s\n" "$*" >&2
+}
+
+log_debug() {
+  if [[ "${DEBUG:-0}" == "1" ]]; then
+    printf "DEBUG: %s\n" "$*" >&2
+  fi
+}
+
+check_dependencies() {
+  local -a missing_deps=()
+  local -a required=("cp" "mkdir" "grep" "wc" "tr" "printf" "cat" "mv" "find")
+
+  for cmd in "${required[@]}"; do
+    if ! command -v "$cmd" &>/dev/null; then
+      missing_deps+=("$cmd")
+    fi
+  done
+
+  if [[ ${#missing_deps[@]} -gt 0 ]]; then
+    log_error "Missing required commands: ${missing_deps[*]}"
+    exit 1
+  fi
+  log_info "All required dependencies found."
+}
 
 test_source_tree() {
   local missing=0
   if [[ ! -d "$SKILLS_SRC" ]]; then
-    err "Missing skills/ directory"
+    log_error "Missing skills/ directory"
     missing=1
   fi
 
   if [[ ! -d "${SKILLS_SRC}/_shared" ]]; then
-    err "Missing skills/_shared directory"
+    log_error "Missing skills/_shared directory"
     missing=1
   fi
 
@@ -84,27 +124,27 @@ test_source_tree() {
   for skill_dir in "${SKILLS_SRC}"/flow-nea-*; do
     if [[ -d "$skill_dir" ]]; then
       if [[ ! -f "${skill_dir}/SKILL.md" ]]; then
-        err "Missing: $(basename "$skill_dir")/SKILL.md"
+        log_error "Missing: $(basename "$skill_dir")/SKILL.md"
         missing=1
       fi
     fi
   done
 
-  if [[ $missing -ne 0 ]]; then
-    echo ""
-    err "Source validation failed. Is this a complete clone of the repository?"
-    echo "  Try: git clone https://github.com/RDuuke/sdd-nea-flow.git"
-    echo ""
-    exit 1
-  fi
+    if [[ $missing -ne 0 ]]; then
+      printf "\n"
+      log_error "Source validation failed. Is this a complete clone of the repository?"
+      printf "  Try: git clone https://github.com/RDuuke/sdd-nea-flow.git\n"
+      printf "\n"
+      exit 1
+    fi
 }
 
 install_skills() {
   local target_dir="$1"
   local tool_name="$2"
 
-  echo ""
-  echo "Installing skills for ${tool_name}..."
+  printf "\n"
+  printf "Installing skills for %s...\n" "${tool_name}"
   mkdir -p "$target_dir"
 
   local shared_src="${SKILLS_SRC}/_shared"
@@ -120,9 +160,9 @@ install_skills() {
       fi
     done
     if [[ $shared_count -gt 0 ]]; then
-      ok "_shared (${shared_count} convention files)"
+      log_info "_shared (${shared_count} convention files)"
     else
-      warn "_shared directory found but no .md files to copy"
+      log_warn "_shared directory found but no .md files to copy"
     fi
   fi
 
@@ -134,18 +174,18 @@ install_skills() {
       skill_name="$(basename "$skill_dir")"
       local skill_file="${skill_dir}/SKILL.md"
       if [[ ! -f "$skill_file" ]]; then
-        warn "Skipping ${skill_name} (SKILL.md not found in source)"
+        log_warn "Skipping ${skill_name} (SKILL.md not found in source)"
         continue
       fi
       mkdir -p "${target_dir}/${skill_name}"
       cp "$skill_file" "${target_dir}/${skill_name}/SKILL.md"
-      ok "$skill_name"
+      log_info "$skill_name"
       count=$((count + 1))
     fi
   done
 
-  echo ""
-  echo "  ${count} skills installed -> ${target_dir}"
+  printf "\n"
+  printf "  %s skills installed -> %s\n" "${count}" "${target_dir}"
 }
 
 install_amazonq_prompt() {
@@ -154,7 +194,7 @@ install_amazonq_prompt() {
   local prompt_target="${amazonq_prompts_dir}/amazonq-instructions.md"
 
   if [[ ! -f "$prompt_src" ]]; then
-    err "Missing examples/amazonq/amazon-instructions.md"
+    log_error "Missing examples/amazonq/amazon-instructions.md"
     exit 1
   fi
 
@@ -162,11 +202,11 @@ install_amazonq_prompt() {
   cp "$prompt_src" "$prompt_target"
 
   if [[ ! -f "$prompt_target" ]]; then
-    warn "No se pudo verificar el prompt de Amazon Q"
+    log_warn "No se pudo verificar el prompt de Amazon Q"
     return
   fi
 
-  ok "amazonq prompt (amazon-instructions.md)"
+  log_info "amazonq prompt (amazon-instructions.md)"
 }
 
 install_gemini_prompt() {
@@ -176,14 +216,14 @@ install_gemini_prompt() {
   local marker="ORQUESTADOR NEA FLOW"
 
   if [[ ! -f "$prompt_src" ]]; then
-    err "Missing examples/gemini-cli/GEMINI.md"
+    log_error "Missing examples/gemini-cli/GEMINI.md"
     exit 1
   fi
 
   mkdir -p "$gemini_dir"
 
   if [[ -f "$prompt_target" ]] && grep -q "$marker" "$prompt_target"; then
-    warn "Prompt de Gemini CLI ya existe en GEMINI.md"
+    log_warn "Prompt de Gemini CLI ya existe en GEMINI.md"
     return
   fi
 
@@ -195,11 +235,11 @@ install_gemini_prompt() {
   fi
 
   if [[ ! -f "$prompt_target" ]]; then
-    warn "No se pudo verificar el prompt de Gemini CLI"
+    log_warn "No se pudo verificar el prompt de Gemini CLI"
     return
   fi
 
-  ok "gemini CLI prompt (GEMINI.md)"
+  log_info "gemini CLI prompt (GEMINI.md)"
 }
 
 install_codex_prompt() {
@@ -209,14 +249,14 @@ install_codex_prompt() {
   local marker="ORQUESTADOR NEA FLOW"
 
   if [[ ! -f "$prompt_src" ]]; then
-    err "Missing examples/codex/agents.md"
+    log_error "Missing examples/codex/agents.md"
     exit 1
   fi
 
   mkdir -p "$codex_dir"
 
   if [[ -f "$prompt_target" ]] && grep -q "$marker" "$prompt_target"; then
-    warn "Prompt de Codex ya existe en agents.md"
+    log_warn "Prompt de Codex ya existe en agents.md"
     return
   fi
 
@@ -228,11 +268,11 @@ install_codex_prompt() {
   fi
 
   if [[ ! -f "$prompt_target" ]]; then
-    warn "No se pudo verificar el prompt de Codex"
+    log_warn "No se pudo verificar el prompt de Codex"
     return
   fi
 
-  ok "codex prompt (agents.md)"
+  log_info "codex prompt (agents.md)"
 }
 
 resolve_user_home() {
@@ -244,7 +284,7 @@ resolve_user_home() {
     echo "${USERPROFILE}"
     return
   fi
-  err "Unable to determine the user home directory. Set HOME or USERPROFILE."
+  log_error "Unable to determine the user home directory. Set HOME or USERPROFILE."
   exit 1
 }
 
@@ -280,69 +320,69 @@ install_for_agent() {
       if [[ -f "${REPO_DIR}/examples/opencode/opencode.json" ]]; then
         mkdir -p .opencode
         cp "${REPO_DIR}/examples/opencode/opencode.json" .opencode/opencode.json
-        ok ".opencode/opencode.json"
+        log_info ".opencode/opencode.json"
       else
-        warn "Missing examples/opencode/opencode.json"
+        log_warn "Missing examples/opencode/opencode.json"
       fi
       if [[ -d "${REPO_DIR}/examples/opencode/commands" ]]; then
         mkdir -p .opencode/commands
         cp "${REPO_DIR}/examples/opencode/commands"/*.md .opencode/commands/
-        ok ".opencode/commands/ ($(ls ${REPO_DIR}/examples/opencode/commands/*.md | wc -l | tr -d ' ') commands)"
+        log_info ".opencode/commands/ ($(ls ${REPO_DIR}/examples/opencode/commands/*.md | wc -l | tr -d ' ') commands)"
       fi
       ;;
     amazonq)
       install_skills ".amazonq/rules" "Amazon Q"
       install_amazonq_prompt
-      echo ""
-      warn "Skills instaladas en .amazonq/rules/"
-      warn "Prompt instalado en ~/.aws/amazonq/prompts/amazon-instructions.md"
-      echo "Siguiente paso: abre Amazon Q y ejecuta /flow-nea-init"
+      printf "\n"
+      log_warn "Skills instaladas en .amazonq/rules/"
+      log_warn "Prompt instalado en ~/.aws/amazonq/prompts/amazon-instructions.md"
+      printf "Siguiente paso: abre Amazon Q y ejecuta /flow-nea-init\n"
       ;;
     gemini-cli)
       if [[ -z "$SCOPE" ]]; then
-        read -r -p "Scope (local/global): " SCOPE
+        read -p "Scope (local/global): " SCOPE
       fi
       if [[ "$SCOPE" != "local" && "$SCOPE" != "global" ]]; then
-        err "Scope invalido. Usa local o global."
+        log_error "Scope invalido. Usa local o global."
         exit 1
       fi
       gemini_dir="$(resolve_gemini_skills_dir "$SCOPE")"
       install_skills "$gemini_dir" "Gemini CLI"
       install_gemini_prompt
-      echo ""
-      warn "Skills instaladas en ${gemini_dir}"
-      warn "Prompt instalado en ~/.gemini/GEMINI.md"
-      warn "Asegura GEMINI_SYSTEM_MD=1 en ~/.gemini/.env"
-      echo "Siguiente paso: abre Gemini CLI y ejecuta /flow-nea-init"
+      printf "\n"
+      log_warn "Skills instaladas en ${gemini_dir}"
+      log_warn "Prompt instalado en ~/.gemini/GEMINI.md"
+      log_warn "Asegura GEMINI_SYSTEM_MD=1 en ~/.gemini/.env"
+      printf "Siguiente paso: abre Gemini CLI y ejecuta /flow-nea-init\n"
       ;;
     codex)
       if [[ -z "$SCOPE" ]]; then
-        read -r -p "Scope (local/global): " SCOPE
+        read -p "Scope (local/global): " SCOPE
       fi
       if [[ "$SCOPE" != "local" && "$SCOPE" != "global" ]]; then
-        err "Scope invalido. Usa local o global."
+        log_error "Scope invalido. Usa local o global."
         exit 1
       fi
       codex_dir="$(resolve_codex_skills_dir "$SCOPE")"
       install_skills "$codex_dir" "Codex"
       install_codex_prompt
-      echo ""
-      warn "Skills instaladas en ${codex_dir}"
-      warn "Prompt instalado en ~/.codex/agents.md"
-      echo "Siguiente paso: abre Codex y ejecuta /flow-nea-init"
+      printf "\n"
+      log_warn "Skills instaladas en ${codex_dir}"
+      log_warn "Prompt instalado en ~/.codex/agents.md"
+      printf "Siguiente paso: abre Codex y ejecuta /flow-nea-init\n"
       ;;
     vscode)
       install_skills ".vscode/skills" "VS Code (Copilot)"
-      echo ""
-      echo "Next step:"
-      echo "  Add the orchestrator to your .github/copilot-instructions.md"
-      echo "  See: examples/vscode/copilot-instructions.md"
-      warn "Skills installed in current project (.vscode/skills/)"
+      printf "\n"
+      printf "Next step:\n"
+      printf "  Add the orchestrator to your .github/copilot-instructions.md\n"
+      printf "  See: examples/vscode/copilot-instructions.md\n"
+      log_warn "Skills installed in current project (.vscode/skills/)"
       ;;
     project-local)
       install_skills "./skills" "Project-local"
-      echo ""
-      warn "Skills installed in ./skills - relative to this project"
+      printf "\n"
+      log_warn "Skills installed in ./skills - relative to this project"
       ;;
     all-global)
       local user_home
@@ -355,9 +395,9 @@ install_for_agent() {
       if [[ -f "${REPO_DIR}/examples/opencode/opencode.json" ]]; then
         mkdir -p "$global_opencode_dir"
         cp "${REPO_DIR}/examples/opencode/opencode.json" "${global_opencode_dir}/opencode.json"
-        ok "${global_opencode_dir}/opencode.json"
+        log_info "${global_opencode_dir}/opencode.json"
       else
-        warn "Missing examples/opencode/opencode.json"
+        log_warn "Missing examples/opencode/opencode.json"
       fi
 
       if [[ -d "${REPO_DIR}/examples/opencode/commands" ]]; then
@@ -365,24 +405,24 @@ install_for_agent() {
         cp "${REPO_DIR}/examples/opencode/commands"/*.md "${global_opencode_dir}/commands/"
         local cmd_count
         cmd_count=$(find "${REPO_DIR}/examples/opencode/commands" -type f -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
-        ok "${global_opencode_dir}/commands/ (${cmd_count} commands)"
+        log_info "${global_opencode_dir}/commands/ (${cmd_count} commands)"
       fi
 
-      warn "Skills installed globally for OpenCode in ${global_skills_dir}"
-      warn "OpenCode assets stored in ${global_opencode_dir}"
+      log_warn "Skills installed globally for OpenCode in ${global_skills_dir}"
+      log_warn "OpenCode assets stored in ${global_opencode_dir}"
       ;;
     custom)
       if [[ -z "$CUSTOM_PATH" ]]; then
-        read -r -p "Enter target path: " CUSTOM_PATH
+        read -p "Enter target path: " CUSTOM_PATH
       fi
       if [[ -z "$CUSTOM_PATH" ]]; then
-        err "No path provided"
+        log_error "No path provided"
         exit 1
       fi
       install_skills "$CUSTOM_PATH" "Custom"
       ;;
     *)
-      err "Unknown agent: $agent"
+      log_error "Unknown agent: $agent"
       usage
       exit 1
       ;;
@@ -393,19 +433,19 @@ show_menu() {
   local all_global_dir
   all_global_dir="$(resolve_all_global_opencode_dir)"
 
-  echo "Select your AI coding assistant:"
-  echo ""
-  echo "  1) OpenCode       (${OPENCODE_SKILLS_DIR})"
-  echo "  2) Amazon Q       (.amazonq/rules)"
-  echo "  3) Gemini CLI     (local o global)"
-  echo "  4) Codex          (local o global)"
-  echo "  5) VS Code        (.vscode/skills)"
-  echo "  6) Project-local  (./skills)"
-  echo "  7) All global     (${all_global_dir})"
-  echo "  8) Custom path"
-  echo ""
+  printf "Select your AI coding assistant:\n"
+  printf "\n"
+  printf "  1) OpenCode       (%s)\n" "${OPENCODE_SKILLS_DIR}"
+  printf "  2) Amazon Q       (.amazonq/rules)\n"
+  printf "  3) Gemini CLI     (local o global)\n"
+  printf "  4) Codex          (local o global)\n"
+  printf "  5) VS Code        (.vscode/skills)\n"
+  printf "  6) Project-local  (./skills)\n"
+  printf "  7) All global     (%s)\n" "${all_global_dir}"
+  printf "  8) Custom path\n"
+  printf "\n"
 
-  read -r -p "Choice [1-8]: " choice
+  read -p "Choice [1-8]: " choice
   case "$choice" in
     1) install_for_agent opencode ;;
     2) install_for_agent amazonq ;;
@@ -416,7 +456,7 @@ show_menu() {
     7) install_for_agent all-global ;;
     8) install_for_agent custom ;;
     *)
-      err "Invalid choice"
+      log_error "Invalid choice"
       exit 1
       ;;
   esac
@@ -424,6 +464,7 @@ show_menu() {
 
 header
 test_source_tree
+check_dependencies
 
 if [[ -n "$TARGET_AGENT" ]]; then
   install_for_agent "$TARGET_AGENT"
@@ -431,6 +472,6 @@ else
   show_menu
 fi
 
-echo ""
-echo "Done! Start using NEA Flow with: /flow-nea-init"
-echo "Recommended persistence backend: OpenSpec"
+printf "\n"
+printf "Done! Start using NEA Flow with: /flow-nea-init\n"
+printf "Recommended persistence backend: OpenSpec\n"
