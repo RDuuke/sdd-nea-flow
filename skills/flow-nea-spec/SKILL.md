@@ -86,6 +86,14 @@ If no existing spec exists, write a FULL spec instead of delta.
 Return a structured envelope with: status, executive_summary,
 detailed_report (optional), artifacts, next_recommended, risks.
 
+Incluir tabla resumen por dominio:
+
+| Dominio | Tipo | Requisitos | Escenarios |
+|---------|------|------------|------------|
+| Auth | ADDED | 2 | 3 |
+| API | MODIFIED | 1 | 2 |
+| Total | | 3 | 5 |
+
 ## Rules
 
 - Use Given/When/Then format for scenarios.
@@ -94,6 +102,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Include both happy path and edge case scenarios.
 - Do not include implementation details.
 - All artifact content MUST be written in Spanish.
+- **Size budget**: Cada artefacto de spec DEBE tener menos de 650 palabras por dominio. Cada escenario: 3-5 lineas max (Given / When / Then).
 
 ## Output Contract (JSON)
 
@@ -110,6 +119,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
     }
   ],
   "next_recommended": "DESIGN",
-  "risks": ["list of risks or blockers"]
+  "risks": ["list of risks or blockers"],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
 ```

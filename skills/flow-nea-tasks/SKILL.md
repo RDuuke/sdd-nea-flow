@@ -85,12 +85,44 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Rules
 
+Cada tarea DEBE cumplir:
+
+| Criterio | Ejemplo ✅ | Anti-ejemplo ❌ |
+|----------|-----------|----------------|
+| **Especifica** | "Crear `internal/auth/middleware.go` con validacion JWT" | "Agregar auth" |
+| **Accionable** | "Agregar metodo `ValidateToken()` en `AuthService`" | "Manejar tokens" |
+| **Verificable** | "Test: `POST /login` devuelve 401 sin token" | "Asegurarse que funcione" |
+| **Pequeña** | Un archivo o unidad logica | "Implementar el feature" |
+
+Guia de organizacion por fase:
+
+```
+Fase 1: Foundation / Infrastructure
+  └─ Nuevos tipos, interfaces, cambios de DB, config
+  └─ Lo que otras tareas necesitan primero
+
+Fase 2: Core Implementation
+  └─ Logica principal, reglas de negocio, comportamiento central
+
+Fase 3: Integration / Wiring
+  └─ Conectar componentes, rutas, wiring de UI
+
+Fase 4: Testing
+  └─ Tests unitarios, de integracion, e2e
+  └─ Verificar contra escenarios de specs
+
+Fase 5: Cleanup (si aplica)
+  └─ Documentacion, eliminar codigo muerto, polish
+```
+
 - Always reference concrete file paths in tasks.
 - Order tasks by dependency.
 - Each task must be small enough for one session.
 - Use hierarchical numbering (1.1, 1.2, etc.).
 - If the project uses TDD, include RED -> GREEN -> REFACTOR tasks.
 - All artifact content MUST be written in Spanish.
+- **Size budget**: El artefacto tasks.md DEBE tener menos de 530 palabras. Cada tarea: 1-2 lineas max. Usar formato checklist, no parrafos.
+- NUNCA incluir tareas vagas como "implementar feature" o "agregar tests".
 
 ## Output Contract (JSON)
 
@@ -107,6 +139,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
     }
   ],
   "next_recommended": "APPLY",
-  "risks": ["list of risks or blockers"]
+  "risks": ["list of risks or blockers"],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
 ```

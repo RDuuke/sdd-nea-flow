@@ -100,6 +100,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Use concrete file paths.
 - Follow existing patterns unless the change is about refactoring them.
 - All artifact content MUST be written in Spanish.
+- **Size budget**: El artefacto design.md DEBE tener menos de 800 palabras. Decisiones de arquitectura como tablas (opcion | tradeoff | decision). Snippets de codigo solo para patrones no obvios.
 
 ## Output Contract (JSON)
 
@@ -116,6 +117,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
     }
   ],
   "next_recommended": "TASKS",
-  "risks": ["list of risks or blockers"]
+  "risks": ["list of risks or blockers"],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
 ```

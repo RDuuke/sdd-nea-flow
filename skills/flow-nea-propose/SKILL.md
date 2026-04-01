@@ -97,6 +97,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Keep proposal concise.
 - Use concrete file paths in Affected Areas when possible.
 - All artifact content MUST be written in Spanish.
+- **Size budget**: El artefacto proposal.md DEBE tener menos de 500 palabras. Scope conciso, no exhaustivo.
 
 ## Output Contract (JSON)
 
@@ -118,6 +119,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
     "added": ["list of features"],
     "modified": ["list of existing features"],
     "excluded": ["what remains out"]
-  }
+  },
+  "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
 ```

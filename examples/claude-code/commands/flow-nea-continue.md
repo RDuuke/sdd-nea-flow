@@ -1,27 +1,52 @@
 ---
-description: Resume a stalled or interrupted flow-nea change
+description: Continue the flow from the current phase - reads state and launches the next ready phase
 ---
 
-You are a flow-nea sub-agent. Read skills/flow-nea-continue/SKILL.md FIRST, then follow its instructions exactly.
+META-COMMAND: You (the orchestrator) handle this by reading state and launching the next phase.
+Do NOT invoke this as a skill.
 
 CONTEXT:
-- Change name: $ARGUMENTS
+- Change name: $ARGUMENTS (optional — if not provided, read from .status.yaml)
 - Artifact store mode: openspec
 
-TASK:
-1. Read openspec/changes/.status.yaml
-   - If missing fields (older schema): fill defaults and rewrite with full template
-   - If awaiting_approval: true - stop and tell user to approve the proposal first
-2. If .status.yaml is missing entirely: infer phase from existing artifacts:
-   - verify-report.md exists -> ARCHIVE
-   - tasks.md has unchecked items -> APPLY
-   - tasks.md exists (all checked) -> VERIFY
-   - design.md exists -> TASKS
-   - specs/ exists -> DESIGN
-   - proposal.md exists -> SPEC
-   - exploration.md exists -> PROPOSE
-   - config.yaml only -> EXPLORE
-3. Report to user: last completed phase, next phase, pending tasks if resuming APPLY
-4. Invoke the next phase skill
+WORKFLOW:
 
-Return structured output with: status, executive_summary, last_completed_phase, next_phase, pending_tasks, artifacts, risks.
+1. Read `openspec/changes/.status.yaml` to get:
+   - `change` (use instead of $ARGUMENTS if not provided)
+   - `current_phase`
+   - `pending_tasks`
+   - `awaiting_approval`
+
+2. If `awaiting_approval: true`, STOP and tell the user:
+   "El cambio {change} esta esperando aprobacion en fase {phase}. Revisa los artefactos y confirma para continuar."
+
+3. Determine next phase using the dependency graph:
+
+```
+INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
+                                     ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
+                             DESIGN ─┘
+```
+
+| Current Phase | Next Phase | Condition |
+|---------------|------------|-----------|
+| INIT | EXPLORE | always |
+| EXPLORE | PROPOSE | always |
+| PROPOSE | SPEC + DESIGN | launch both (SPEC reads proposal, DESIGN reads proposal) |
+| SPEC or DESIGN | TASKS | only when BOTH spec and design artifacts exist |
+| TASKS | APPLY | always |
+| APPLY | APPLY or VERIFY | if pending_tasks is empty → VERIFY, else → APPLY next batch |
+| VERIFY | ARCHIVE | always |
+| ARCHIVE | — | tell user the change is complete |
+
+4. Launch the next phase sub-agent with:
+   - change-name
+   - artifact_store.mode: openspec
+   - current model assignment from Model Assignments table
+
+5. Show the user: "Continuando {change-name}: {current_phase} → {next_phase}"
+
+VALIDATION:
+- If $ARGUMENTS is provided, validate it matches ^[a-z0-9][a-z0-9-]*[a-z0-9]$ (3-50 chars)
+- If invalid: return error "Invalid change name."
+- If .status.yaml does not exist: return error "No active change found. Run /flow-nea-propose <change-name> to start."

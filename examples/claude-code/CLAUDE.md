@@ -26,10 +26,50 @@ sobre el codigo, configuracion, o tareas de menos de 3 pasos.
 
 Cuando el usuario invoca un comando `/flow-nea-*`:
 
+### Asignacion de modelos
+
+Lee esta tabla al inicio de la sesion (o antes de la primera delegacion), almacenala en cache y pasa el modelo en cada llamada Agent. Si el modelo asignado no esta disponible, usa `sonnet` y continua.
+
+| Fase | Modelo | Razon |
+|------|--------|-------|
+| orchestrator | opus | Coordina y toma decisiones |
+| flow-nea-explore | sonnet | Lee codigo, analisis estructural |
+| flow-nea-propose | opus | Decisiones arquitectonicas |
+| flow-nea-spec | sonnet | Escritura estructurada |
+| flow-nea-design | opus | Decisiones de arquitectura |
+| flow-nea-tasks | sonnet | Desglose mecanico |
+| flow-nea-apply | sonnet | Implementacion |
+| flow-nea-verify | sonnet | Validacion contra specs |
+| flow-nea-archive | haiku | Copiar y cerrar |
+| default | sonnet | Delegaciones generales |
+
 ### Delegacion
+
+Principio: **¿esto infla mi contexto sin necesidad?** Si sí → delegar. Si no → hacer inline.
+
+| Accion | Inline | Delegar |
+|--------|--------|---------|
+| Leer para decidir/verificar (1-3 archivos) | ✅ | — |
+| Leer para explorar/entender (4+ archivos) | — | ✅ |
+| Leer como preparacion para escribir | — | ✅ junto con el write |
+| Escribir atomico (un archivo, mecanico, ya sabes que) | ✅ | — |
+| Escribir con analisis (multiples archivos, nueva logica) | — | ✅ |
+| Bash para estado (git, gh) | ✅ | — |
+| Bash para ejecucion (test, build, install) | — | ✅ |
+
+`delegate (async)` es el default para trabajo delegado. Usa `task (sync)` solo cuando necesitas el resultado antes de tu proxima accion.
+
 - Usa el Agent tool para lanzar sub-agentes con contexto fresco.
-- Cada sub-agente lee su SKILL.md y ejecuta la fase.
-- No ejecutes trabajo de fases directamente (excepto tareas triviales).
+- Cada sub-agente recibe compact rules pre-resueltas del skill registry como `## Project Standards (auto-resolved)`.
+- No ejecutes trabajo de fases directamente (excepto tareas triviales del inline).
+
+### Anti-patterns
+
+Estas acciones SIEMPRE inflan el contexto sin necesidad — nunca hacerlas inline:
+- Leer 4+ archivos para "entender" el codebase → delegar una exploracion
+- Escribir un feature en multiples archivos → delegar
+- Ejecutar tests o builds → delegar
+- Leer archivos como preparacion para editar, luego editar → delegar todo junto
 
 ### Estado
 - Antes de cada fase, lee openspec/changes/.status.yaml
@@ -40,6 +80,9 @@ Cuando el usuario invoca un comando `/flow-nea-*`:
 - Si la respuesta del sub-agente no contiene al menos `status` y
   `executive_summary`, tratar como `status: "failed"` con mensaje:
   "Respuesta del sub-agente incompleta o malformada."
+- Despues de cada delegacion, verifica el campo `skill_resolution`:
+  - `injected` → correcto, las skills llegaron al sub-agente
+  - `fallback-registry`, `fallback-path`, o `none` → el cache de skills se perdio (probable compaction). Vuelve a leer `.atl/skill-registry.md` e inyecta compact rules en todas las delegaciones siguientes.
 
 ### Registro de ejecucion
 - Despues de que CADA sub-agente completa una fase, AGREGA una entrada a
@@ -85,7 +128,13 @@ Cuando el usuario invoca un comando `/flow-nea-*`:
 
 ## Flujo de fases
 
-INIT -> EXPLORE -> PROPOSE -> SPEC -> DESIGN -> TASKS -> APPLY -> VERIFY -> ARCHIVE
+```
+INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
+                                     ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
+                             DESIGN ─┘
+```
+
+SPEC y DESIGN son independientes (ambas leen de PROPOSE). TASKS requiere ambas.
 
 ## Persistencia
 

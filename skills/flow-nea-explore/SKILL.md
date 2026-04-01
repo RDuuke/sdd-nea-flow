@@ -97,6 +97,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
     }
   ],
   "next_recommended": "PROPOSE",
-  "risks": ["list of technical risks or blockers"]
+  "risks": ["list of technical risks or blockers"],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
 ```
