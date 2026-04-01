@@ -9,7 +9,7 @@
 > Un orquestador + sub-agentes especializados para desarrollo estructurado.
 > Cero dependencias. Solo Markdown. Funciona en cualquier lugar.
 
-Version: 1.4.0
+Version: 1.5.0
 
 Links rapidos: [Indice](#indice) • [Instalacion](#instalacion) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [Gemini CLI](#gemini-cli) • [Codex](#codex) • [Claude Code](#claude-code) • [VS Code](#vs-code)
 
@@ -36,6 +36,7 @@ Links rapidos: [Indice](#indice) • [Instalacion](#instalacion) • [OpenCode](
 - [Ciclo de archivo](#ciclo-de-archivo)
 - [Contrato de respuesta de sub-agentes](#contrato-de-respuesta-de-sub-agentes)
 - [Glosario](#glosario)
+- [Skills adicionales](#skills-adicionales)
 - [Troubleshooting](#troubleshooting)
 - [Contribuir](#contribuir)
 - [Notas](#notas)
@@ -152,7 +153,7 @@ Grafo de dependencias
 Comandos del flujo:
 
 - /flow-nea-init
-- /flow-nea-explore <topic>
+- /flow-nea-explore <change-name>
 - /flow-nea-propose <change-name>
 - /flow-nea-spec <change-name>
 - /flow-nea-design <change-name>
@@ -160,6 +161,12 @@ Comandos del flujo:
 - /flow-nea-apply <change-name>
 - /flow-nea-verify <change-name>
 - /flow-nea-archive <change-name>
+
+Meta-comandos (manejados por el orquestador):
+
+- /flow-nea-ff <change-name> — atajo: lanza propose → spec → design → tasks en secuencia
+- /flow-nea-continue <change-name> — reanuda desde la proxima fase pendiente segun `.status.yaml`
+- /flow-nea-judgment <change-name> — revision dual ciega en paralelo (dos jueces independientes)
 
 No hay alias del flujo anterior. El unico flujo soportado es nea-flow.
 
@@ -171,8 +178,12 @@ No hay alias del flujo anterior. El unico flujo soportado es nea-flow.
 
 ## Estructura del repo
 
-- skills/: skills nea-flow y shared
-- examples/opencode/: configuracion base para OpenCode
+- skills/flow-nea-*/: skills de cada fase del flujo
+- skills/judgment-day/: revision dual ciega en paralelo
+- skills/skill-registry/: genera indice compacto de skills para el orquestador
+- skills/skill-creator/: crea nuevas skills a partir de una descripcion
+- skills/_shared/: contratos y reglas compartidas entre skills
+- examples/opencode/: configuracion nativa multi-agente para OpenCode
 - examples/amazonq/: configuracion base para Amazon Q
 - examples/vscode/: configuracion base para VS Code
 - examples/gemini-cli/: configuracion base para Gemini CLI
@@ -215,40 +226,60 @@ Links rapidos:
 
 ## OpenCode
 
+OpenCode soporta multi-agentes nativos: el orquestador delega a sub-agentes
+especializados con `delegate` tool. Cada fase corre en un agente separado con
+contexto fresco.
+
 1. Copiar las skills
 
 ```bash
-# Usando el instalador
+# Usando el instalador (recomendado — instala tambien judgment-day, skill-registry, skill-creator)
 ./scripts/install.sh  # Opcion 1: OpenCode
 
-# O manualmente (local al proyecto)
-mkdir -p .opencode/skills
-cp -r skills/flow-nea-* .opencode/skills/
-cp -r skills/_shared .opencode/skills/
+# O manualmente (global)
+mkdir -p ~/.config/opencode/skills
+cp -r skills/flow-nea-* ~/.config/opencode/skills/
+cp -r skills/judgment-day ~/.config/opencode/skills/
+cp -r skills/skill-registry ~/.config/opencode/skills/
+cp -r skills/skill-creator ~/.config/opencode/skills/
+cp -r skills/_shared ~/.config/opencode/skills/
 ```
 
-2. Agregar el orquestador a `.opencode/opencode.json`
+2. Elegir variante de configuracion
 
-Fusiona el bloque `agent` desde `examples/opencode/opencode.json`.
+Hay dos variantes en `examples/opencode/`:
 
-Puedes:
-- Agregarlo a tu agente actual (anexar las instrucciones al prompt principal)
-- Crear un agente dedicado (usar el bloque tal cual)
+| Archivo | Modelos | Cuando usarlo |
+|---------|---------|---------------|
+| `opencode.multi.json` | opus para arquitectura, sonnet para ejecucion, haiku para archive | Maximo rendimiento por fase |
+| `opencode.single.json` | mismo modelo para todo | Simplicidad o proveedor con un solo modelo |
 
-Setup recomendado:
-- Mantener tu asistente diario como primary
-- Usar `flow-nea-orchestrator` solo cuando quieras el flujo SDD
+Ambas incluyen `AGENTS.md` como prompt del orquestador via `{file:./AGENTS.md}`.
 
-3. Verificar
+3. Instalar la configuracion
+
+```bash
+# Usando el instalador (te pregunta que variante quieres)
+./scripts/install.sh  # Opcion 1: OpenCode
+
+# O manualmente: fusiona el bloque "agent" en ~/.config/opencode/config.json
+# El instalador usa jq para preservar tu configuracion existente
+```
+
+El instalador copia `AGENTS.md` a `~/.config/opencode/` y fusiona solo los
+agentes `flow-nea-*`, `judgment-day` y `skill-registry`, sin tocar tus otros agentes.
+
+4. Verificar
 
 Abre OpenCode y ejecuta `/flow-nea-init`. Debe reconocer el comando.
 
 Como usar en OpenCode:
 
-- Inicia OpenCode en tu proyecto: `opencode .`
-- Abre el selector de agente (Tab) y elige `flow-nea-orchestrator`
-- Ejecuta comandos: `/flow-nea-init`, `/flow-nea-propose <name>`, `/flow-nea-apply`, etc.
-- Vuelve a tu agente normal (Tab) para el trabajo diario
+- Inicia OpenCode en tu proyecto: `opencode`
+- El agente `flow-nea-orchestrator` esta disponible como agente primario
+- Ejecuta comandos: `/flow-nea-init`, `/flow-nea-ff <name>`, `/flow-nea-apply <name>`, etc.
+- Usa `/flow-nea-continue <name>` para reanudar un cambio interrumpido
+- Los sub-agentes se lanzan automaticamente; no necesitas cambiar de agente manualmente
 
 ## Amazon Q
 
@@ -546,6 +577,36 @@ el analisis es complejo o requiere contexto adicional.
 - OpenSpec: backend de artefactos y estructura de cambios.
 - Task tool: herramienta para lanzar sub-agentes en paralelo o por fases.
 - MCP: protocolo para integrar herramientas externas con el agente.
+
+## Skills adicionales
+
+Ademas de las skills de fases, el flujo incluye tres skills de soporte:
+
+### judgment-day
+
+Revision dual ciega en paralelo. Dos jueces analizan el mismo artefacto de
+forma independiente y el orquestador sintetiza los resultados.
+
+Trigger: `/flow-nea-judgment <change-name>`
+
+Resultado: `Confirmed` (ambos de acuerdo), `Suspect A/B` (uno detecta un problema) o
+`Contradiction` (visiones opuestas — requiere decision del usuario).
+
+### skill-registry
+
+Genera un indice compacto de todas las skills disponibles (5-15 lineas por skill)
+en `.atl/skill-registry.md`. El orquestador lo usa para inyectar las reglas
+de cada fase sin leer el SKILL.md completo, reduciendo el uso de contexto.
+
+El instalador puede ejecutar esta skill automaticamente tras la instalacion.
+
+### skill-creator
+
+Crea nuevas skills siguiendo el formato y contratos del flujo a partir de una
+descripcion del comportamiento esperado.
+
+Util para extender el flujo con skills propias sin tener que escribir el
+boilerplate manualmente.
 
 ## Troubleshooting
 
