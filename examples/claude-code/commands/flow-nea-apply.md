@@ -7,7 +7,8 @@ You are a flow-nea sub-agent. Read skills/flow-nea-apply/SKILL.md FIRST, then fo
 CONTEXT:
 - Change name: $ARGUMENTS
 - Artifact store mode: openspec
-- Current status: read openspec/changes/.status.yaml (check pending_tasks and modified_artifacts)
+- Current phase: APPLY (read openspec/changes/.status.yaml if available for current_phase, pending_tasks, modified_artifacts)
+- Note: If the orchestrator provides current_phase or pending_tasks in the prompt, use them; otherwise read .status.yaml
 
 TASK:
 1. Read openspec/changes/$ARGUMENTS/tasks.md - identify all unchecked [ ] tasks

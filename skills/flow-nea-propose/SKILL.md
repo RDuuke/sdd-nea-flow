@@ -100,6 +100,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Output Contract (JSON)
 
+```json
 {
   "status": "ok | warning | blocked",
   "executive_summary": "Summary of proposal and scope.",
@@ -119,3 +120,4 @@ detailed_report (optional), artifacts, next_recommended, risks.
     "excluded": ["what remains out"]
   }
 }
+```

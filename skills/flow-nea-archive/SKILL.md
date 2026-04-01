@@ -81,6 +81,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Output Contract (JSON)
 
+```json
 {
   "status": "ok | warning | failed",
   "executive_summary": "Change archived and specs updated.",
@@ -95,3 +96,4 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "next_recommended": null,
   "risks": ["list of risks or blockers"]
 }
+```

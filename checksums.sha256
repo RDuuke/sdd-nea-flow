@@ -1,0 +1,13 @@
+# SHA-256 checksums for NEA Flow skill files
+# Verify with: sha256sum -c checksums.sha256
+fa4671a8c81aed5dd4fa7419cddcf2874390dcda92c80d6a63f33d05f5448369  skills/_shared/persistence-contract.md
+965ffd1f2c28a99313ab7769c0b20d231e61dddeaf19c73d0ade943a2d7d252f  skills/flow-nea-apply/SKILL.md
+312aaa77d462b6d49ea6e45017933bbf798970416c5a60a73cf897660bbc258a  skills/flow-nea-archive/SKILL.md
+7fde98b20bf34b54bae3e42f72e91cc89a1eb6ac1ee45d4d0eba2491953dd458  skills/flow-nea-continue/SKILL.md
+d287a0ad2b57497a1b51c35980c98bc866bbf05e60e9e7d6b4a0a29ffcf7f721  skills/flow-nea-design/SKILL.md
+9d714933e3ee2eda3401bc1ce6f45b8483f0b7e7fee5f3fce8bb5dca1fe59f4e  skills/flow-nea-explore/SKILL.md
+7552c0d9f544c80a923894389c9be2d52bc554330c6e3a07e617f21e36b32a13  skills/flow-nea-init/SKILL.md
+7e005c9ae048f85f7589c53dd04f2610f96508a08f2cdb691306e514553949ba  skills/flow-nea-propose/SKILL.md
+408fdb326f0938657d12e5cbec727157b9151fd593d33c7574a0ac4510035ff1  skills/flow-nea-spec/SKILL.md
+68d6c94afc7dcf7af863b3ffd1a86bc9e5d72e158f9d0d90dd73effd7cfb5a83  skills/flow-nea-tasks/SKILL.md
+bb91552949f67fb3400385a737eb284eb6618a70499f4a801657e29691983d5a  skills/flow-nea-verify/SKILL.md

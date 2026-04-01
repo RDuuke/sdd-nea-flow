@@ -9,6 +9,12 @@ CONTEXT:
 - Change name: $ARGUMENTS
 - Artifact store mode: openspec
 
+VALIDATION:
+Before proceeding, validate that $ARGUMENTS is a valid change-name:
+- MUST match pattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$ (lowercase alphanumeric + hyphens only, 3-50 chars)
+- If INVALID: return error to user: "Invalid change name. Use lowercase letters, numbers, and hyphens only (3-50 chars)"
+- If VALID: proceed to WORKFLOW below
+
 WORKFLOW - run in sequence, do NOT show intermediate results to user:
 1. Launch Agent with prompt:
    "You are a flow-nea sub-agent. Read skills/flow-nea-propose/SKILL.md FIRST.

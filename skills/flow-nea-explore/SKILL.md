@@ -19,8 +19,8 @@ By default you research, report back, and persist the analysis when a change nam
 
 ## What You Receive
 
-- Topic or feature to explore
-- Optional change name
+- Topic or feature to explore (always provided)
+- Optional change name (if provided and valid, use for artifact persistence)
 - Artifact store mode (openspec | none)
 
 ## Execution and Persistence Contract
@@ -51,8 +51,9 @@ Compare multiple approaches if relevant.
 
 ### Step 4: Save Exploration (openspec mode)
 
-If change name is provided, write:
-openspec/changes/{change-name}/exploration.md
+If a valid change-name is provided (see Change Name Validation in
+persistence-contract.md), write:
+- openspec/changes/{change-name}/exploration.md
 - Update openspec/changes/.status.yaml:
   ```yaml
   phase: EXPLORE
@@ -64,7 +65,9 @@ openspec/changes/{change-name}/exploration.md
   notes: ""
   ```
 
-If no change name is provided, return analysis inline only (no artifact).
+If no change-name is provided or is invalid, return analysis inline only (no
+artifact). The topic itself is NOT used as a change-name for persistence
+purposes.
 
 ### Step 5: Return Structured Analysis
 
@@ -81,6 +84,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Output Contract (JSON)
 
+```json
 {
   "status": "ok | warning | failed",
   "executive_summary": "High-level summary for the orchestrator.",
@@ -95,3 +99,4 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "next_recommended": "PROPOSE",
   "risks": ["list of technical risks or blockers"]
 }
+```

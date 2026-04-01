@@ -49,6 +49,7 @@ fill the context with the detected values in the same run.
 
 Base template:
 
+```yaml
 schema: flow-nea
 
 context: |
@@ -78,6 +79,7 @@ rules:
 
 experimental:
   neabrain: false
+```
 
 ### Step 4: Persist Context (openspec mode only)
 
@@ -110,6 +112,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Output Contract (JSON)
 
+```json
 {
   "status": "ok | warning | failed",
   "executive_summary": "Initialization summary and persistence mode.",
@@ -124,3 +127,4 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "next_recommended": "EXPLORE",
   "risks": ["list of risks or blockers"]
 }
+```

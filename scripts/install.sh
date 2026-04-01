@@ -73,21 +73,25 @@ header() {
   printf "\n"
 }
 
+_timestamp() {
+  date +%H:%M:%S 2>/dev/null || printf "??:??:??"
+}
+
 log_info() {
-  printf "INFO: %s\n" "$*" >&2
+  printf "[%s] INFO: %s\n" "$(_timestamp)" "$*" >&2
 }
 
 log_warn() {
-  printf "WARN: %s\n" "$*" >&2
+  printf "[%s] WARN: %s\n" "$(_timestamp)" "$*" >&2
 }
 
 log_error() {
-  printf "ERROR: %s\n" "$*" >&2
+  printf "[%s] ERROR: %s\n" "$(_timestamp)" "$*" >&2
 }
 
 log_debug() {
   if [[ "${DEBUG:-0}" == "1" ]]; then
-    printf "DEBUG: %s\n" "$*" >&2
+    printf "[%s] DEBUG: %s\n" "$(_timestamp)" "$*" >&2
   fi
 }
 
@@ -105,7 +109,30 @@ check_dependencies() {
     log_error "Missing required commands: ${missing_deps[*]}"
     exit 1
   fi
-  log_info "All required dependencies found."
+  log_info "Todas las dependencias encontradas."
+}
+
+verify_checksums() {
+  local checksum_file="${REPO_DIR}/checksums.sha256"
+  if [[ ! -f "$checksum_file" ]]; then
+    log_warn "checksums.sha256 no encontrado — omitiendo verificacion de integridad"
+    return 0
+  fi
+  if ! command -v sha256sum &>/dev/null; then
+    log_warn "sha256sum no disponible — omitiendo verificacion de integridad"
+    return 0
+  fi
+  log_info "Verificando integridad de archivos..."
+  local old_dir
+  old_dir="$(pwd)"
+  cd "$REPO_DIR"
+  if sha256sum -c "$checksum_file" --quiet 2>/dev/null; then
+    log_info "Todos los checksums verificados OK"
+  else
+    log_warn "Algunos checksums no coinciden. Los archivos fuente pueden haber sido modificados."
+    log_warn "Esto es esperado si hiciste cambios locales a las skills."
+  fi
+  cd "$old_dir"
 }
 
 test_source_tree() {
@@ -144,7 +171,7 @@ install_skills() {
   local tool_name="$2"
 
   printf "\n"
-  printf "Installing skills for %s...\n" "${tool_name}"
+  printf "Instalando skills para %s...\n" "${tool_name}"
   mkdir -p "$target_dir"
 
   local shared_src="${SKILLS_SRC}/_shared"
@@ -185,7 +212,7 @@ install_skills() {
   done
 
   printf "\n"
-  printf "  %s skills installed -> %s\n" "${count}" "${target_dir}"
+  printf "  %s skills instaladas -> %s\n" "${count}" "${target_dir}"
 }
 
 install_amazonq_prompt() {
@@ -459,27 +486,27 @@ install_for_agent() {
       install_claude_code_prompt "$SCOPE"
       install_claude_code_commands "$claude_dir"
       printf "\n"
-      log_warn "Skills installed in ${claude_dir}/skills/"
-      log_warn "Commands installed in ${claude_dir}/commands/"
+      log_warn "Skills instaladas en ${claude_dir}/skills/"
+      log_warn "Comandos instalados en ${claude_dir}/commands/"
       if [[ "$SCOPE" == "local" ]]; then
-        log_warn "Orchestrator instructions added to ./CLAUDE.md"
+        log_warn "Instrucciones del orquestador agregadas a ./CLAUDE.md"
       else
-        log_warn "Orchestrator instructions added to ${claude_dir}/CLAUDE.md"
+        log_warn "Instrucciones del orquestador agregadas a ${claude_dir}/CLAUDE.md"
       fi
-      printf "Next step: open Claude Code and run /flow-nea-init\n"
+      printf "Siguiente paso: abre Claude Code y ejecuta /flow-nea-init\n"
       ;;
     vscode)
       install_skills ".vscode/skills" "VS Code (Copilot)"
       printf "\n"
-      printf "Next step:\n"
-      printf "  Add the orchestrator to your .github/copilot-instructions.md\n"
-      printf "  See: examples/vscode/copilot-instructions.md\n"
-      log_warn "Skills installed in current project (.vscode/skills/)"
+      printf "Siguiente paso:\n"
+      printf "  Agrega el orquestador a .github/copilot-instructions.md\n"
+      printf "  Ver: examples/vscode/copilot-instructions.md\n"
+      log_warn "Skills instaladas en el proyecto actual (.vscode/skills/)"
       ;;
     project-local)
       install_skills "./skills" "Project-local"
       printf "\n"
-      log_warn "Skills installed in ./skills - relative to this project"
+      log_warn "Skills instaladas en ./skills - relativo a este proyecto"
       ;;
     all-global)
       local user_home
@@ -505,8 +532,8 @@ install_for_agent() {
         log_info "${global_opencode_dir}/commands/ (${cmd_count} commands)"
       fi
 
-      log_warn "Skills installed globally for OpenCode in ${global_skills_dir}"
-      log_warn "OpenCode assets stored in ${global_opencode_dir}"
+      log_warn "Skills instaladas globalmente para OpenCode en ${global_skills_dir}"
+      log_warn "Assets de OpenCode en ${global_opencode_dir}"
       ;;
     custom)
       if [[ -z "$CUSTOM_PATH" ]]; then
@@ -564,6 +591,7 @@ show_menu() {
 header
 test_source_tree
 check_dependencies
+verify_checksums
 
 if [[ -n "$TARGET_AGENT" ]]; then
   install_for_agent "$TARGET_AGENT"
@@ -572,5 +600,5 @@ else
 fi
 
 printf "\n"
-printf "Done! Start using NEA Flow with: /flow-nea-init\n"
-printf "Recommended persistence backend: OpenSpec\n"
+printf "Listo! Empieza a usar NEA Flow con: /flow-nea-init\n"
+printf "Backend de persistencia recomendado: OpenSpec\n"

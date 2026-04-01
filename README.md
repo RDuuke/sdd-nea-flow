@@ -36,6 +36,7 @@ Links rapidos: [Indice](#indice) • [Instalacion](#instalacion) • [OpenCode](
 - [Ciclo de archivo](#ciclo-de-archivo)
 - [Contrato de respuesta de sub-agentes](#contrato-de-respuesta-de-sub-agentes)
 - [Glosario](#glosario)
+- [Troubleshooting](#troubleshooting)
 - [Contribuir](#contribuir)
 - [Notas](#notas)
 
@@ -545,6 +546,60 @@ el analisis es complejo o requiere contexto adicional.
 - OpenSpec: backend de artefactos y estructura de cambios.
 - Task tool: herramienta para lanzar sub-agentes en paralelo o por fases.
 - MCP: protocolo para integrar herramientas externas con el agente.
+
+## Troubleshooting
+
+Problemas comunes y como resolverlos:
+
+### .status.yaml corrupto o inconsistente
+
+Si el archivo `.status.yaml` tiene datos invalidos o la fase no coincide con
+los artefactos existentes:
+
+1. Elimina `openspec/changes/.status.yaml`
+2. Ejecuta `/flow-nea-continue <change-name>`
+3. El sistema inferira la fase correcta a partir de los artefactos existentes
+
+### Sub-agente devuelve JSON malformado
+
+Si el orquestador reporta una respuesta incompleta:
+
+1. Reintenta el comando (el orquestador reintenta automaticamente una vez)
+2. Si persiste, ejecuta la fase manualmente: `/flow-nea-{fase} <change-name>`
+3. Verifica que el SKILL.md correspondiente existe y es accesible
+
+### Flujo bloqueado en una fase
+
+Si el flujo no avanza y no hay error claro:
+
+1. Revisa `.status.yaml` para ver el estado actual
+2. Verifica que `awaiting_approval` no este en `true` (requiere confirmacion)
+3. Revisa `pending_tasks` para ver si hay tareas sin completar
+4. Usa `/flow-nea-continue <change-name>` para reanudar
+
+### Skills no encontradas tras instalacion
+
+Si los comandos `/flow-nea-*` no se reconocen:
+
+1. Verifica que las skills estan en la ruta correcta para tu herramienta
+2. Reinicia tu herramienta (algunos editores cachean los comandos)
+3. Ejecuta el instalador de nuevo con `--agent <tu-herramienta>`
+
+### Conflicto entre dos cambios activos
+
+El flujo soporta un solo cambio activo a la vez. Si necesitas trabajar en otro:
+
+1. Archiva o abandona el cambio actual: `/flow-nea-archive <change-actual>`
+2. O renombra manualmente la carpeta en `openspec/changes/` y elimina `.status.yaml`
+3. Inicia el nuevo cambio normalmente
+
+### Reset completo del flujo
+
+Para reiniciar desde cero (pierde todo el progreso del cambio actual):
+
+1. Elimina la carpeta `openspec/changes/<change-name>/`
+2. Elimina `openspec/changes/.status.yaml`
+3. Ejecuta `/flow-nea-propose <change-name>` para empezar de nuevo
 
 ## Contribuir
 

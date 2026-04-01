@@ -64,19 +64,23 @@ function Write-Header {
     Write-Host ''
 }
 
+function Get-Timestamp {
+    return (Get-Date -Format 'HH:mm:ss')
+}
+
 function Write-Skill {
     param([string]$Name)
-    Write-Host "  [OK] $Name" -ForegroundColor Green
+    Write-Host "  [$(Get-Timestamp)] [OK] $Name" -ForegroundColor Green
 }
 
 function Write-Warn {
     param([string]$Message)
-    Write-Host "  [WARN] $Message" -ForegroundColor Yellow
+    Write-Host "  [$(Get-Timestamp)] [WARN] $Message" -ForegroundColor Yellow
 }
 
 function Write-Err {
     param([string]$Message)
-    Write-Host "  [ERR] $Message" -ForegroundColor Red
+    Write-Host "  [$(Get-Timestamp)] [ERR] $Message" -ForegroundColor Red
 }
 
 function Write-NextStep {
@@ -85,17 +89,17 @@ function Write-NextStep {
         [string]$ExampleFile
     )
     Write-Host ''
-    Write-Host 'Next step:' -ForegroundColor Yellow
-    Write-Host "  Add the orchestrator to your $ConfigFile" -ForegroundColor White
-    Write-Host "  See: $ExampleFile" -ForegroundColor Cyan
+    Write-Host 'Siguiente paso:' -ForegroundColor Yellow
+    Write-Host "  Agrega el orquestador a tu $ConfigFile" -ForegroundColor White
+    Write-Host "  Ver: $ExampleFile" -ForegroundColor Cyan
 }
 
 function Write-OpenSpecNote {
     Write-Host ''
-    Write-Host 'Recommended persistence backend: ' -ForegroundColor Yellow -NoNewline
+    Write-Host 'Backend de persistencia recomendado: ' -ForegroundColor Yellow -NoNewline
     Write-Host 'OpenSpec' -ForegroundColor White
-    Write-Host '  If OpenSpec is available, it will be used automatically (recommended)'
-    Write-Host '  Otherwise it falls back to local artifacts in openspec/'
+    Write-Host '  Si OpenSpec esta disponible, se usara automaticamente (recomendado)'
+    Write-Host '  De lo contrario, usa artefactos locales en openspec/'
 }
 
 function Show-Usage {
@@ -137,6 +141,37 @@ function Test-SourceTree {
     }
 }
 
+function Test-Checksums {
+    $checksumFile = Join-Path $RepoDir 'checksums.sha256'
+    if (-not (Test-Path $checksumFile)) {
+        Write-Warn 'checksums.sha256 no encontrado - omitiendo verificacion de integridad'
+        return
+    }
+    Write-Host '  Verificando integridad de archivos...' -ForegroundColor Blue
+    $lines = Get-Content $checksumFile | Where-Object { $_ -and -not $_.StartsWith('#') }
+    $failed = 0
+    foreach ($line in $lines) {
+        $parts = $line -split '\s+', 2
+        if ($parts.Count -ne 2) { continue }
+        $expectedHash = $parts[0]
+        $filePath = Join-Path $RepoDir ($parts[1].TrimStart('*'))
+        if (-not (Test-Path $filePath)) {
+            Write-Warn "Archivo faltante: $($parts[1])"
+            $failed++
+            continue
+        }
+        $actualHash = (Get-FileHash -Path $filePath -Algorithm SHA256).Hash.ToLower()
+        if ($actualHash -ne $expectedHash) {
+            $failed++
+        }
+    }
+    if ($failed -eq 0) {
+        Write-Skill 'Todos los checksums verificados OK'
+    } else {
+        Write-Warn "$failed archivo(s) no coinciden con checksums. Esperado si hiciste cambios locales."
+    }
+}
+
 function Install-Skills {
     param(
         [string]$TargetDir,
@@ -144,7 +179,7 @@ function Install-Skills {
     )
 
     Write-Host ''
-    Write-Host "Installing skills for $ToolName..." -ForegroundColor Blue
+    Write-Host "Instalando skills para $ToolName..." -ForegroundColor Blue
 
     New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
 
@@ -190,17 +225,17 @@ function Install-Skills {
     }
 
     Write-Host ''
-    Write-Host "  $count skills installed" -ForegroundColor Green -NoNewline
+    Write-Host "  $count skills instaladas" -ForegroundColor Green -NoNewline
     Write-Host " -> $TargetDir"
 }
 
 function Install-AmazonQPrompt {
     $amazonqPromptsDir = Join-Path $env:USERPROFILE '.aws\amazonq\prompts'
-    $promptSrc = Join-Path $RepoDir 'examples\amazonq\amazon-instructions.md'
-    $promptTarget = Join-Path $amazonqPromptsDir 'amazon-instructions.md'
+    $promptSrc = Join-Path $RepoDir 'examples\amazonq\amazonq-instructions.md'
+    $promptTarget = Join-Path $amazonqPromptsDir 'amazonq-instructions.md'
 
     if (-not (Test-Path $promptSrc)) {
-        Write-Err 'Missing examples\amazonq\amazon-instructions.md'
+        Write-Err 'Missing examples\amazonq\amazonq-instructions.md'
         exit 1
     }
 
@@ -212,7 +247,7 @@ function Install-AmazonQPrompt {
         return
     }
 
-    Write-Skill 'amazonq prompt (amazon-instructions.md)'
+    Write-Skill 'amazonq prompt (amazonq-instructions.md)'
 }
 
 function Install-GeminiPrompt {
@@ -245,7 +280,7 @@ function Install-GeminiPrompt {
         return
     }
 
-    Write-Skill 'gemini CLI prompt (GEMINI.md)'
+    Write-Skill 'Gemini CLI prompt (GEMINI.md)'
 }
 
 function Install-CodexPrompt {
@@ -310,7 +345,7 @@ function Install-ClaudeCodePrompt {
     }
 
     if ((Test-Path $claudeMdTarget) -and ((Get-Content -Path $claudeMdTarget -Raw) -match $marker)) {
-        Write-Warn "Orchestrator instructions already exist in $claudeMdTarget"
+        Write-Warn "Instrucciones del orquestador ya existen en $claudeMdTarget"
         return
     }
 
@@ -322,11 +357,11 @@ function Install-ClaudeCodePrompt {
     }
 
     if (-not (Test-Path $claudeMdTarget)) {
-        Write-Warn "Could not verify $claudeMdTarget"
+        Write-Warn "No se pudo verificar $claudeMdTarget"
         return
     }
 
-    Write-Skill "$claudeMdTarget (orchestrator instructions)"
+    Write-Skill "$claudeMdTarget (instrucciones del orquestador)"
 }
 
 function Install-ClaudeCodeCommands {
@@ -441,33 +476,33 @@ function Install-ForAgent {
             Install-ClaudeCodePrompt -InstallScope $installScope
             Install-ClaudeCodeCommands -TargetDir $claudeDir
             Write-Host ''
-            Write-Warn "Skills installed in $claudeDir\skills\"
-            Write-Warn "Commands installed in $claudeDir\commands\"
+            Write-Warn "Skills instaladas en $claudeDir\skills\"
+            Write-Warn "Comandos instalados en $claudeDir\commands\"
             if ($installScope -eq 'local') {
-                Write-Warn 'Orchestrator instructions added to .\CLAUDE.md'
+                Write-Warn 'Instrucciones del orquestador agregadas a .\CLAUDE.md'
             }
             else {
-                Write-Warn "Orchestrator instructions added to $claudeDir\CLAUDE.md"
+                Write-Warn "Instrucciones del orquestador agregadas a $claudeDir\CLAUDE.md"
             }
-            Write-Host 'Next step: open Claude Code and run /flow-nea-init' -ForegroundColor Yellow
+            Write-Host 'Siguiente paso: abre Claude Code y ejecuta /flow-nea-init' -ForegroundColor Yellow
         }
         'vscode' {
             Install-Skills -TargetDir $ToolPaths['vscode'] -ToolName 'VS Code (Copilot)'
             Write-NextStep '.github\copilot-instructions.md' 'examples\vscode\copilot-instructions.md'
-            Write-Warn 'Skills installed in current project (.vscode\skills\)'
+            Write-Warn 'Skills instaladas en el proyecto actual (.vscode\skills\)'
         }
         'project-local' {
             Install-Skills -TargetDir $ToolPaths['project-local'] -ToolName 'Project-local'
             Write-Host ''
-            Write-Warn 'Skills installed in .\skills\ - relative to this project'
+            Write-Warn 'Skills instaladas en .\skills\ - relativo a este proyecto'
         }
         'all-global' {
             Install-Skills -TargetDir $ToolPaths['opencode'] -ToolName 'OpenCode'
             Write-Host ''
-            Write-Host 'Next steps:' -ForegroundColor Yellow
-            Write-Host '  1. Add orchestrator agent to ' -NoNewline
+            Write-Host 'Siguientes pasos:' -ForegroundColor Yellow
+            Write-Host '  1. Agrega el agente orquestador a ' -NoNewline
             Write-Host "$env:APPDATA\opencode\opencode.json" -ForegroundColor White
-            Write-Host '     See: examples\opencode\opencode.json' -ForegroundColor Cyan
+            Write-Host '     Ver: examples\opencode\opencode.json' -ForegroundColor Cyan
         }
         'custom' {
             $customPath = $Path
@@ -542,6 +577,7 @@ try {
 
     Write-Header
     Test-SourceTree
+    Test-Checksums
 
     if ($Agent) {
         Install-ForAgent $Agent
@@ -551,10 +587,10 @@ try {
     }
 
     Write-Host ''
-    Write-Host 'Done!' -ForegroundColor Green -NoNewline
-    Write-Host ' Start using NEA Flow with: ' -NoNewline
+    Write-Host 'Listo!' -ForegroundColor Green -NoNewline
+    Write-Host ' Empieza a usar NEA Flow con: ' -NoNewline
     Write-Host '/flow-nea-init' -ForegroundColor Cyan -NoNewline
-    Write-Host ' in your project'
+    Write-Host ' en tu proyecto'
 
     Write-OpenSpecNote
     Write-Host ''

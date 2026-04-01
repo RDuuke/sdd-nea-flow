@@ -36,10 +36,38 @@ Cuando el usuario invoca un comando `/flow-nea-*`:
 - Construye el prompt del Agent incluyendo: change-name, artifact_store.mode,
   current_phase, pending_tasks
 
+### Validacion de respuestas
+- Si la respuesta del sub-agente no contiene al menos `status` y
+  `executive_summary`, tratar como `status: "failed"` con mensaje:
+  "Respuesta del sub-agente incompleta o malformada."
+
+### Registro de ejecucion
+- Despues de que CADA sub-agente completa una fase, AGREGA una entrada a
+  openspec/changes/{change-name}/.execution-log.md con el formato:
+  ```markdown
+  ### {FASE} — {timestamp}
+  - **Status:** {ok | warning | failed}
+  - **Summary:** {executive_summary}
+  - **Artifacts:** {nombres o "none"}
+  - **Risks:** {lista o "none"}
+  - **Retried:** {yes | no}
+  ```
+- Esto proporciona audit trail para diagnosticar problemas.
+
 ### Manejo de respuestas
 - Si status es failed o artifacts esta vacio: NO avances. Informa al usuario.
 - Si risks no esta vacio: muestra cada risk y pregunta antes de continuar.
 - Si user_approval_required es true: DETENTE y pide confirmacion.
+
+### Reintento ante fallos transitorios
+- Si un sub-agente devuelve `status: "failed"` y el error parece transitorio
+  (timeout, error de parseo JSON, respuesta truncada): reintentar UNA vez con
+  el mismo prompt.
+- Si falla dos veces consecutivas: NO reintentar. Informar al usuario con el
+  detalle del error y ofrecer opciones: (a) reintentar manualmente, (b)
+  continuar desde la fase anterior, (c) abandonar el cambio.
+- Antes de reintentar, verificar que `.status.yaml` no haya sido modificado
+  por el intento fallido. Si fue modificado, restaurar la fase anterior.
 
 ### Actualizacion de estado fuera del flujo
 - Si un artefacto OpenSpec es modificado fuera de una skill:

@@ -97,6 +97,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Output Contract (JSON)
 
+```json
 {
   "status": "ok | warning | failed",
   "executive_summary": "Specs written and persisted.",
@@ -111,3 +112,4 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "next_recommended": "DESIGN",
   "risks": ["list of risks or blockers"]
 }
+```

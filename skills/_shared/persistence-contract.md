@@ -30,6 +30,22 @@ openspec/
 Change folders live at:
 openspec/changes/{change-name}/
 
+## Change Name Validation
+
+Before creating any folder or file under `openspec/changes/`, validate the
+change-name:
+
+- MUST match the pattern `^[a-z0-9][a-z0-9-]*[a-z0-9]$` (lowercase
+  alphanumeric and hyphens only, cannot start or end with a hyphen).
+- Length MUST be between 3 and 50 characters.
+- MUST NOT contain path separators (`/`, `\`), dots (`..`), or spaces.
+
+If the change-name is invalid:
+1. Do NOT create any folders or files.
+2. Return `status: "failed"` with a clear message explaining the validation
+   rule that was violated.
+3. Suggest a sanitized alternative (e.g., `"my feature!"` → `"my-feature"`).
+
 ## Status File
 
 Path: openspec/changes/.status.yaml
@@ -70,6 +86,30 @@ When an OpenSpec artifact is modified outside a phase skill (by the orchestrator
 3. Set `notes` with a brief description of what changed and why.
 4. Inform the user that the phase was regressed and which tasks need to be re-run.
 
+## Execution Log
+
+Path: `openspec/changes/{change-name}/.execution-log.md`
+
+The orchestrator MUST append an entry to this file after each sub-agent
+completes a phase. Format:
+
+```markdown
+### {PHASE} — {YYYY-MM-DD HH:MM}
+
+- **Status:** {ok | warning | failed}
+- **Summary:** {executive_summary from sub-agent response}
+- **Artifacts:** {comma-separated list of artifact names, or "none"}
+- **Risks:** {comma-separated list, or "none"}
+- **Retried:** {yes | no}
+```
+
+Rules:
+- Create the file on first entry (do not fail if it does not exist yet).
+- Always append; never overwrite previous entries.
+- If mode is `none`, skip logging (no file persistence available).
+- The log is informational only — never use it to determine flow state
+  (use `.status.yaml` for that).
+
 ## File Access Rules
 
 - Always use direct relative paths from the project root (e.g. `openspec/changes/{change-name}/design.md`).
@@ -86,6 +126,25 @@ If the key is absent or false, the feature is disabled.
 experimental:
   neabrain: false  # Set to true to enable Neabrain index for path/relationship lookup
 ```
+
+## Security Guidelines
+
+Sub-agents generate code and execute commands. Follow these rules to minimize
+risk:
+
+- **No hardcoded secrets.** Sub-agents MUST NOT write API keys, passwords,
+  tokens, or credentials directly in code. Use environment variables or
+  configuration files excluded from version control.
+- **No destructive commands without confirmation.** The APPLY and VERIFY phases
+  MUST NOT execute destructive commands (e.g., `rm -rf`, `DROP TABLE`,
+  `git push --force`) without explicit user approval from the orchestrator.
+- **Scope enforcement.** Sub-agents MUST NOT modify files outside of:
+  (a) the project source code (for APPLY), or (b) the `openspec/` directory
+  (for artifact persistence). Any attempt to write outside these boundaries
+  should be reported as `status: "failed"`.
+- **Sanitize generated file names.** When creating files based on user input
+  (e.g., spec domain names), apply the same validation rules as change-name
+  (see Change Name Validation above).
 
 ## Common Rules
 

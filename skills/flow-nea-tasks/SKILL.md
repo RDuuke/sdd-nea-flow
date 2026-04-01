@@ -62,16 +62,21 @@ Format:
 ### Step 3: Persist (openspec mode)
 
 - Save tasks to openspec/changes/{change-name}/tasks.md
+- Extract all task IDs from the tasks.md file just created (e.g., ["1.1", "1.2",
+  "1.3", "2.1", etc.])
 - Update openspec/changes/.status.yaml:
   ```yaml
   phase: TASKS
   change: "{change-name}"
   awaiting_approval: false
   completed: false
-  pending_tasks: []
+  pending_tasks: ["1.1", "1.2", "1.3", "2.1", ...]
   modified_artifacts: []
   notes: ""
   ```
+
+Note: `pending_tasks` should contain ALL task IDs at creation time. The
+orchestrator updates this list as tasks are completed in the APPLY phase.
 
 ### Step 4: Return Summary
 
@@ -89,6 +94,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Output Contract (JSON)
 
+```json
 {
   "status": "ok | warning | failed",
   "executive_summary": "Task list complete. X phases and Y tasks.",
@@ -103,3 +109,4 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "next_recommended": "APPLY",
   "risks": ["list of risks or blockers"]
 }
+```

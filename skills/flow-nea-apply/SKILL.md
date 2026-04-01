@@ -12,12 +12,17 @@ metadata:
   invoker: flow-nea-orchestrator
 ---
 
-## Related Skills
+## Related Skills (optional, load if available)
 
 - **typescript-general** - Type safety and code organization (load for .ts files)
 - **testing** - Test structure and TDD patterns (load for *.test.ts files)
 - **form-controls** - Form component patterns (load for form/input components)
 - **scss** - Styling tokens and patterns (load for .scss files)
+
+If a related skill file does not exist at the expected path, skip it silently
+and continue with implementation using your general knowledge. Do NOT fail or
+block because an optional coding skill is missing. Report any missing skills as
+a warning in the output envelope `risks` field.
 
 ## Purpose
 
@@ -58,12 +63,15 @@ If TDD is active, use RED -> GREEN -> REFACTOR.
 
 ### Step 2.5: Load Coding Skills (autonomous)
 
-Based on files to be modified, load the corresponding skill before implementing.
+Based on files to be modified, attempt to load the corresponding skill before implementing.
 Do not wait for the orchestrator to specify them — this is the sub-agent's responsibility:
 - .ts files -> read skills/typescript-general/SKILL.md
 - *.test.ts files -> read skills/testing/SKILL.md
 - Form/input components -> read skills/form-controls/SKILL.md
 - .scss files -> read skills/scss/SKILL.md
+
+If a skill file does not exist, skip it and proceed with general knowledge.
+Add `"Missing optional skill: {skill-name}"` to the `risks` field in your output.
 
 ### Step 3: Implement Tasks
 
@@ -101,6 +109,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Output Contract (JSON)
 
+```json
 {
   "status": "ok | warning | failed",
   "executive_summary": "Implemented tasks X.Y through Z.W.",
@@ -117,3 +126,4 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "next_recommended": "APPLY | VERIFY",
   "risks": ["list of risks or blockers"]
 }
+```
