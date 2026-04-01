@@ -49,6 +49,10 @@ $ToolPaths = @{
     'project-local' = Join-Path '.' 'skills'
 }
 
+$MarkerBegin = '<!-- BEGIN:flow-nea -->'
+$MarkerEnd = '<!-- END:flow-nea -->'
+$OpenCodeMode = ''
+
 # ============================================================================
 # Display Helpers
 # ============================================================================
@@ -203,7 +207,12 @@ function Install-Skills {
     }
 
     $count = 0
-    $skillDirs = Get-ChildItem -Path $SkillsSrc -Directory -Filter 'flow-nea-*'
+    $extraSkills = @('judgment-day', 'skill-registry', 'skill-creator')
+    $skillDirs = @(Get-ChildItem -Path $SkillsSrc -Directory -Filter 'flow-nea-*') +
+                 @($extraSkills | ForEach-Object {
+                     $p = Join-Path $SkillsSrc $_
+                     if (Test-Path $p) { Get-Item $p } }) |
+                 Where-Object { $_ -ne $null }
 
     foreach ($skillDir in $skillDirs) {
         $skillName = $skillDir.Name
@@ -344,16 +353,29 @@ function Install-ClaudeCodePrompt {
         $claudeMdTarget = Join-Path $claudeDir 'CLAUDE.md'
     }
 
-    if ((Test-Path $claudeMdTarget) -and ((Get-Content -Path $claudeMdTarget -Raw) -match $marker)) {
-        Write-Warn "Instrucciones del orquestador ya existen en $claudeMdTarget"
+    $content = Get-Content -Path $claudeMdSrc -Raw
+
+    if ((Test-Path $claudeMdTarget) -and ((Get-Content -Path $claudeMdTarget -Raw) -like "*$MarkerBegin*")) {
+        # Marcadores existen → reemplazar contenido entre ellos (idempotente)
+        $current = Get-Content -Path $claudeMdTarget -Raw
+        $pattern = [regex]::Escape($MarkerBegin) + '[\s\S]*?' + [regex]::Escape($MarkerEnd)
+        $replacement = "$MarkerBegin`n$content`n$MarkerEnd"
+        $updated = $current -replace $pattern, $replacement
+        Set-Content -Path $claudeMdTarget -Value $updated -NoNewline
+        Write-Skill "Instrucciones del orquestador actualizadas en $(Split-Path $claudeMdTarget -Leaf)"
         return
     }
-
-    if (Test-Path $claudeMdTarget) {
-        Add-Content -Path $claudeMdTarget -Value "`n`n$(Get-Content -Path $claudeMdSrc -Raw)"
+    elseif ((Test-Path $claudeMdTarget) -and ((Get-Content -Path $claudeMdTarget -Raw) -match $marker)) {
+        Write-Warn "Instrucciones del orquestador ya existen en $claudeMdTarget (sin marcadores)"
+        Write-Warn "Para actualizaciones automaticas, envuelve la seccion con marcadores BEGIN/END"
+        return
+    }
+    elseif (Test-Path $claudeMdTarget) {
+        # Archivo existe, sin contenido flow-nea → agregar con marcadores
+        Add-Content -Path $claudeMdTarget -Value "`n`n$MarkerBegin`n$content`n$MarkerEnd"
     }
     else {
-        Copy-Item -Path $claudeMdSrc -Destination $claudeMdTarget -Force
+        Set-Content -Path $claudeMdTarget -Value "$MarkerBegin`n$content`n$MarkerEnd"
     }
 
     if (-not (Test-Path $claudeMdTarget)) {
@@ -399,6 +421,74 @@ function Resolve-CodexSkillsDir {
     return Join-Path $env:USERPROFILE '.codex\skills'
 }
 
+function Install-OpenCodeAgentsMd {
+    param([string]$TargetDir)
+    $agentsSrc = Join-Path $RepoDir 'examples\opencode\AGENTS.md'
+    if (-not (Test-Path $agentsSrc)) {
+        Write-Warn 'Missing examples\opencode\AGENTS.md'
+        return
+    }
+    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+    Copy-Item -Path $agentsSrc -Destination (Join-Path $TargetDir 'AGENTS.md') -Force
+    Write-Skill "AGENTS.md instalado en $TargetDir"
+}
+
+function Get-OpenCodeMode {
+    if ($script:OpenCodeMode) { return $script:OpenCodeMode }
+    Write-Host ''
+    Write-Host '  Modo de agentes OpenCode:' -ForegroundColor White
+    Write-Host '  1) Single model  — un modelo para todas las fases (simple, recomendado)'
+    Write-Host '  2) Multi-model   — modelo distinto por fase (optimiza costos)'
+    Write-Host ''
+    $choice = Read-Host '  Opcion [1]'
+    if ($choice -eq '2' -or $choice -eq 'multi') {
+        $script:OpenCodeMode = 'multi'
+    } else {
+        $script:OpenCodeMode = 'single'
+    }
+    return $script:OpenCodeMode
+}
+
+function Install-OpenCodeConfig {
+    param([string]$TargetDir)
+    $mode = Get-OpenCodeMode
+    $configSrc = Join-Path $RepoDir "examples\opencode\opencode.$mode.json"
+    if (-not (Test-Path $configSrc)) {
+        $configSrc = Join-Path $RepoDir 'examples\opencode\opencode.json'
+    }
+    if (-not (Test-Path $configSrc)) {
+        Write-Warn 'Missing opencode config source'
+        return
+    }
+    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+    $configTarget = Join-Path $TargetDir 'opencode.json'
+
+    $jqCmd = Get-Command jq -ErrorAction SilentlyContinue
+    if ($jqCmd -and (Test-Path $configTarget)) {
+        # Smart merge preservando modelos del usuario
+        $newAgents = (& jq '.agent // {}' $configSrc) | Out-String
+        $merged = (& jq --argjson new_agents $newAgents '
+          (reduce ((.agent // {}) | to_entries[] |
+            select(.key | test("^flow-nea-|^judgment-day|^skill-registry")) |
+            select(.value.model)) as $e
+            ({}; . + {($e.key): $e.value.model})) as $saved |
+          .agent = (
+            ((.agent // {}) | with_entries(select(.key | test("^flow-nea-|^judgment-day|^skill-registry") | not)))
+            + $new_agents
+          ) |
+          reduce ($saved | to_entries[]) as $m (.;
+            if .agent[$m.key] then .agent[$m.key].model = $m.value else . end
+          )
+        ' $configTarget) | Out-String
+        Set-Content -Path $configTarget -Value $merged
+        Write-Skill "opencode.json actualizado ($mode mode, modelos preservados)"
+    } else {
+        Copy-Item -Path $configSrc -Destination $configTarget -Force
+        Write-Skill "opencode.json instalado ($mode mode)"
+        Write-Warn "Edita el modelo en $configTarget (busca <your-provider/your-model>)"
+    }
+}
+
 # ============================================================================
 # Agent Install Dispatcher
 # ============================================================================
@@ -408,15 +498,19 @@ function Install-ForAgent {
 
     switch ($AgentName) {
         'opencode' {
-            Install-Skills -TargetDir $ToolPaths['opencode'] -ToolName 'OpenCode'
             $opencodeDir = Join-Path (Get-Location) '.opencode'
-            $opencodeSrc = Join-Path $RepoDir 'examples\opencode\opencode.json'
-            if (Test-Path $opencodeSrc) {
-                New-Item -ItemType Directory -Path $opencodeDir -Force | Out-Null
-                Copy-Item -Path $opencodeSrc -Destination (Join-Path $opencodeDir 'opencode.json') -Force
-                Write-Skill '.opencode/opencode.json'
-            } else {
-                Write-Warn 'Missing examples\opencode\opencode.json'
+            Install-Skills -TargetDir $ToolPaths['opencode'] -ToolName 'OpenCode'
+            Install-OpenCodeAgentsMd -TargetDir $opencodeDir
+            Install-OpenCodeConfig -TargetDir $opencodeDir
+            $commandsSrc = Join-Path $RepoDir 'examples\opencode\commands'
+            if (Test-Path $commandsSrc) {
+                $commandsTarget = Join-Path $opencodeDir 'commands'
+                New-Item -ItemType Directory -Path $commandsTarget -Force | Out-Null
+                $cmdFiles = Get-ChildItem -Path $commandsSrc -Filter '*.md' -ErrorAction SilentlyContinue
+                foreach ($f in $cmdFiles) {
+                    Copy-Item -Path $f.FullName -Destination $commandsTarget -Force
+                }
+                Write-Skill ".opencode\commands\ ($($cmdFiles.Count) commands)"
             }
         }
         'amazonq' {

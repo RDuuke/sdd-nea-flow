@@ -37,6 +37,9 @@ OPENCODE_SKILLS_DIR=".opencode/skills"
 TARGET_AGENT=""
 CUSTOM_PATH=""
 SCOPE=""
+MARKER_BEGIN="<!-- BEGIN:flow-nea -->"
+MARKER_END="<!-- END:flow-nea -->"
+OPENCODE_MODE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -195,7 +198,11 @@ install_skills() {
 
   local count=0
   local skill_dir
-  for skill_dir in "${SKILLS_SRC}"/flow-nea-*; do
+  for skill_dir in \
+    "${SKILLS_SRC}"/flow-nea-* \
+    "${SKILLS_SRC}/judgment-day" \
+    "${SKILLS_SRC}/skill-registry" \
+    "${SKILLS_SRC}/skill-creator"; do
     if [[ -d "$skill_dir" ]]; then
       local skill_name
       skill_name="$(basename "$skill_dir")"
@@ -333,22 +340,45 @@ install_claude_code_prompt() {
 
   local marker="FLOW-NEA ORCHESTRATOR"
 
-  if [[ -f "$claude_md_target" ]] && grep -q "$marker" "$claude_md_target"; then
-    log_warn "Orchestrator instructions already exist in $(basename "$claude_md_target")"
-    return
-  fi
-
   if [[ "$scope" == "global" ]]; then
     local parent_dir
     parent_dir="$(dirname "$claude_md_target")"
     mkdir -p "$parent_dir"
   fi
 
-  if [[ -f "$claude_md_target" ]]; then
-    printf "\n\n" >> "$claude_md_target"
-    cat "$claude_md_src" >> "$claude_md_target"
+  local content
+  content="$(cat "$claude_md_src")"
+
+  if [[ -f "$claude_md_target" ]] && grep -qF "$MARKER_BEGIN" "$claude_md_target"; then
+    # Marcadores existen → reemplazar contenido entre ellos (idempotente)
+    local tmp
+    tmp="$(mktemp)"
+    awk -v begin="$MARKER_BEGIN" -v end="$MARKER_END" -v content="$content" '
+      $0 == begin { print; print content; skip=1; next }
+      $0 == end   { print; skip=0; next }
+      !skip       { print }
+    ' "$claude_md_target" > "$tmp"
+    mv "$tmp" "$claude_md_target"
+    log_info "Instrucciones del orquestador actualizadas en $(basename "$claude_md_target")"
+  elif [[ -f "$claude_md_target" ]] && grep -q "$marker" "$claude_md_target"; then
+    log_warn "Orchestrator instructions already exist in $(basename "$claude_md_target") (sin marcadores)"
+    log_warn "Para actualizaciones automaticas, envuelve la seccion con: $MARKER_BEGIN / $MARKER_END"
+  elif [[ -f "$claude_md_target" ]]; then
+    # Archivo existe pero sin contenido flow-nea → agregar con marcadores
+    {
+      printf "\n\n%s\n" "$MARKER_BEGIN"
+      cat "$claude_md_src"
+      printf "\n%s\n" "$MARKER_END"
+    } >> "$claude_md_target"
+    log_info "Instrucciones del orquestador agregadas a $(basename "$claude_md_target")"
   else
-    cp "$claude_md_src" "$claude_md_target"
+    # Archivo no existe → crear con marcadores
+    {
+      printf "%s\n" "$MARKER_BEGIN"
+      cat "$claude_md_src"
+      printf "\n%s\n" "$MARKER_END"
+    } > "$claude_md_target"
+    log_info "$(basename "$claude_md_target") creado con instrucciones del orquestador"
   fi
 
   if [[ ! -f "$claude_md_target" ]]; then
@@ -413,22 +443,85 @@ resolve_codex_skills_dir() {
   echo "${HOME}/.codex/skills"
 }
 
+install_opencode_agents_md() {
+  local target_dir="$1"
+  local agents_src="${REPO_DIR}/examples/opencode/AGENTS.md"
+  local agents_target="${target_dir}/AGENTS.md"
+
+  [[ -f "$agents_src" ]] || { log_warn "Missing examples/opencode/AGENTS.md"; return 0; }
+
+  mkdir -p "$target_dir"
+  cp "$agents_src" "$agents_target"
+  log_info "AGENTS.md instalado en ${agents_target}"
+}
+
+ask_opencode_mode() {
+  [[ -n "$OPENCODE_MODE" ]] && return
+  if [[ -t 0 ]]; then
+    printf "\n  Modo de agentes OpenCode:\n"
+    printf "  1) Single model  — un modelo para todas las fases (simple, recomendado)\n"
+    printf "  2) Multi-model   — modelo distinto por fase (optimiza costos)\n\n"
+    read -rp "  Opcion [1]: " mode_choice
+    mode_choice="${mode_choice:-1}"
+    case "$mode_choice" in
+      2|multi) OPENCODE_MODE="multi" ;;
+      *)       OPENCODE_MODE="single" ;;
+    esac
+  else
+    OPENCODE_MODE="single"
+  fi
+}
+
+install_opencode_config() {
+  local target_dir="$1"
+  ask_opencode_mode
+  local config_src="${REPO_DIR}/examples/opencode/opencode.${OPENCODE_MODE}.json"
+  local config_target="${target_dir}/opencode.json"
+
+  [[ -f "$config_src" ]] || config_src="${REPO_DIR}/examples/opencode/opencode.json"
+  [[ -f "$config_src" ]] || { log_warn "Missing opencode config source"; return 0; }
+
+  if command -v jq &>/dev/null && [[ -f "$config_target" ]]; then
+    # Smart merge: reemplaza flow-nea-* agents, preserva modelos que el usuario eligio
+    local new_agents
+    new_agents="$(jq '.agent // {}' "$config_src")"
+    local merged
+    merged="$(jq --argjson new_agents "$new_agents" '
+      (reduce ((.agent // {}) | to_entries[] |
+        select(.key | test("^flow-nea-|^judgment-day|^skill-registry")) |
+        select(.value.model)) as $e
+        ({}; . + {($e.key): $e.value.model})) as $saved_models |
+      .agent = (
+        ((.agent // {}) | with_entries(select(.key | test("^flow-nea-|^judgment-day|^skill-registry") | not)))
+        + $new_agents
+      ) |
+      reduce ($saved_models | to_entries[]) as $m (.;
+        if .agent[$m.key] then .agent[$m.key].model = $m.value else . end
+      )
+    ' "$config_target")"
+    echo "$merged" > "$config_target"
+    log_info "opencode.json actualizado (${OPENCODE_MODE} mode, modelos del usuario preservados)"
+  else
+    mkdir -p "$target_dir"
+    cp "$config_src" "$config_target"
+    log_info "opencode.json instalado (${OPENCODE_MODE} mode)"
+    log_warn "Edita el modelo en ${config_target} (busca <your-provider/your-model>)"
+  fi
+}
+
 install_for_agent() {
   local agent="$1"
   case "$agent" in
     opencode)
       install_skills "$OPENCODE_SKILLS_DIR" "OpenCode"
-      if [[ -f "${REPO_DIR}/examples/opencode/opencode.json" ]]; then
-        mkdir -p .opencode
-        cp "${REPO_DIR}/examples/opencode/opencode.json" .opencode/opencode.json
-        log_info ".opencode/opencode.json"
-      else
-        log_warn "Missing examples/opencode/opencode.json"
-      fi
+      install_opencode_agents_md ".opencode"
+      install_opencode_config ".opencode"
       if [[ -d "${REPO_DIR}/examples/opencode/commands" ]]; then
         mkdir -p .opencode/commands
-        cp "${REPO_DIR}/examples/opencode/commands"/*.md .opencode/commands/
-        log_info ".opencode/commands/ ($(ls ${REPO_DIR}/examples/opencode/commands/*.md | wc -l | tr -d ' ') commands)"
+        cp "${REPO_DIR}/examples/opencode/commands"/*.md .opencode/commands/ 2>/dev/null || true
+        local cmd_count
+        cmd_count=$(find "${REPO_DIR}/examples/opencode/commands" -type f -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+        log_info ".opencode/commands/ (${cmd_count} commands)"
       fi
       ;;
     amazonq)
@@ -516,13 +609,8 @@ install_for_agent() {
 
       install_skills "$global_skills_dir" "OpenCode (global)"
 
-      if [[ -f "${REPO_DIR}/examples/opencode/opencode.json" ]]; then
-        mkdir -p "$global_opencode_dir"
-        cp "${REPO_DIR}/examples/opencode/opencode.json" "${global_opencode_dir}/opencode.json"
-        log_info "${global_opencode_dir}/opencode.json"
-      else
-        log_warn "Missing examples/opencode/opencode.json"
-      fi
+      install_opencode_agents_md "$global_opencode_dir"
+      install_opencode_config "$global_opencode_dir"
 
       if [[ -d "${REPO_DIR}/examples/opencode/commands" ]]; then
         mkdir -p "${global_opencode_dir}/commands"
