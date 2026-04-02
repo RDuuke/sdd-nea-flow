@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "1.0"
+  version: "2.0"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -101,6 +101,9 @@ Incluir tabla resumen por dominio:
 - Every requirement must have at least one scenario.
 - Include both happy path and edge case scenarios.
 - Do not include implementation details.
+- **Las specs describen el QUÉ, nunca el CÓMO** — sin mencionar clases, métodos, librerías ni decisiones de implementación. Si describes cómo, muévelo a design.md.
+- **Cada requirement DEBE tener: al menos un happy path + un edge case + un error state.** Si alguno falta, la spec está incompleta — no avanzar a DESIGN.
+- **Cada escenario DEBE ser testeable.** Si no se puede escribir un test automatizado para el escenario, reformularlo hasta que sea verificable. Escenarios no testeables = `status: warning`.
 - All artifact content MUST be written in Spanish.
 - **Size budget**: Cada artefacto de spec DEBE tener menos de 650 palabras por dominio. Cada escenario: 3-5 lineas max (Given / When / Then).
 

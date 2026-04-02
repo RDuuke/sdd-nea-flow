@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "1.0"
+  version: "2.0"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -99,6 +99,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Every decision must include rationale.
 - Use concrete file paths.
 - Follow existing patterns unless the change is about refactoring them.
+- **Si no sabes cómo resolver algo, escríbelo en Open Questions — nunca adivines ni inventes una solución.** Una pregunta abierta honesta es mejor que una decisión de arquitectura incorrecta. Si hay preguntas bloqueantes sin respuesta, reportar como `status: warning`.
 - All artifact content MUST be written in Spanish.
 - **Size budget**: El artefacto design.md DEBE tener menos de 800 palabras. Decisiones de arquitectura como tablas (opcion | tradeoff | decision). Snippets de codigo solo para patrones no obvios.
 

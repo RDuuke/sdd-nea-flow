@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "1.0"
+  version: "2.0"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -118,6 +118,8 @@ Fase 5: Cleanup (si aplica)
 - Always reference concrete file paths in tasks.
 - Order tasks by dependency.
 - Each task must be small enough for one session.
+- **Cada tarea debe ser completable en UNA sesión de trabajo** — si al escribirla se siente grande o ambigua, dividirla en subtareas más pequeñas. Una tarea que tarda más de una sesión es un riesgo de bloqueo.
+- **No dependencias circulares** — una tarea no puede requerir resultados de una tarea en una fase posterior. Si el orden crea un ciclo, rediseñar la división de tareas.
 - Use hierarchical numbering (1.1, 1.2, etc.).
 - If the project uses TDD, include RED -> GREEN -> REFACTOR tasks.
 - All artifact content MUST be written in Spanish.
