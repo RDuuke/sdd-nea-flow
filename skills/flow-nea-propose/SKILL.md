@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "1.0"
+  version: "2.0"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -31,6 +31,8 @@ Read and follow: skills/_shared/persistence-contract.md
 ### Step 1: Load Context
 
 - If openspec, read openspec/changes/{change-name}/exploration.md if present.
+- Read openspec/config.yaml → check `rules.proposal` for custom rules to apply.
+  Apply any project-specific proposal rules on top of the defaults in this skill.
 
 ### Step 2: Create or Update proposal.md (openspec mode)
 
@@ -56,7 +58,9 @@ Format:
 ## Affected Areas
 | Area | Impact | Description |
 |------|--------|-------------|
-| path/to/area | New/Modified/Removed | ... |
+| src/path/to/file.ts | New/Modified/Removed | descripcion concreta |
+
+> Usar rutas concretas de archivos, no descripciones vagas como "modulo de auth".
 
 ## Risks
 | Risk | Likelihood | Mitigation |
@@ -64,12 +68,18 @@ Format:
 | ... | Low/Med/High | ... |
 
 ## Rollback Plan
-{How to revert}
+> OBLIGATORIO. Describir como revertir este cambio si falla en produccion.
+> Minimo: que archivos restaurar, que migraciones revertir, si hay feature flags.
+
+{Como revertir}
 
 ## Dependencies
 - ...
 
 ## Success Criteria
+> OBLIGATORIO. Lista de condiciones verificables que deben cumplirse para considerar este cambio exitoso.
+> Cada criterio debe ser comprobable (test, metrica, comportamiento observable).
+
 - [ ] ...
 
 ### Step 3: Persist (openspec mode)
@@ -93,11 +103,12 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Rules
 
-- Always include rollback plan and success criteria.
-- Keep proposal concise.
-- Use concrete file paths in Affected Areas when possible.
+- **Rollback plan es NO NEGOCIABLE.** Si no se puede definir como revertir el cambio, no avanzar — reportar como `status: blocked`.
+- **Success criteria es NO NEGOCIABLE.** Si no se pueden definir criterios verificables, no avanzar — reportar como `status: blocked`.
+- Usar rutas concretas de archivos en Affected Areas, no descripciones vagas.
+- Aplicar reglas custom de `openspec/config.yaml → rules.proposal` si existen.
 - All artifact content MUST be written in Spanish.
-- **Size budget**: El artefacto proposal.md DEBE tener menos de 500 palabras. Scope conciso, no exhaustivo.
+- **Size budget**: El artefacto proposal.md DEBE tener menos de 400 palabras. Scope conciso, no exhaustivo.
 
 ## Output Contract (JSON)
 

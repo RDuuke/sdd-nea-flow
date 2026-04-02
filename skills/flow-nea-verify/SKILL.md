@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "1.0"
+  version: "2.0"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -24,6 +24,26 @@ as a warning in the output envelope `risks` field.
 ## Purpose
 
 Prove the implementation is correct using real test/build execution and spec compliance.
+Act as a quality gate: code alone is never sufficient — every scenario requires a passing test as proof.
+
+## Compliance Levels
+
+Use these status labels consistently throughout the report:
+
+| Status | Simbolo | Significado |
+|--------|---------|-------------|
+| COMPLIANT | ✅ | Test existe Y pasa. Unico estado aceptable para avanzar a ARCHIVE. |
+| FAILING | ❌ | Test existe pero falla. |
+| UNTESTED | ❌ | Escenario sin test asociado. Equivale a FAILING. |
+| PARTIAL | ⚠️ | Test cubre parte del escenario pero no todos los casos. |
+
+## Issue Severity
+
+Clasificar cada problema encontrado con uno de estos niveles:
+
+- **CRITICAL**: bloquea el avance. Tests fallando, build roto, escenarios sin cobertura en features core.
+- **WARNING**: riesgo pero no bloqueante. Cobertura parcial, escenarios edge sin test.
+- **SUGGESTION**: mejora opcional. Refactor, legibilidad, tests adicionales recomendados.
 
 ## What You Receive
 
@@ -40,13 +60,33 @@ Read and follow: skills/_shared/persistence-contract.md
 
 - Read tasks.md and list incomplete tasks
 
-### Step 2: Static Spec Match
+### Step 2: Behavioral Validation Matrix
 
-For each requirement and scenario, check code for structural evidence.
+For each spec domain in `openspec/changes/{change-name}/specs/`:
+1. Read each requirement and its scenarios
+2. Search for a corresponding test (by name, description, or assertion)
+3. Assign a compliance status per scenario: COMPLIANT ✅ / FAILING ❌ / UNTESTED ❌ / PARTIAL ⚠️
+
+Build a matrix in the report:
+
+```markdown
+## Matriz de Validacion
+
+| Dominio | Escenario | Estado | Test asociado | Severidad |
+|---------|-----------|--------|---------------|-----------|
+| auth    | Login con credenciales validas | ✅ COMPLIANT | auth.test.ts:22 | — |
+| auth    | Login fallido muestra error | ❌ FAILING | auth.test.ts:41 | CRITICAL |
+| export  | Exportar CSV vacio | ❌ UNTESTED | — | CRITICAL |
+| export  | Exportar con headers | ⚠️ PARTIAL | export.test.ts:15 | WARNING |
+```
+
+**Regla clave**: UNTESTED equivale a FAILING. Código que funciona pero sin test = NO COMPLIANT.
 
 ### Step 3: Check Design Coherence
 
-Verify design decisions were followed.
+Verify design decisions were followed. For each decision in `design.md`:
+- Mark as ✅ implemented, ⚠️ partial, or ❌ missing
+- Flag any deviation as WARNING or CRITICAL depending on impact
 
 ### Step 4: Run Tests (Real Execution)
 
@@ -85,9 +125,17 @@ If a coverage command is found:
   {actual}% < {threshold}%".
 - If no threshold is configured and no coverage command is found, skip silently.
 
-### Step 6: Spec Compliance Matrix
+### Step 6: Final Compliance Summary
 
-Each scenario is compliant only if a test exists and passes.
+Aggregate the matrix from Step 2 with test results from Step 4:
+- Count COMPLIANT / FAILING / UNTESTED / PARTIAL per domain
+- Determine overall status:
+  - Any CRITICAL issue → `status: failed`
+  - Only WARNINGs → `status: warning`
+  - All COMPLIANT → `status: ok`
+
+Remember: a scenario is only COMPLIANT if a test EXISTS and PASSES.
+Code that implements the feature without a passing test is UNTESTED = FAILING.
 
 ### Step 7: Persist Report
 
@@ -130,7 +178,9 @@ detailed_report (optional), artifacts, next_recommended, risks.
 ## Rules
 
 - Always execute tests; static analysis is not enough.
-- If tests or build fail, mark as critical.
+- Codigo que funciona pero sin test = UNTESTED = FAILING. No hacer excepciones.
+- Clasificar cada problema con CRITICAL / WARNING / SUGGESTION.
+- Si hay cualquier issue CRITICAL: `status: failed`. No avanzar a ARCHIVE.
 - Do not fix issues; only report.
 - All artifact content MUST be written in Spanish.
 
