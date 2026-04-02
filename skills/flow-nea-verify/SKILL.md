@@ -30,20 +30,20 @@ Act as a quality gate: code alone is never sufficient — every scenario require
 
 Use these status labels consistently throughout the report:
 
-| Status | Simbolo | Significado |
-|--------|---------|-------------|
-| COMPLIANT | ✅ | Test existe Y pasa. Unico estado aceptable para avanzar a ARCHIVE. |
-| FAILING | ❌ | Test existe pero falla. |
-| UNTESTED | ❌ | Escenario sin test asociado. Equivale a FAILING. |
-| PARTIAL | ⚠️ | Test cubre parte del escenario pero no todos los casos. |
+| Status | Symbol | Meaning |
+|--------|--------|---------|
+| COMPLIANT | ✅ | Test exists AND passes. Only acceptable state to advance to ARCHIVE. |
+| FAILING | ❌ | Test exists but fails. |
+| UNTESTED | ❌ | Scenario has no associated test. Equivalent to FAILING. |
+| PARTIAL | ⚠️ | Test covers part of the scenario but not all cases. |
 
 ## Issue Severity
 
 Clasificar cada problema encontrado con uno de estos niveles:
 
-- **CRITICAL**: bloquea el avance. Tests fallando, build roto, escenarios sin cobertura en features core.
-- **WARNING**: riesgo pero no bloqueante. Cobertura parcial, escenarios edge sin test.
-- **SUGGESTION**: mejora opcional. Refactor, legibilidad, tests adicionales recomendados.
+- **CRITICAL**: blocks progress. Failing tests, broken build, uncovered scenarios in core features.
+- **WARNING**: risk but not blocking. Partial coverage, edge scenarios without tests.
+- **SUGGESTION**: optional improvement. Refactor, readability, additional tests recommended.
 
 ## What You Receive
 
@@ -80,7 +80,7 @@ Build a matrix in the report:
 | export  | Exportar con headers | ⚠️ PARTIAL | export.test.ts:15 | WARNING |
 ```
 
-**Regla clave**: UNTESTED equivale a FAILING. Código que funciona pero sin test = NO COMPLIANT.
+**Key rule**: UNTESTED equals FAILING. Code that works but has no test = NOT COMPLIANT.
 
 ### Step 3: Check Design Coherence
 
@@ -178,9 +178,9 @@ detailed_report (optional), artifacts, next_recommended, risks.
 ## Rules
 
 - Always execute tests; static analysis is not enough.
-- Codigo que funciona pero sin test = UNTESTED = FAILING. No hacer excepciones.
-- Clasificar cada problema con CRITICAL / WARNING / SUGGESTION.
-- Si hay cualquier issue CRITICAL: `status: failed`. No avanzar a ARCHIVE.
+- Code that works but has no test = UNTESTED = FAILING. No exceptions.
+- Classify every issue as CRITICAL / WARNING / SUGGESTION.
+- If any CRITICAL issue exists: `status: failed`. Do not advance to ARCHIVE.
 - Do not fix issues; only report.
 - All artifact content MUST be written in Spanish.
 

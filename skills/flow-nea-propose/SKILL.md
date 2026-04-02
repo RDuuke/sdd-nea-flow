@@ -60,7 +60,7 @@ Format:
 |------|--------|-------------|
 | src/path/to/file.ts | New/Modified/Removed | descripcion concreta |
 
-> Usar rutas concretas de archivos, no descripciones vagas como "modulo de auth".
+> Use concrete file paths, not vague descriptions like "auth module".
 
 ## Risks
 | Risk | Likelihood | Mitigation |
@@ -68,8 +68,8 @@ Format:
 | ... | Low/Med/High | ... |
 
 ## Rollback Plan
-> OBLIGATORIO. Describir como revertir este cambio si falla en produccion.
-> Minimo: que archivos restaurar, que migraciones revertir, si hay feature flags.
+> MANDATORY. Describe how to revert this change if it fails in production.
+> Minimum: which files to restore, which migrations to revert, whether feature flags are involved.
 
 {Como revertir}
 
@@ -77,8 +77,8 @@ Format:
 - ...
 
 ## Success Criteria
-> OBLIGATORIO. Lista de condiciones verificables que deben cumplirse para considerar este cambio exitoso.
-> Cada criterio debe ser comprobable (test, metrica, comportamiento observable).
+> MANDATORY. List of verifiable conditions that must be met to consider this change successful.
+> Each criterion must be checkable (test, metric, observable behavior).
 
 - [ ] ...
 
@@ -103,12 +103,12 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Rules
 
-- **Rollback plan es NO NEGOCIABLE.** Si no se puede definir como revertir el cambio, no avanzar — reportar como `status: blocked`.
-- **Success criteria es NO NEGOCIABLE.** Si no se pueden definir criterios verificables, no avanzar — reportar como `status: blocked`.
-- Usar rutas concretas de archivos en Affected Areas, no descripciones vagas.
-- Aplicar reglas custom de `openspec/config.yaml → rules.proposal` si existen.
+- **Rollback plan is NON-NEGOTIABLE.** If it is not possible to define how to revert the change, do not advance — report as `status: blocked`.
+- **Success criteria is NON-NEGOTIABLE.** If verifiable criteria cannot be defined, do not advance — report as `status: blocked`.
+- Use concrete file paths in Affected Areas, not vague descriptions.
+- Apply custom rules from `openspec/config.yaml → rules.proposal` if they exist.
 - All artifact content MUST be written in Spanish.
-- **Size budget**: El artefacto proposal.md DEBE tener menos de 400 palabras. Scope conciso, no exhaustivo.
+- **Size budget**: proposal.md artifact MUST be under 400 words. Concise scope, not exhaustive.
 
 ## Output Contract (JSON)
 

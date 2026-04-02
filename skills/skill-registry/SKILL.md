@@ -13,50 +13,50 @@ metadata:
 
 ## Purpose
 
-Genera un skill registry (`.atl/skill-registry.md`) que cataloga todas las skills disponibles y las compacta en reglas para inyectar en prompts de sub-agentes.
+Generates a skill registry (`.atl/skill-registry.md`) that catalogs all available skills and compacts them into rules for injection into sub-agent prompts.
 
-## Concepto clave
+## Key Concept
 
-**Los sub-agentes NO leen el registry ni los archivos SKILL.md individuales.** En cambio, reciben resumenes compactos de reglas pre-resueltos en su prompt de lanzamiento. Esto optimiza el contexto por agente y por sesion.
+**Sub-agents do NOT read the registry or individual SKILL.md files.** Instead, they receive compact rule summaries pre-resolved in their launch prompt. This optimizes context per agent and per session.
 
-## Que hace
+## What It Does
 
-### Paso 1: Escanear directorios
+### Step 1: Scan Directories
 
-Recorre en orden:
+Traverse in order:
 - User-level: `~/.claude/skills/`
-- Project-level: `skills/` (en la raiz del proyecto)
+- Project-level: `skills/` (at the project root)
 
-### Paso 2: Excluir skills del workflow SDD/NEA
+### Step 2: Exclude SDD/NEA Workflow Skills
 
-No catalogar:
+Do not catalog:
 - `flow-nea-explore`, `flow-nea-propose`, `flow-nea-spec`, `flow-nea-design`
 - `flow-nea-tasks`, `flow-nea-apply`, `flow-nea-verify`, `flow-nea-archive`
 - `flow-nea-init`, `_shared`
-- El propio `skill-registry`
+- The `skill-registry` skill itself
 
-Estas son reservadas para coordinacion del orquestador.
+These are reserved for orchestrator coordination.
 
-### Paso 3: Extraer compact rules
+### Step 3: Extract Compact Rules
 
-Para cada skill encontrada, extraer:
-- Proposito (una linea desde `description`)
-- 2-5 patrones criticos o restricciones del contenido
-- Trigger/contexto de uso
+For each skill found, extract:
+- Purpose (one line from `description`)
+- 2-5 critical patterns or restrictions from the content
+- Trigger/usage context
 
-Formato de compact rule (5-15 lineas):
+Compact rule format (5-15 lines):
 ```
 ## {Skill Name}
 
-- {Patron critico 1}
-- {Patron critico 2}
-- {Patron critico 3}
-- Usar cuando: {contexto de trigger}
+- {Critical pattern 1}
+- {Critical pattern 2}
+- {Critical pattern 3}
+- Use when: {trigger context}
 ```
 
-### Paso 4: Escribir `.atl/skill-registry.md`
+### Step 4: Write `.atl/skill-registry.md`
 
-Estructura:
+Structure:
 
 ```markdown
 # Skill Registry
@@ -65,7 +65,7 @@ Generated: {timestamp}
 
 ## Compact Rules
 
-{Bloques de compact rules por skill}
+{Compact rule blocks per skill}
 
 ## Metadata
 
@@ -74,18 +74,18 @@ Generated: {timestamp}
 - Updated: {timestamp}
 ```
 
-Crear el directorio `.atl/` si no existe. Agregar `.atl/` al `.gitignore` si no esta.
+Create the `.atl/` directory if it does not exist. Add `.atl/` to `.gitignore` if not already there.
 
-### Paso 5: Return Summary
+### Step 5: Return Summary
 
-Retornar envelope con: status, executive_summary, artifacts, risks.
+Return an envelope with: status, executive_summary, artifacts, risks.
 
 ## Rules
 
-- NUNCA incluir codigo de implementacion en compact rules
-- Compact rules DEBEN ser concisas (5-15 lineas cada una)
-- No re-escanear en cada invocacion si el registry existe y es reciente (< 1 hora)
-- Si no se encuentran skills, retornar registry vacio con metadata
+- NEVER include implementation code in compact rules
+- Compact rules MUST be concise (5-15 lines each)
+- Do not re-scan on every invocation if the registry exists and is recent (< 1 hour)
+- If no skills are found, return an empty registry with metadata
 
 ## Output Contract (JSON)
 

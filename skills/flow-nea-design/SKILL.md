@@ -99,9 +99,9 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Every decision must include rationale.
 - Use concrete file paths.
 - Follow existing patterns unless the change is about refactoring them.
-- **Si no sabes cómo resolver algo, escríbelo en Open Questions — nunca adivines ni inventes una solución.** Una pregunta abierta honesta es mejor que una decisión de arquitectura incorrecta. Si hay preguntas bloqueantes sin respuesta, reportar como `status: warning`.
+- **If you don't know how to solve something, write it in Open Questions — never guess or invent a solution.** An honest open question is better than an incorrect architecture decision. If there are blocking questions without answers, report as `status: warning`.
 - All artifact content MUST be written in Spanish.
-- **Size budget**: El artefacto design.md DEBE tener menos de 800 palabras. Decisiones de arquitectura como tablas (opcion | tradeoff | decision). Snippets de codigo solo para patrones no obvios.
+- **Size budget**: design.md artifact MUST be under 800 words. Architecture decisions as tables (option | tradeoff | decision). Code snippets only for non-obvious patterns.
 
 ## Output Contract (JSON)
 

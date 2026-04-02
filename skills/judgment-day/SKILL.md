@@ -13,75 +13,75 @@ metadata:
 
 ## Purpose
 
-Desplegar dos jueces independientes y ciegos simultaneamente para evaluar el mismo objetivo, luego sintetizar sus hallazgos. Maximiza confianza en issues criticos.
+Deploy two independent blind judges simultaneously to evaluate the same target, then synthesize their findings. Maximizes confidence in critical issues.
 
-## Que recibe
+## What You Receive
 
-- Change name (obligatorio)
+- Change name (required)
 - Artifact store mode (openspec | none)
-- Criterios de evaluacion (opcional — por defecto: spec compliance, design adherence, code quality)
+- Evaluation criteria (optional — default: spec compliance, design adherence, code quality)
 
-## Flujo de ejecucion
+## Execution Flow
 
-### Paso 1: Resolver skills del proyecto
+### Step 1: Resolve Project Skills
 
-Leer `.atl/skill-registry.md` para obtener compact rules relevantes al codebase. Inyectar en ambos jueces.
+Read `.atl/skill-registry.md` to obtain compact rules relevant to the codebase. Inject into both judges.
 
-### Paso 2: Lanzar jueces en paralelo (async)
+### Step 2: Launch Judges in Parallel (async)
 
-Lanzar Juez A y Juez B simultaneamente con:
-- Acceso identico a: specs, design, tasks, codigo implementado
-- Criterios identicos de evaluacion
-- **SIN conocimiento del otro juez** (contextos separados)
+Launch Judge A and Judge B simultaneously with:
+- Identical access to: specs, design, tasks, implemented code
+- Identical evaluation criteria
+- **NO knowledge of the other judge** (separate contexts)
 
-Prompt para cada juez:
+Prompt for each judge:
 ```
-Eres un revisor de codigo independiente. Revisa la implementacion del cambio '{change-name}'.
-Lee: openspec/changes/{change-name}/specs/, design.md, tasks.md y el codigo afectado.
-Evalua: cumplimiento de specs, coherencia con design, calidad de codigo, tests.
-Categoriza cada hallazgo como: CRITICO | ADVERTENCIA | SUGERENCIA
-Retorna lista de hallazgos con: categoria, archivo:linea, descripcion, evidencia.
+You are an independent code reviewer. Review the implementation of change '{change-name}'.
+Read: openspec/changes/{change-name}/specs/, design.md, tasks.md and the affected code.
+Evaluate: spec compliance, design coherence, code quality, tests.
+Categorize each finding as: CRITICAL | WARNING | SUGGESTION
+Return a list of findings with: category, file:line, description, evidence.
 ```
 
-### Paso 3: Sintetizar veredictos
+### Step 3: Synthesize Verdicts
 
-Comparar resultados de ambos jueces:
+Compare results from both judges:
 
-| Estado | Condicion | Accion |
+| Status | Condition | Action |
 |--------|-----------|--------|
-| **Confirmado** | Encontrado por ambos jueces | Aplicar fix |
-| **Sospechoso A** | Solo Juez A | Revisar manualmente |
-| **Sospechoso B** | Solo Juez B | Revisar manualmente |
-| **Contradiccion** | Jueces en desacuerdo sobre el mismo issue | Escalar al usuario |
+| **Confirmed** | Found by both judges | Apply fix |
+| **Suspect A** | Judge A only | Review manually |
+| **Suspect B** | Judge B only | Review manually |
+| **Contradiction** | Judges disagree on the same issue | Escalate to user |
 
-### Paso 4: Mostrar veredicto al usuario
+### Step 4: Show Verdict to User
 
-Tabla de veredicto:
+Verdict table:
 ```
-| Severidad | Hallazgo | Fuente | Estado |
-|-----------|----------|--------|--------|
-| CRITICO   | ...      | Ambos  | Confirmado |
-| ADVERTENCIA | ...   | Juez A | Sospechoso A |
+| Severity | Finding | Source | Status |
+|----------|---------|--------|--------|
+| CRITICAL   | ...   | Both   | Confirmed |
+| WARNING    | ...   | Judge A | Suspect A |
 ```
 
-Preguntar: "¿Aplicamos los fixes confirmados?"
+Ask: "Should we apply the confirmed fixes?"
 
-### Paso 5: Aplicar fixes (si el usuario confirma)
+### Step 5: Apply Fixes (if user confirms)
 
-Delegar a un Fix Agent separado (NUNCA un juez hace fixes).
-Despues de aplicar, re-lanzar ambos jueces (maximo 2 ciclos).
+Delegate to a separate Fix Agent (NEVER a judge applies fixes).
+After applying, re-launch both judges (maximum 2 cycles).
 
-### Paso 6: Escalar si no converge
+### Step 6: Escalate if No Convergence
 
-Si despues de 2 ciclos siguen issues criticos confirmados: reportar al usuario con historial completo. No seguir loopeando.
+If after 2 cycles there are still confirmed critical issues: report to the user with the full history. Do not keep looping.
 
 ## Rules
 
-- El orquestador NUNCA revisa codigo directamente — solo lanza jueces, lee resultados y sintetiza
-- Los jueces trabajan ciegos entre si — ningun cross-contamination
-- El Fix Agent es una delegacion separada — nunca un juez hace fixes
-- Maximo 2 ciclos de fix+re-judge antes de escalar
-- Issues CRITICOS confirmados bloquean ARCHIVE
+- The orchestrator NEVER reviews code directly — only launches judges, reads results, and synthesizes
+- Judges work blind to each other — no cross-contamination
+- The Fix Agent is a separate delegation — a judge never applies fixes
+- Maximum 2 fix+re-judge cycles before escalating
+- Confirmed CRITICAL issues block ARCHIVE
 
 ## Output Contract (JSON)
 

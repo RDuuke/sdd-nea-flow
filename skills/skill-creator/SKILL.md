@@ -12,46 +12,46 @@ metadata:
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
-## Cuando crear una skill
+## When to Create a Skill
 
-Crear cuando:
-- Un patron se usa repetidamente y el AI necesita guia
-- Las convenciones del proyecto difieren de las mejores practicas genericas
-- Workflows complejos necesitan instrucciones paso a paso
-- Arboles de decision ayudan al AI a elegir el enfoque correcto
+Create when:
+- A pattern is used repeatedly and the AI needs guidance
+- Project conventions differ from generic best practices
+- Complex workflows need step-by-step instructions
+- Decision trees help the AI choose the right approach
 
-**No crear cuando:**
-- Ya existe documentacion (crear una referencia en su lugar)
-- El patron es trivial o autoexplicativo
-- Es una tarea de una sola vez
+**Do NOT create when:**
+- Documentation already exists (create a reference instead)
+- The pattern is trivial or self-explanatory
+- It is a one-off task
 
 ---
 
-## Estructura de una skill
+## Skill Structure
 
 ```
 skills/{skill-name}/
-├── SKILL.md              # Requerido — archivo principal
-├── assets/               # Opcional — templates, schemas, ejemplos
+├── SKILL.md              # Required — main file
+├── assets/               # Optional — templates, schemas, examples
 │   ├── template.ext
 │   └── schema.json
-└── references/           # Opcional — links a docs locales
+└── references/           # Optional — links to local docs
     └── docs.md
 ```
 
 ---
 
-## Template de SKILL.md
+## SKILL.md Template
 
 ```markdown
 ---
 name: {skill-name}
 description: >
-  {Descripcion en una linea de que hace esta skill}.
-  Trigger: {Cuando el AI debe cargar esta skill}.
+  {One-line description of what this skill does}.
+  Trigger: {When the AI should load this skill}.
 license: MIT
 metadata:
-  author: {autor}
+  author: {author}
   version: "1.0"
   scope: [root]
   invoker: flow-nea-orchestrator
@@ -59,7 +59,7 @@ metadata:
 
 ## Purpose
 
-{Proposito conciso}
+{Concise purpose}
 
 ## What You Receive
 
@@ -68,18 +68,18 @@ metadata:
 
 ## What to Do
 
-### Step 1: {Primer paso}
+### Step 1: {First step}
 
-{Instrucciones}
+{Instructions}
 
-### Step 2: {Segundo paso}
+### Step 2: {Second step}
 
-{Instrucciones}
+{Instructions}
 
 ## Rules
 
-- {Regla critica 1}
-- {Regla critica 2}
+- {Critical rule 1}
+- {Critical rule 2}
 
 ## Output Contract (JSON)
 
@@ -97,49 +97,49 @@ metadata:
 
 ---
 
-## Convenciones de nombres
+## Naming Conventions
 
-| Tipo | Patron | Ejemplos |
-|------|--------|----------|
-| Skill generica | `{technology}` | `pytest`, `playwright` |
-| Especifica del proyecto | `{project}-{component}` | `myapp-api`, `myapp-ui` |
+| Type | Pattern | Examples |
+|------|---------|----------|
+| Generic skill | `{technology}` | `pytest`, `playwright` |
+| Project-specific | `{project}-{component}` | `myapp-api`, `myapp-ui` |
 | Workflow | `{action}-{target}` | `skill-creator`, `judgment-day` |
 
 ---
 
-## Regla: assets/ vs references/
+## Rule: assets/ vs references/
 
 ```
-Necesitas templates de codigo?    → assets/
-Necesitas schemas JSON?           → assets/
-Necesitas ejemplos de config?     → assets/
-Link a docs existentes?           → references/ (rutas LOCALES, no URLs web)
+Need code templates?       → assets/
+Need JSON schemas?         → assets/
+Need config examples?      → assets/
+Link to existing docs?     → references/ (LOCAL paths, not web URLs)
 ```
 
 ---
 
-## Frontmatter requerido
+## Required Frontmatter
 
-| Campo | Requerido | Descripcion |
-|-------|-----------|-------------|
-| `name` | Si | Identificador (lowercase, hyphens) |
-| `description` | Si | Que hace + Trigger en un bloque |
-| `license` | Si | MIT |
-| `metadata.author` | Si | Autor |
-| `metadata.version` | Si | Version semantica como string |
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Identifier (lowercase, hyphens) |
+| `description` | Yes | What it does + Trigger in one block |
+| `license` | Yes | MIT |
+| `metadata.author` | Yes | Author |
+| `metadata.version` | Yes | Semantic version as string |
 
 ---
 
-## Checklist antes de crear
+## Pre-creation Checklist
 
-- [ ] La skill no existe ya (verificar en `skills/`)
-- [ ] El patron es reutilizable (no es one-off)
-- [ ] El nombre sigue las convenciones
-- [ ] El frontmatter esta completo (description incluye trigger keywords)
-- [ ] Los patrones criticos son claros
-- [ ] Los ejemplos de codigo son minimos
-- [ ] El Output Contract incluye `skill_resolution`
-- [ ] Registrar en `checksums.sha256` si aplica
+- [ ] Skill does not already exist (check `skills/`)
+- [ ] Pattern is reusable (not a one-off)
+- [ ] Name follows conventions
+- [ ] Frontmatter is complete (description includes trigger keywords)
+- [ ] Critical patterns are clear
+- [ ] Code examples are minimal
+- [ ] Output Contract includes `skill_resolution`
+- [ ] Register in `checksums.sha256` if applicable
 
 ## Output Contract (JSON)
 

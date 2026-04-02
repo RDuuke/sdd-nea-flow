@@ -85,46 +85,46 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Rules
 
-Cada tarea DEBE cumplir:
+Each task MUST meet:
 
-| Criterio | Ejemplo ✅ | Anti-ejemplo ❌ |
-|----------|-----------|----------------|
-| **Especifica** | "Crear `internal/auth/middleware.go` con validacion JWT" | "Agregar auth" |
-| **Accionable** | "Agregar metodo `ValidateToken()` en `AuthService`" | "Manejar tokens" |
-| **Verificable** | "Test: `POST /login` devuelve 401 sin token" | "Asegurarse que funcione" |
-| **Pequeña** | Un archivo o unidad logica | "Implementar el feature" |
+| Criterion | Example ✅ | Anti-example ❌ |
+|-----------|-----------|----------------|
+| **Specific** | "Create `internal/auth/middleware.go` with JWT validation" | "Add auth" |
+| **Actionable** | "Add `ValidateToken()` method to `AuthService`" | "Handle tokens" |
+| **Verifiable** | "Test: `POST /login` returns 401 without token" | "Make sure it works" |
+| **Small** | One file or logical unit | "Implement the feature" |
 
-Guia de organizacion por fase:
+Phase organization guide:
 
 ```
-Fase 1: Foundation / Infrastructure
-  └─ Nuevos tipos, interfaces, cambios de DB, config
-  └─ Lo que otras tareas necesitan primero
+Phase 1: Foundation / Infrastructure
+  └─ New types, interfaces, DB changes, config
+  └─ What other tasks depend on first
 
-Fase 2: Core Implementation
-  └─ Logica principal, reglas de negocio, comportamiento central
+Phase 2: Core Implementation
+  └─ Main logic, business rules, core behavior
 
-Fase 3: Integration / Wiring
-  └─ Conectar componentes, rutas, wiring de UI
+Phase 3: Integration / Wiring
+  └─ Connect components, routes, UI wiring
 
-Fase 4: Testing
-  └─ Tests unitarios, de integracion, e2e
-  └─ Verificar contra escenarios de specs
+Phase 4: Testing
+  └─ Unit, integration, e2e tests
+  └─ Verify against spec scenarios
 
-Fase 5: Cleanup (si aplica)
-  └─ Documentacion, eliminar codigo muerto, polish
+Phase 5: Cleanup (if applicable)
+  └─ Documentation, remove dead code, polish
 ```
 
 - Always reference concrete file paths in tasks.
 - Order tasks by dependency.
 - Each task must be small enough for one session.
-- **Cada tarea debe ser completable en UNA sesión de trabajo** — si al escribirla se siente grande o ambigua, dividirla en subtareas más pequeñas. Una tarea que tarda más de una sesión es un riesgo de bloqueo.
-- **No dependencias circulares** — una tarea no puede requerir resultados de una tarea en una fase posterior. Si el orden crea un ciclo, rediseñar la división de tareas.
+- **Each task must be completable in ONE work session** — if it feels large or ambiguous when writing it, split it into smaller subtasks. A task that spans more than one session is a blocking risk.
+- **No circular dependencies** — a task cannot require results from a task in a later phase. If the ordering creates a cycle, redesign the task breakdown.
 - Use hierarchical numbering (1.1, 1.2, etc.).
 - If the project uses TDD, include RED -> GREEN -> REFACTOR tasks.
 - All artifact content MUST be written in Spanish.
-- **Size budget**: El artefacto tasks.md DEBE tener menos de 530 palabras. Cada tarea: 1-2 lineas max. Usar formato checklist, no parrafos.
-- NUNCA incluir tareas vagas como "implementar feature" o "agregar tests".
+- **Size budget**: tasks.md artifact MUST be under 530 words. Each task: 1-2 lines max. Use checklist format, not paragraphs.
+- NEVER include vague tasks like "implement feature" or "add tests".
 
 ## Output Contract (JSON)
 

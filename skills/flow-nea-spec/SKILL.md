@@ -86,10 +86,10 @@ If no existing spec exists, write a FULL spec instead of delta.
 Return a structured envelope with: status, executive_summary,
 detailed_report (optional), artifacts, next_recommended, risks.
 
-Incluir tabla resumen por dominio:
+Include a summary table per domain:
 
-| Dominio | Tipo | Requisitos | Escenarios |
-|---------|------|------------|------------|
+| Domain | Type | Requirements | Scenarios |
+|--------|------|--------------|-----------|
 | Auth | ADDED | 2 | 3 |
 | API | MODIFIED | 1 | 2 |
 | Total | | 3 | 5 |
@@ -101,11 +101,11 @@ Incluir tabla resumen por dominio:
 - Every requirement must have at least one scenario.
 - Include both happy path and edge case scenarios.
 - Do not include implementation details.
-- **Las specs describen el QUÉ, nunca el CÓMO** — sin mencionar clases, métodos, librerías ni decisiones de implementación. Si describes cómo, muévelo a design.md.
-- **Cada requirement DEBE tener: al menos un happy path + un edge case + un error state.** Si alguno falta, la spec está incompleta — no avanzar a DESIGN.
-- **Cada escenario DEBE ser testeable.** Si no se puede escribir un test automatizado para el escenario, reformularlo hasta que sea verificable. Escenarios no testeables = `status: warning`.
+- **Specs describe WHAT, never HOW** — no mention of classes, methods, libraries, or implementation decisions. If you are describing how, move it to design.md.
+- **Each requirement MUST have: at least one happy path + one edge case + one error state.** If any is missing, the spec is incomplete — do not advance to DESIGN.
+- **Every scenario MUST be testable.** If an automated test cannot be written for the scenario, rewrite it until it is verifiable. Non-testable scenarios = `status: warning`.
 - All artifact content MUST be written in Spanish.
-- **Size budget**: Cada artefacto de spec DEBE tener menos de 650 palabras por dominio. Cada escenario: 3-5 lineas max (Given / When / Then).
+- **Size budget**: Each spec artifact MUST be under 650 words per domain. Each scenario: 3-5 lines max (Given / When / Then).
 
 ## Output Contract (JSON)
 
