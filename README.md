@@ -209,7 +209,7 @@ Siguiente paso: ve a [Instalacion por herramienta](#instalacion-por-herramienta)
 
 Guia por herramienta soportada:
 
-- OpenCode — Soporta sub-agentes via Task tool
+- OpenCode — Multi-agentes nativos (orquestador + sub-agentes dedicados por fase)
 - Amazon Q — Soporta sub-agentes via Task tool
 - Gemini CLI — Ejecuta skills inline (sin sub-agentes reales)
 - Codex — Ejecuta skills inline (sin sub-agentes reales)
@@ -548,23 +548,26 @@ segun la complejidad, pero siempre mantiene esta forma base:
 
 ```json
 {
-  "status": "ok | warning | blocked | failed",
+  "status": "ok | warning | failed",
   "executive_summary": "short decision-grade summary",
   "detailed_report": "optional long-form analysis when needed",
   "artifacts": [
     {
       "name": "design",
-      "store": "engram | openspec | none",
-      "ref": "observation-id | file-path | null"
+      "path": "openspec/changes/{change-name}/design.md",
+      "type": "markdown"
     }
   ],
-  "next_recommended": ["tasks"],
-  "risks": ["optional risk list"]
+  "next_recommended": "TASKS",
+  "risks": ["optional risk list"],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
 ```
 
 `executive_summary` es intencionalmente breve. `detailed_report` se usa cuando
-el analisis es complejo o requiere contexto adicional.
+el analisis es complejo o requiere contexto adicional. `skill_resolution` le
+indica al orquestador si la skill llego correctamente al sub-agente; si no es
+`injected`, el orquestador re-inyecta las compact rules en la siguiente delegacion.
 
 ## Glosario
 

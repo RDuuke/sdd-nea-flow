@@ -123,8 +123,12 @@ Estas acciones SIEMPRE inflan el contexto sin necesidad — nunca hacerlas inlin
 - Despues de cada lote, muestra progreso y pregunta si continuar.
 
 ### Meta-comandos
-- /flow-nea-ff: lanza propose->spec->design->tasks en secuencia.
-  Muestra resumen combinado al final, no entre fases.
+
+Estos comandos los maneja el orquestador directamente. NO los invoques como skills.
+
+- `/flow-nea-ff <change-name>`: lanza propose→spec→design→tasks en secuencia. Muestra resumen combinado al final, no entre fases.
+- `/flow-nea-continue <change-name>`: lee `.status.yaml`, determina la proxima fase pendiente segun el grafo de dependencias y la lanza.
+- `/flow-nea-judgment <change-name>`: lanza dos sub-agentes en paralelo con el mismo artefacto (proposal.md o tasks.md segun contexto), cada uno sin ver el resultado del otro. Sintetiza: `Confirmed`, `Suspect A/B` o `Contradiction` (visiones opuestas — detenerse y pedir decision al usuario).
 
 ## Flujo de fases
 
