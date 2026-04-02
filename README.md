@@ -11,7 +11,7 @@
 
 Version: 2.0.2
 
-Links rapidos: [Instalacion](#instalacion) • [OpenCode](#opencode) • [Gemini CLI](#gemini-cli) • [Codex](#codex) • [Claude Code](#claude-code) • [VS Code](#vs-code) • [Documentacion tecnica](#documentacion-tecnica)
+Links rapidos: [Instalacion](#instalacion) • [Herramientas](#herramientas) • [Documentacion tecnica](#documentacion-tecnica)
 
 ## Indice
 
@@ -24,12 +24,7 @@ Links rapidos: [Instalacion](#instalacion) • [OpenCode](#opencode) • [Gemini
 - [Requisitos](#requisitos)
 - [Estructura del repo](#estructura-del-repo)
 - [Instalacion](#instalacion)
-- [Instalacion por herramienta](#instalacion-por-herramienta)
-- [OpenCode](#opencode)
-- [Gemini CLI](#gemini-cli)
-- [Codex](#codex)
-- [Claude Code](#claude-code)
-- [VS Code](#vs-code)
+- [Herramientas](#herramientas)
 - [Persistencia de artefactos](#persistencia-de-artefactos)
 - [Skills adicionales](#skills-adicionales)
 - [Troubleshooting](#troubleshooting)
@@ -100,6 +95,7 @@ Mapa recomendado:
 - [`ai/flow.md`](ai/flow.md) - fases y reglas del flujo
 - [`ai/persistence.md`](ai/persistence.md) - OpenSpec y artefactos
 - [`ai/sub-agents.md`](ai/sub-agents.md) - modelo de sub-agentes por herramienta
+- [`ai/token-economics.md`](ai/token-economics.md) - estimado de economia de tokens
 - [`ai/authoring.md`](ai/authoring.md) - guia para maintainers
 
 ## Flujo nea-flow
@@ -167,74 +163,36 @@ cd sdd-nea-flow
 
 El instalador pregunta que herramienta usas y copia las skills al lugar correcto.
 
-## Instalacion por herramienta
+## Herramientas
 
-Resumen por herramienta:
+| Herramienta | Modo | Setup base |
+| --- | --- | --- |
+| OpenCode | sub-agentes reales | instalar skills + `examples/opencode/AGENTS.md` + una variante JSON |
+| Claude Code | sub-agentes reales | instalar skills + `commands/` + `examples/claude-code/CLAUDE.md` |
+| Codex | inline | instalar skills + `examples/codex/agents.md` |
+| Gemini CLI | inline | instalar skills + `examples/gemini-cli/GEMINI.md` |
+| VS Code | prompts/contexto | instalar skills + `examples/vscode/copilot-instructions.md` |
 
-- OpenCode - multi-agentes nativos
-- Gemini CLI - ejecuta skills inline
-- Codex - ejecuta skills inline
-- Claude Code - soporta sub-agentes via Agent tool
-- VS Code (Copilot) - usa prompts y contexto en modo agente
+Regla rapida:
 
-## OpenCode
+- si quieres el modelo mas fiel al patron, usa OpenCode
+- si quieres Anthropic CLI con delegacion real, usa Claude Code
+- si quieres una adaptacion inline, usa Codex o Gemini CLI
+- si quieres integrarlo en tu editor, usa VS Code
 
-1. Instala skills:
+Referencias por herramienta:
 
-```bash
-./scripts/install.sh  # Opcion OpenCode
-```
+- OpenCode: `examples/opencode/`
+- Claude Code: `examples/claude-code/`
+- Codex: `examples/codex/`
+- Gemini CLI: `examples/gemini-cli/`
+- VS Code: `examples/vscode/`
 
-2. Elige variante:
+Verificacion minima en todos los casos:
 
-- `examples/opencode/opencode.multi.json` - distintos modelos por fase
-- `examples/opencode/opencode.single.json` - mismo modelo para todo
-
-3. El instalador copia `examples/opencode/AGENTS.md` a `~/.config/opencode/`
-   y fusiona la configuracion con tu `config.json`.
-
-4. Verifica ejecutando:
-
-```bash
+```text
 /flow-nea-init
 ```
-
-## Gemini CLI
-
-1. Instala skills con el instalador o copialas a `~/.gemini/skills/`
-2. Agrega `examples/gemini-cli/GEMINI.md` a `~/.gemini/GEMINI.md`
-3. Asegurate de tener `GEMINI_SYSTEM_MD=1` en `~/.gemini/.env`
-4. Verifica con `/flow-nea-init`
-
-Nota: Gemini CLI no tiene sub-agentes reales en esta integracion.
-
-## Codex
-
-1. Instala skills con el instalador o copialas a `~/.codex/skills/`
-2. Agrega `examples/codex/agents.md` a `~/.codex/agents.md`
-3. Verifica con `/flow-nea-init`
-
-Nota: Codex ejecuta las skills inline.
-
-## Claude Code
-
-1. Instala skills con el instalador o copialas a `.claude/skills/`
-2. Copia `examples/claude-code/commands/*.md` a `.claude/commands/`
-3. Copia `examples/claude-code/CLAUDE.md` a `CLAUDE.md` en el proyecto o a
-   `~/.claude/CLAUDE.md`
-4. Verifica con `/flow-nea-init`
-
-Claude Code soporta delegacion real de sub-agentes via Agent tool.
-
-## VS Code
-
-1. Copia las skills al workspace o usa el instalador
-2. Crea un archivo de prompts de usuario y copia
-   `examples/vscode/copilot-instructions.md`
-3. Verifica abriendo el chat y ejecutando `/flow-nea-init`
-
-VS Code funciona principalmente como capa de instrucciones y contexto. Para la
-experiencia mas cercana al modelo de sub-agentes reales, usa OpenCode.
 
 ## Persistencia de artefactos
 

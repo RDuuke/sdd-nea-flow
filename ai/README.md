@@ -24,6 +24,7 @@ artefactos.
 | `flow.md` | Documenta fases, dependencias y reglas de avance | Cuando cambias el flujo o sus comandos |
 | `persistence.md` | Explica OpenSpec, artefactos y regresion de fase | Cuando tocas persistencia o contratos |
 | `sub-agents.md` | Describe el modelo de sub-agentes y diferencias por herramienta | Cuando actualizas ejemplos o capacidades |
+| `token-economics.md` | Estima el impacto de contexto y costo del patron | Cuando necesitas argumentar eficiencia o escalabilidad |
 | `authoring.md` | Guia para crear o modificar skills y prompts | Cuando contribuyes o extiendes `nea-flow` |
 
 ## Alcance
