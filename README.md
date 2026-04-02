@@ -11,7 +11,7 @@
 
 Version: 1.5.0
 
-Links rapidos: [Indice](#indice) • [Instalacion](#instalacion) • [OpenCode](#opencode) • [Amazon Q](#amazon-q) • [Gemini CLI](#gemini-cli) • [Codex](#codex) • [Claude Code](#claude-code) • [VS Code](#vs-code)
+Links rapidos: [Indice](#indice) • [Instalacion](#instalacion) • [OpenCode](#opencode) • [Gemini CLI](#gemini-cli) • [Codex](#codex) • [Claude Code](#claude-code) • [VS Code](#vs-code)
 
 ## Indice
 
@@ -25,7 +25,6 @@ Links rapidos: [Indice](#indice) • [Instalacion](#instalacion) • [OpenCode](
 - [Instalacion](#instalacion)
 - [Instalacion por herramienta](#instalacion-por-herramienta)
 - [OpenCode](#opencode)
-- [Amazon Q](#amazon-q)
 - [Gemini CLI](#gemini-cli)
 - [Codex](#codex)
 - [Claude Code](#claude-code)
@@ -172,7 +171,7 @@ No hay alias del flujo anterior. El unico flujo soportado es nea-flow.
 
 ## Requisitos
 
-- OpenCode, Amazon Q, Gemini CLI, Codex o Claude Code
+- OpenCode, Gemini CLI, Codex o Claude Code
 - Integracion del editor para orquestacion de skills
 - PowerShell (para scripts de integracion en Windows)
 
@@ -184,7 +183,6 @@ No hay alias del flujo anterior. El unico flujo soportado es nea-flow.
 - skills/skill-creator/: crea nuevas skills a partir de una descripcion
 - skills/_shared/: contratos y reglas compartidas entre skills
 - examples/opencode/: configuracion nativa multi-agente para OpenCode
-- examples/amazonq/: configuracion base para Amazon Q
 - examples/vscode/: configuracion base para VS Code
 - examples/gemini-cli/: configuracion base para Gemini CLI
 - examples/codex/: configuracion base para Codex
@@ -210,7 +208,6 @@ Siguiente paso: ve a [Instalacion por herramienta](#instalacion-por-herramienta)
 Guia por herramienta soportada:
 
 - OpenCode — Multi-agentes nativos (orquestador + sub-agentes dedicados por fase)
-- Amazon Q — Soporta sub-agentes via Task tool
 - Gemini CLI — Ejecuta skills inline (sin sub-agentes reales)
 - Codex — Ejecuta skills inline (sin sub-agentes reales)
 - Claude Code — Soporta sub-agentes via Agent tool
@@ -218,7 +215,6 @@ Guia por herramienta soportada:
 
 Links rapidos:
 - [OpenCode](#opencode)
-- [Amazon Q](#amazon-q)
 - [Gemini CLI](#gemini-cli)
 - [Codex](#codex)
 - [Claude Code](#claude-code)
@@ -280,37 +276,6 @@ Como usar en OpenCode:
 - Ejecuta comandos: `/flow-nea-init`, `/flow-nea-ff <name>`, `/flow-nea-apply <name>`, etc.
 - Usa `/flow-nea-continue <name>` para reanudar un cambio interrumpido
 - Los sub-agentes se lanzan automaticamente; no necesitas cambiar de agente manualmente
-
-## Amazon Q
-
-1. Copiar las skills (proyecto)
-
-```bash
-# Usando el instalador
-./scripts/install.sh  # Opcion 2: Amazon Q
-
-# O manualmente
-mkdir -p .amazonq/rules
-cp -r skills/flow-nea-* .amazonq/rules/
-cp -r skills/_shared .amazonq/rules/
-```
-
-2. Agregar el prompt (perfil del usuario)
-
-```bash
-mkdir -p ~/.aws/amazonq/prompts
-cp examples/amazonq/amazonq-instructions.md ~/.aws/amazonq/prompts/amazonq-instructions.md
-```
-
-Rutas por sistema operativo:
-
-- macOS: `~/.aws/amazonq/prompts/amazonq-instructions.md`
-- Linux: `~/.aws/amazonq/prompts/amazonq-instructions.md`
-- Windows: `%USERPROFILE%\.aws\amazonq\prompts\amazonq-instructions.md`
-
-3. Verificar
-
-Abre Amazon Q y ejecuta `/flow-nea-init`.
 
 ## Gemini CLI
 

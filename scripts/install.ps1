@@ -7,7 +7,7 @@
     Copies nea-flow skills to your AI coding assistant's skill directory.
 .PARAMETER Agent
     Install for a specific agent (non-interactive).
-    Valid values: opencode, amazonq, gemini-cli, codex, vscode, project-local, all-global, custom
+    Valid values: opencode, gemini-cli, codex, vscode, claude-code, project-local, all-global, custom
 .PARAMETER Path
     Custom install path (use with -Agent custom)
 .PARAMETER Help
@@ -22,7 +22,7 @@
 
 [CmdletBinding()]
 param(
-    [ValidateSet('opencode', 'amazonq', 'gemini-cli', 'codex', 'vscode', 'claude-code', 'project-local', 'all-global', 'custom')]
+    [ValidateSet('opencode', 'gemini-cli', 'codex', 'vscode', 'claude-code', 'project-local', 'all-global', 'custom')]
     [string]$Agent,
     [ValidateSet('local', 'global')]
     [string]$Scope,
@@ -42,7 +42,7 @@ $SkillsSrc = Join-Path $RepoDir 'skills'
 
 $ToolPaths = @{
     'opencode'      = Join-Path (Get-Location) '.opencode\skills'
-    'amazonq'       = Join-Path '.' '.amazonq\rules'
+
     'gemini-cli'    = Join-Path $env:USERPROFILE '.gemini\skills'
     'codex'         = Join-Path $env:USERPROFILE '.codex\skills'
     'vscode'        = Join-Path '.' '.vscode\skills'
@@ -115,7 +115,7 @@ function Show-Usage {
     Write-Host '  -Scope SCOPE   Scope for gemini-cli/codex (local or global)'
     Write-Host '  -Help          Show this help'
     Write-Host ''
-    Write-Host 'Agents: opencode, amazonq, gemini-cli, codex, vscode, claude-code, project-local, all-global, custom'
+    Write-Host 'Agents: opencode, gemini-cli, codex, vscode, claude-code, project-local, all-global, custom'
 }
 
 # ============================================================================
@@ -236,27 +236,6 @@ function Install-Skills {
     Write-Host ''
     Write-Host "  $count skills instaladas" -ForegroundColor Green -NoNewline
     Write-Host " -> $TargetDir"
-}
-
-function Install-AmazonQPrompt {
-    $amazonqPromptsDir = Join-Path $env:USERPROFILE '.aws\amazonq\prompts'
-    $promptSrc = Join-Path $RepoDir 'examples\amazonq\amazonq-instructions.md'
-    $promptTarget = Join-Path $amazonqPromptsDir 'amazonq-instructions.md'
-
-    if (-not (Test-Path $promptSrc)) {
-        Write-Err 'Missing examples\amazonq\amazonq-instructions.md'
-        exit 1
-    }
-
-    New-Item -ItemType Directory -Path $amazonqPromptsDir -Force | Out-Null
-    Copy-Item -Path $promptSrc -Destination $promptTarget -Force
-
-    if (-not (Test-Path $promptTarget)) {
-        Write-Warn 'No se pudo verificar el prompt de Amazon Q'
-        return
-    }
-
-    Write-Skill 'amazonq prompt (amazonq-instructions.md)'
 }
 
 function Install-GeminiPrompt {
@@ -513,14 +492,6 @@ function Install-ForAgent {
                 Write-Skill ".opencode\commands\ ($($cmdFiles.Count) commands)"
             }
         }
-        'amazonq' {
-            Install-Skills -TargetDir $ToolPaths['amazonq'] -ToolName 'Amazon Q'
-            Install-AmazonQPrompt
-            Write-Host ''
-            Write-Warn 'Skills instaladas en .amazonq\rules\'
-            Write-Warn 'Prompt instalado en %USERPROFILE%\.aws\amazonq\prompts\amazon-instructions.md'
-            Write-Host 'Siguiente paso: abre Amazon Q y ejecuta /flow-nea-init' -ForegroundColor Yellow
-        }
         'gemini-cli' {
             $installScope = $Scope
             if (-not $installScope) {
@@ -626,28 +597,26 @@ function Show-Menu {
     Write-Host 'Select your AI coding assistant:' -ForegroundColor White
     Write-Host ''
     Write-Host "   1) OpenCode       ($($ToolPaths['opencode']))"
-    Write-Host "   2) Amazon Q       (.amazonq\rules)"
-    Write-Host "   3) Gemini CLI     (local o global)"
-    Write-Host "   4) Codex          (local o global)"
-    Write-Host "   5) VS Code        ($($ToolPaths['vscode']))"
-    Write-Host '   6) Claude Code    (local o global)'
-    Write-Host "   7) Project-local  ($($ToolPaths['project-local']))"
-    Write-Host '   8) All global     (OpenCode)'
-    Write-Host '   9) Custom path'
+    Write-Host "   2) Gemini CLI     (local o global)"
+    Write-Host "   3) Codex          (local o global)"
+    Write-Host "   4) VS Code        ($($ToolPaths['vscode']))"
+    Write-Host '   5) Claude Code    (local o global)'
+    Write-Host "   6) Project-local  ($($ToolPaths['project-local']))"
+    Write-Host '   7) All global     (OpenCode)'
+    Write-Host '   8) Custom path'
     Write-Host ''
 
-    $choice = Read-Host 'Choice [1-9]'
+    $choice = Read-Host 'Choice [1-8]'
 
     $agentMap = @{
         '1' = 'opencode'
-        '2' = 'amazonq'
-        '3' = 'gemini-cli'
-        '4' = 'codex'
-        '5' = 'vscode'
-        '6' = 'claude-code'
-        '7' = 'project-local'
-        '8' = 'all-global'
-        '9' = 'custom'
+        '2' = 'gemini-cli'
+        '3' = 'codex'
+        '4' = 'vscode'
+        '5' = 'claude-code'
+        '6' = 'project-local'
+        '7' = 'all-global'
+        '8' = 'custom'
     }
 
     if ($agentMap.ContainsKey($choice)) {

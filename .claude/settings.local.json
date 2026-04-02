@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs cat:*)",
+      "Bash(wc:*)",
+      "Bash(sed -i 's|/flow-nea-new <change-name>|/flow-nea-propose <change-name>|g' C:/Users/juandg/Desktop/RDuuqe/tdd-nea-flow/examples/opencode/opencode.json)",
+      "Bash(sed -i 's|/flow-nea-explore <topic>|/flow-nea-explore <change-name>|g' C:/Users/juandg/Desktop/RDuuqe/tdd-nea-flow/examples/opencode/opencode.json)",
+      "Bash(rtk git:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(git push:*)",
+      "Bash(gh release:*)",
+      "Bash(git tag:*)",
+      "Bash(ls *.md)",
+      "Bash(AGENTS.md)",
+      "Bash(/flow-nea-judgment)",
+      "Bash(examples/opencode/AGENTS.md)",
+      "Bash(CLAUDE.md)"
+    ]
+  }
+}

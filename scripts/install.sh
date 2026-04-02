@@ -15,7 +15,7 @@ Usage: $(basename "$0") [OPTIONS]
 
 Options:
   -a, --agent NAME   Install for a specific agent (non-interactive)
-                     Valid: opencode, amazonq, gemini-cli, codex, vscode, claude-code, project-local, all-global, custom
+                     Valid: opencode, gemini-cli, codex, vscode, claude-code, project-local, all-global, custom
   -s, --scope SCOPE  Scope for gemini-cli/codex (local or global)
   -p, --path DIR     Custom install path (use with --agent custom)
   -h, --help         Show help
@@ -222,26 +222,6 @@ install_skills() {
   printf "  %s skills instaladas -> %s\n" "${count}" "${target_dir}"
 }
 
-install_amazonq_prompt() {
-  local amazonq_prompts_dir="${HOME}/.aws/amazonq/prompts"
-  local prompt_src="${REPO_DIR}/examples/amazonq/amazonq-instructions.md"
-  local prompt_target="${amazonq_prompts_dir}/amazonq-instructions.md"
-
-  if [[ ! -f "$prompt_src" ]]; then
-    log_error "Missing examples/amazonq/amazon-instructions.md"
-    exit 1
-  fi
-
-  mkdir -p "$amazonq_prompts_dir"
-  cp "$prompt_src" "$prompt_target"
-
-  if [[ ! -f "$prompt_target" ]]; then
-    log_warn "No se pudo verificar el prompt de Amazon Q"
-    return
-  fi
-
-  log_info "amazonq prompt (amazon-instructions.md)"
-}
 
 install_gemini_prompt() {
   local gemini_dir="${HOME}/.gemini"
@@ -524,14 +504,6 @@ install_for_agent() {
         log_info ".opencode/commands/ (${cmd_count} commands)"
       fi
       ;;
-    amazonq)
-      install_skills ".amazonq/rules" "Amazon Q"
-      install_amazonq_prompt
-      printf "\n"
-      log_warn "Skills instaladas en .amazonq/rules/"
-      log_warn "Prompt instalado en ~/.aws/amazonq/prompts/amazon-instructions.md"
-      printf "Siguiente paso: abre Amazon Q y ejecuta /flow-nea-init\n"
-      ;;
     gemini-cli)
       if [[ -z "$SCOPE" ]]; then
         read -p "Scope (local/global): " SCOPE
@@ -648,27 +620,25 @@ show_menu() {
   printf "Select your AI coding assistant:\n"
   printf "\n"
   printf "  1) OpenCode       (%s)\n" "${OPENCODE_SKILLS_DIR}"
-  printf "  2) Amazon Q       (.amazonq/rules)\n"
-  printf "  3) Gemini CLI     (local o global)\n"
-  printf "  4) Codex          (local o global)\n"
-  printf "  5) VS Code        (.vscode/skills)\n"
-  printf "  6) Claude Code    (local o global)\n"
-  printf "  7) Project-local  (./skills)\n"
-  printf "  8) All global     (%s)\n" "${all_global_dir}"
-  printf "  9) Custom path\n"
+  printf "  2) Gemini CLI     (local o global)\n"
+  printf "  3) Codex          (local o global)\n"
+  printf "  4) VS Code        (.vscode/skills)\n"
+  printf "  5) Claude Code    (local o global)\n"
+  printf "  6) Project-local  (./skills)\n"
+  printf "  7) All global     (%s)\n" "${all_global_dir}"
+  printf "  8) Custom path\n"
   printf "\n"
 
-  read -p "Choice [1-9]: " choice
+  read -p "Choice [1-8]: " choice
   case "$choice" in
     1) install_for_agent opencode ;;
-    2) install_for_agent amazonq ;;
-    3) install_for_agent gemini-cli ;;
-    4) install_for_agent codex ;;
-    5) install_for_agent vscode ;;
-    6) install_for_agent claude-code ;;
-    7) install_for_agent project-local ;;
-    8) install_for_agent all-global ;;
-    9) install_for_agent custom ;;
+    2) install_for_agent gemini-cli ;;
+    3) install_for_agent codex ;;
+    4) install_for_agent vscode ;;
+    5) install_for_agent claude-code ;;
+    6) install_for_agent project-local ;;
+    7) install_for_agent all-global ;;
+    8) install_for_agent custom ;;
     *)
       log_error "Invalid choice"
       exit 1

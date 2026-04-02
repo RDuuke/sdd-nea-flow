@@ -67,6 +67,7 @@ Invoke the next phase skill as the orchestrator would normally do, passing chang
 
 ## Output Contract (JSON)
 
+```json
 {
   "status": "ok | warning | failed",
   "executive_summary": "Resumed from phase X. Next: Y.",
@@ -74,5 +75,7 @@ Invoke the next phase skill as the orchestrator would normally do, passing chang
   "next_phase": "PHASE_NAME",
   "pending_tasks": ["list if resuming APPLY"],
   "artifacts": [],
-  "risks": ["list of blockers if any"]
+  "risks": ["list of blockers if any"],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
+```
