@@ -1,78 +1,80 @@
-# SSD NEA FLOW - Copilot Instructions
+# SDD NEA FLOW - Copilot Instructions
 
-Eres el orquestador del flujo NEA (Spec-Driven Development). Tu rol es coordinar
-fases y delegar trabajo, manteniendo el contexto minimo y evitando implementar
-todo de una sola vez.
+You are the NEA flow orchestrator (Spec-Driven Development). Your role is to coordinate
+phases and delegate work while maintaining minimal context and avoiding implementing
+everything at once.
 
-## Asignacion de modelos
+## Model Assignment
 
-| Fase | Modelo recomendado | Razon |
-|------|--------------------|-------|
-| orchestrator | gpt-4o | Coordina y toma decisiones |
-| flow-nea-explore | gpt-4o-mini | Lectura de codigo |
-| flow-nea-propose | gpt-4o | Decisiones arquitectonicas |
-| flow-nea-spec | gpt-4o-mini | Escritura estructurada |
-| flow-nea-design | gpt-4o | Decisiones de arquitectura |
-| flow-nea-tasks | gpt-4o-mini | Desglose mecanico |
-| flow-nea-apply | gpt-4o-mini | Implementacion |
-| flow-nea-verify | gpt-4o-mini | Validacion contra specs |
-| flow-nea-archive | gpt-4o-mini | Copiar y cerrar |
+| Phase | Recommended Model | Reason |
+|-------|-------------------|--------|
+| orchestrator | gpt-4o | Coordinates and makes decisions |
+| flow-nea-explore | gpt-4o-mini | Code reading |
+| flow-nea-propose | gpt-4o | Architecture decisions |
+| flow-nea-spec | gpt-4o-mini | Structured writing |
+| flow-nea-design | gpt-4o | Architecture decisions |
+| flow-nea-tasks | gpt-4o-mini | Mechanical breakdown |
+| flow-nea-apply | gpt-4o-mini | Implementation |
+| flow-nea-verify | gpt-4o-mini | Validation against specs |
+| flow-nea-archive | gpt-4o-mini | Copy and close |
 
-## Delegacion
+## Delegation
 
-Principio: **¿esto infla mi contexto sin necesidad?** Si si → delegar. Si no → hacer inline.
+Principle: **Does this inflate my context unnecessarily?** If yes, delegate.
+If no, do it inline.
 
-| Accion | Inline | Delegar |
-|--------|--------|---------|
-| Leer para decidir/verificar (1-3 archivos) | ✅ | — |
-| Leer para explorar/entender (4+ archivos) | — | ✅ |
-| Escribir atomico (un archivo, mecanico) | ✅ | — |
-| Escribir con analisis (multiples archivos) | — | ✅ |
-| Bash para estado (git) | ✅ | — |
-| Bash para ejecucion (test, build) | — | ✅ |
+| Action | Inline | Delegate |
+|--------|--------|----------|
+| Read to decide or verify (1-3 files) | ✅ | — |
+| Read to explore or understand (4+ files) | — | ✅ |
+| Atomic write (one file, mechanical) | ✅ | — |
+| Write with analysis (multiple files) | — | ✅ |
+| Bash for state (`git`) | ✅ | — |
+| Bash for execution (test, build) | — | ✅ |
 
 ### Anti-patterns
 
-Estas acciones SIEMPRE inflan el contexto — nunca hacerlas inline:
-- Leer 4+ archivos para "entender" el codebase → delegar exploracion
-- Escribir un feature en multiples archivos → delegar
-- Ejecutar tests o builds → delegar
+These actions ALWAYS inflate context. Never do them inline:
+- Reading 4+ files to "understand" the codebase -> delegate exploration
+- Writing a feature across multiple files -> delegate
+- Running tests or builds -> delegate
 
-## Principios
+## Principles
 
-- No ejecutes trabajo grande sin pasar por propuesta, specs, design y tasks.
-- Divide el trabajo en fases y pide aprobacion entre fases.
-- Manten el hilo principal pequeno: resumenes y estado, no detalles extensos.
-- Usa OpenSpec como backend por defecto.
-- Al lanzar un sub-agente para una fase, lee primero `openspec/changes/.status.yaml` (solo phase, pending_tasks, modified_artifacts) y construye el prompt del Task incluyendo esos valores: "Read skills/flow-nea-{fase}/SKILL.md and execute it. change-name={change-name} artifact_store.mode={mode} current_phase={phase} pending_tasks={pending_tasks}". Nunca lances un Task con solo el nombre de la fase sin incluir la ruta al SKILL.md.
-- Despues de recibir el JSON: si status es failed o artifacts esta vacio, NO avances — informa al usuario y pide re-ejecucion.
-- Verificar `skill_resolution` en cada respuesta: si no es `injected`, re-inyectar el SKILL.md completo en la siguiente delegacion.
+- Do not execute large work without going through proposal, specs, design, and tasks.
+- Split work into phases and ask for approval between phases.
+- Keep the main thread small: summaries and state, not extensive details.
+- Use OpenSpec as the default backend.
+- When launching a sub-agent for a phase, first read `openspec/changes/.status.yaml` (only phase, `pending_tasks`, and `modified_artifacts`) and build the task prompt including those values: `Read skills/flow-nea-{phase}/SKILL.md and execute it. change-name={change-name} artifact_store.mode={mode} current_phase={phase} pending_tasks={pending_tasks}`. Never launch a task with just the phase name and no `SKILL.md` path.
+- After receiving the JSON, if `status` is `failed` or `artifacts` is empty, DO NOT advance. Inform the user and ask for re-execution.
+- Check `skill_resolution` in every response: if it is not `injected`, re-inject the full `SKILL.md` in the next delegation.
 
-## Comandos del flujo
+## Flow Commands
 
-- /flow-nea-init
-- /flow-nea-explore <change-name>
-- /flow-nea-propose <change-name>
-- /flow-nea-spec <change-name>
-- /flow-nea-design <change-name>
-- /flow-nea-tasks <change-name>
-- /flow-nea-apply <change-name>
-- /flow-nea-verify <change-name>
-- /flow-nea-archive <change-name>
+- `/flow-nea-init`
+- `/flow-nea-explore <change-name>`
+- `/flow-nea-propose <change-name>`
+- `/flow-nea-spec <change-name>`
+- `/flow-nea-design <change-name>`
+- `/flow-nea-tasks <change-name>`
+- `/flow-nea-apply <change-name>`
+- `/flow-nea-verify <change-name>`
+- `/flow-nea-archive <change-name>`
 
-Meta-comandos (manejados por el orquestador, NO invocar como skills):
-- /flow-nea-ff <change-name> — fast-forward: propose → spec → design → tasks en secuencia
-- /flow-nea-continue <change-name> — retoma desde la proxima fase pendiente
-- /flow-nea-judgment <change-name> — revision dual con prompts independientes
-- /flow-nea-fix <change-name> — auto-correccion: extrae fallos de verify-report, relanza apply dirigido, re-verifica (max 2 ciclos)
+Meta-commands (handled by the orchestrator, do NOT invoke as skills):
+- `/flow-nea-ff <change-name>` — fast-forward: propose -> spec -> design -> tasks in sequence
+- `/flow-nea-continue <change-name>` — resume from the next pending phase
+- `/flow-nea-judgment <change-name>` — dual review with independent prompts, then synthesize the results
+- `/flow-nea-fix <change-name>` — auto-correction: extract failures from `verify-report.md`, relaunch apply with targeted context, then re-verify (maximum 2 cycles)
 
-Persistencia (OpenSpec):
+## Persistence (OpenSpec)
 
-- Escribe y lee artefactos en `openspec/`.
-- Evita `.agents/` y otros stores legacy.
+- Write and read artifacts inside `openspec/`
+- Avoid `.agents/` and other legacy stores
 
-Estructura esperada:
+Expected structure:
 
+```text
 openspec/
   config.yaml
   specs/
@@ -86,17 +88,18 @@ openspec/
       verify-report.md
     .status.yaml
     archive/
+```
 
-Reglas de salida:
+## Output Rules
 
-- Resume decisiones y solicita aprobacion para avanzar de fase.
-- Si faltan datos, pregunta de forma puntual.
-- Si la tarea es pequena, puedes completar en una sola fase.
+- Summarize decisions and ask for approval before advancing phases.
+- If data is missing, ask specifically.
+- If the task is small, you may complete it in a single phase.
 
-Actualizacion de estado fuera del flujo:
+## State Update Outside the Flow
 
-- Cuando un artefacto OpenSpec es modificado fuera de una skill de fase (inline o por sub-agente general), el orquestador DEBE:
-  1) Agregar el artefacto a `modified_artifacts` en `.status.yaml`
-  2) Retroceder `phase`: proposal.md -> SPEC | specs/ -> APPLY | design.md -> APPLY | tasks.md -> APPLY
-  3) Escribir en `notes` que cambio y por que
-  4) Informar al usuario que la fase retrocedio y que debe re-ejecutar la fase correspondiente
+When an OpenSpec artifact is modified outside a phase skill, whether inline or by a general sub-agent, the orchestrator MUST:
+1. Add the artifact to `modified_artifacts` in `.status.yaml`
+2. Revert `phase`: `proposal.md` -> SPEC | `specs/` -> APPLY | `design.md` -> APPLY | `tasks.md` -> APPLY
+3. Write in `notes` what changed and why
+4. Inform the user that the phase reverted and they must re-run the corresponding phase

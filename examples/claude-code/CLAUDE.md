@@ -1,148 +1,163 @@
 # Flow-NEA: Spec-Driven Development
 
-Este proyecto usa flow-nea para cambios complejos. Los comandos `/flow-nea-*`
-activan un flujo estructurado de fases con sub-agentes.
+This project uses flow-nea for complex changes. The `/flow-nea-*` commands
+activate a structured phase flow with sub-agents.
 
-## Cuando se activa el flujo
+## When the Flow Activates
 
-El flujo se activa SOLO cuando:
-1. El usuario ejecuta un comando `/flow-nea-*` explicitamente
-2. El usuario pide iniciar el flujo expresamente
+The flow activates ONLY when:
+1. The user explicitly runs a `/flow-nea-*` command
+2. The user explicitly asks to start the flow
 
-Para todo lo demas (fix, preguntas, ediciones, refactors simples), trabaja
-normalmente sin el flujo.
+For everything else (fixes, questions, edits, simple refactors), work
+normally without the flow.
 
-## Deteccion automatica (solo sugerir, nunca forzar)
+## Automatic Detection (Suggest Only, Never Force)
 
-Si el usuario describe un cambio que involucra multiples archivos, multiples
-dominios o requiere investigacion previa, puedes sugerir:
-"Esto parece un buen candidato para el flujo. Quieres que empiece con
-/flow-nea-ff <nombre-sugerido>?"
+If the user describes a change involving multiple files, multiple
+domains, or requiring prior investigation, you may suggest:
+"This looks like a good candidate for the flow. Do you want me to start with
+/flow-nea-ff <suggested-name>?"
 
-No sugiereas el flujo para: ediciones de un archivo, fixes rapidos, preguntas
-sobre el codigo, configuracion, o tareas de menos de 3 pasos.
+Do not suggest the flow for single-file edits, quick fixes, questions
+about the code, configuration, or tasks with fewer than 3 steps.
 
-## Reglas del orquestador (aplican solo dentro del flujo)
+## Orchestrator Rules (Apply Only Within the Flow)
 
-Cuando el usuario invoca un comando `/flow-nea-*`:
+When the user invokes a `/flow-nea-*` command:
 
-### Asignacion de modelos
+### Model Assignment
 
-Lee esta tabla al inicio de la sesion (o antes de la primera delegacion), almacenala en cache y pasa el modelo en cada llamada Agent. Si el modelo asignado no esta disponible, usa `sonnet` y continua.
+Read this table at the start of the session, or before the first delegation,
+cache it, and pass the model in each Agent call. If the assigned model is not
+available, use `sonnet` and continue.
 
-| Fase | Modelo | Razon |
-|------|--------|-------|
-| orchestrator | opus | Coordina y toma decisiones |
-| flow-nea-explore | sonnet | Lee codigo, analisis estructural |
-| flow-nea-propose | opus | Decisiones arquitectonicas |
-| flow-nea-spec | sonnet | Escritura estructurada |
-| flow-nea-design | opus | Decisiones de arquitectura |
-| flow-nea-tasks | sonnet | Desglose mecanico |
-| flow-nea-apply | sonnet | Implementacion |
-| flow-nea-verify | sonnet | Validacion contra specs |
-| flow-nea-archive | haiku | Copiar y cerrar |
-| default | sonnet | Delegaciones generales |
+| Phase | Model | Reason |
+|-------|-------|--------|
+| orchestrator | opus | Coordinates and makes decisions |
+| flow-nea-explore | sonnet | Reads code, structural analysis |
+| flow-nea-propose | opus | Architecture decisions |
+| flow-nea-spec | sonnet | Structured writing |
+| flow-nea-design | opus | Architecture decisions |
+| flow-nea-tasks | sonnet | Mechanical breakdown |
+| flow-nea-apply | sonnet | Implementation |
+| flow-nea-verify | sonnet | Validation against specs |
+| flow-nea-archive | haiku | Copy and close |
+| default | sonnet | General delegations |
 
-### Delegacion
+### Delegation
 
-Principio: **¿esto infla mi contexto sin necesidad?** Si sí → delegar. Si no → hacer inline.
+Principle: **Does this inflate my context unnecessarily?** If yes, delegate.
+If no, do it inline.
 
-| Accion | Inline | Delegar |
-|--------|--------|---------|
-| Leer para decidir/verificar (1-3 archivos) | ✅ | — |
-| Leer para explorar/entender (4+ archivos) | — | ✅ |
-| Leer como preparacion para escribir | — | ✅ junto con el write |
-| Escribir atomico (un archivo, mecanico, ya sabes que) | ✅ | — |
-| Escribir con analisis (multiples archivos, nueva logica) | — | ✅ |
-| Bash para estado (git, gh) | ✅ | — |
-| Bash para ejecucion (test, build, install) | — | ✅ |
+| Action | Inline | Delegate |
+|--------|--------|----------|
+| Read to decide or verify (1-3 files) | ✅ | — |
+| Read to explore or understand (4+ files) | — | ✅ |
+| Read as preparation for writing | — | ✅ together with the write |
+| Atomic write (one file, mechanical, already understood) | ✅ | — |
+| Write with analysis (multiple files, new logic) | — | ✅ |
+| Bash for state (`git`, `gh`) | ✅ | — |
+| Bash for execution (test, build, install) | — | ✅ |
 
-`delegate (async)` es el default para trabajo delegado. Usa `task (sync)` solo cuando necesitas el resultado antes de tu proxima accion.
+`delegate (async)` is the default for delegated work. Use `task (sync)` only
+when you need the result before the next action.
 
-- Usa el Agent tool para lanzar sub-agentes con contexto fresco.
-- Cada sub-agente recibe compact rules pre-resueltas del skill registry como `## Project Standards (auto-resolved)`.
-- No ejecutes trabajo de fases directamente (excepto tareas triviales del inline).
+- Use the Agent tool to launch sub-agents with fresh context.
+- Each sub-agent receives pre-resolved compact rules from the skill registry as
+  `## Project Standards (auto-resolved)`.
+- Do not execute phase work directly except for trivial inline tasks.
 
 ### Anti-patterns
 
-Estas acciones SIEMPRE inflan el contexto sin necesidad — nunca hacerlas inline:
-- Leer 4+ archivos para "entender" el codebase → delegar una exploracion
-- Escribir un feature en multiples archivos → delegar
-- Ejecutar tests o builds → delegar
-- Leer archivos como preparacion para editar, luego editar → delegar todo junto
+These actions ALWAYS inflate context unnecessarily. Never do them inline:
+- Reading 4+ files to "understand" the codebase -> delegate exploration
+- Writing a feature across multiple files -> delegate
+- Running tests or builds -> delegate
+- Reading files as preparation to edit, then editing -> delegate the whole unit of work
 
-### Estado
-- Antes de cada fase, lee openspec/changes/.status.yaml
-- Construye el prompt del Agent incluyendo: change-name, artifact_store.mode,
-  current_phase, pending_tasks
+### State
 
-### Validacion de respuestas
-- Si la respuesta del sub-agente no contiene al menos `status` y
-  `executive_summary`, tratar como `status: "failed"` con mensaje:
-  "Respuesta del sub-agente incompleta o malformada."
-- Despues de cada delegacion, verifica el campo `skill_resolution`:
-  - `injected` → correcto, las skills llegaron al sub-agente
-  - `fallback-registry`, `fallback-path`, o `none` → el cache de skills se perdio (probable compaction). Vuelve a leer `.atl/skill-registry.md` e inyecta compact rules en todas las delegaciones siguientes.
+- Before each phase, read `openspec/changes/.status.yaml`
+- Build the Agent prompt including: `change-name`, `artifact_store.mode`,
+  `current_phase`, and `pending_tasks`
 
-### Registro de ejecucion
-- Despues de que CADA sub-agente completa una fase, AGREGA una entrada a
-  openspec/changes/{change-name}/.execution-log.md con el formato:
-  ```markdown
-  ### {FASE} — {timestamp}
-  - **Status:** {ok | warning | failed}
-  - **Summary:** {executive_summary}
-  - **Artifacts:** {nombres o "none"}
-  - **Risks:** {lista o "none"}
-  - **Retried:** {yes | no}
-  ```
-- Esto proporciona audit trail para diagnosticar problemas.
+### Response Validation
 
-### Manejo de respuestas
-- Si status es failed o artifacts esta vacio: NO avances. Informa al usuario.
-- Si risks no esta vacio: muestra cada risk y pregunta antes de continuar.
-- Si user_approval_required es true: DETENTE y pide confirmacion.
+- If the sub-agent response does not contain at least `status` and
+  `executive_summary`, treat it as `status: "failed"` with the message:
+  `"Sub-agent response incomplete or malformed."`
+- After each delegation, check `skill_resolution`:
+  - `injected` -> correct, skills reached the sub-agent
+  - `fallback-registry`, `fallback-path`, or `none` -> the skill cache was lost
+    (likely due to compaction). Re-read `.atl/skill-registry.md` and inject
+    compact rules into all subsequent delegations.
 
-### Reintento ante fallos transitorios
-- Si un sub-agente devuelve `status: "failed"` y el error parece transitorio
-  (timeout, error de parseo JSON, respuesta truncada): reintentar UNA vez con
-  el mismo prompt.
-- Si falla dos veces consecutivas: NO reintentar. Informar al usuario con el
-  detalle del error y ofrecer opciones: (a) reintentar manualmente, (b)
-  continuar desde la fase anterior, (c) abandonar el cambio.
-- Antes de reintentar, verificar que `.status.yaml` no haya sido modificado
-  por el intento fallido. Si fue modificado, restaurar la fase anterior.
+### Execution Log
 
-### Actualizacion de estado fuera del flujo
-- Si un artefacto OpenSpec es modificado fuera de una skill:
-  1) Agregar a modified_artifacts en .status.yaml
-  2) Retroceder phase: proposal.md -> SPEC | specs/ -> APPLY | design.md -> APPLY | tasks.md -> APPLY
-  3) Informar al usuario
+After EACH sub-agent completes a phase, APPEND an entry to
+`openspec/changes/{change-name}/.execution-log.md` with this format:
 
-### Apply strategy
-- Para listas de tareas grandes, divide en lotes.
-- Despues de cada lote, muestra progreso y pregunta si continuar.
-
-### Meta-comandos
-
-Estos comandos los maneja el orquestador directamente. NO los invoques como skills.
-
-- `/flow-nea-ff <change-name>`: lanza propose→spec→design→tasks en secuencia. Muestra resumen combinado al final, no entre fases.
-- `/flow-nea-continue <change-name>`: lee `.status.yaml`, determina la proxima fase pendiente segun el grafo de dependencias y la lanza.
-- `/flow-nea-judgment <change-name>`: lanza dos sub-agentes en paralelo con el mismo artefacto (proposal.md o tasks.md segun contexto), cada uno sin ver el resultado del otro. Sintetiza: `Confirmed`, `Suspect A/B` o `Contradiction` (visiones opuestas — detenerse y pedir decision al usuario).
-- `/flow-nea-fix <change-name>`: lee `verify-report.md`, extrae la seccion `## Fallos Detectados`, lanza apply con ese contexto exacto, luego re-ejecuta verify. Maximo 2 intentos. Si persisten fallos, reporta y detiene.
-
-## Flujo de fases
-
+```markdown
+### {PHASE} — {timestamp}
+- **Status:** {ok | warning | failed}
+- **Summary:** {executive_summary}
+- **Artifacts:** {names or "none"}
+- **Risks:** {list or "none"}
+- **Retried:** {yes | no}
 ```
+
+This provides an audit trail for diagnosis.
+
+### Response Handling
+
+- If `status` is `failed` or `artifacts` is empty: DO NOT advance. Inform the user.
+- If `risks` is not empty: show each risk and ask before continuing.
+- If `user_approval_required` is true: STOP and ask for confirmation.
+
+### Retry on Transient Failures
+
+- If a sub-agent returns `status: "failed"` and the error seems transient
+  (timeout, JSON parse error, truncated response), retry ONCE with the same prompt.
+- If it fails twice in a row: DO NOT retry. Inform the user and offer options:
+  (a) retry manually, (b) continue from the previous phase, or (c) abandon the change.
+- Before retrying, verify that `.status.yaml` was not modified by the failed
+  attempt. If it was modified, restore the previous phase.
+
+### State Update Outside the Flow
+
+If an OpenSpec artifact is modified outside a skill:
+1. Add it to `modified_artifacts` in `.status.yaml`
+2. Revert the phase:
+   `proposal.md` -> SPEC | `specs/` -> APPLY | `design.md` -> APPLY | `tasks.md` -> APPLY
+3. Inform the user
+
+### Apply Strategy
+
+- For large task lists, split work into batches
+- After each batch, show progress and ask whether to continue
+
+### Meta-commands
+
+These commands are handled directly by the orchestrator. Do NOT invoke them as skills.
+
+- `/flow-nea-ff <change-name>`: launches propose -> spec -> design -> tasks in sequence. Show a combined summary only at the end.
+- `/flow-nea-continue <change-name>`: reads `.status.yaml`, determines the next pending phase according to the dependency graph, and launches it.
+- `/flow-nea-judgment <change-name>`: launches two sub-agents in parallel with the same artifact (`proposal.md` or `tasks.md` depending on context), each without seeing the other's result. Synthesize one of: `Confirmed`, `Suspect A`, `Suspect B`, or `Contradiction`.
+- `/flow-nea-fix <change-name>`: reads `verify-report.md`, extracts the `## Fallos Detectados` section, launches apply with that exact context, then re-runs verify. Maximum 2 attempts.
+
+## Phase Flow
+
+```text
 INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
                                      ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
                              DESIGN ─┘
 ```
 
-SPEC y DESIGN son independientes (ambas leen de PROPOSE). TASKS requiere ambas.
+SPEC and DESIGN are independent (both read PROPOSE). TASKS requires both.
 
-## Persistencia
+## Persistence
 
-- artifact_store.mode: auto | openspec | none (default: auto)
-- En modo openspec, solo escribe dentro de openspec/.
-- openspec/ se crea con /flow-nea-init.
+- `artifact_store.mode`: `auto | openspec | none` (default: `auto`)
+- In `openspec` mode, write only inside `openspec/`
+- `openspec/` is created with `/flow-nea-init`
