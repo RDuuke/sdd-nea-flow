@@ -92,6 +92,25 @@ Each scenario is compliant only if a test exists and passes.
 ### Step 7: Persist Report
 
 - If openspec mode, write openspec/changes/{change-name}/verify-report.md
+
+  The report MUST include a `## Fallos Detectados` section when tests or build fail,
+  with this exact structure for machine consumption by flow-nea-fix:
+
+  ```markdown
+  ## Fallos Detectados
+
+  ### Tests fallidos
+  - `test name or file`: error message (1 line max)
+
+  ### Errores de build
+  - `file:line`: error message (1 line max)
+
+  ### Tareas incompletas
+  - task id / description
+  ```
+
+  If all tests pass and build succeeds, omit the `## Fallos Detectados` section entirely.
+
 - Update openspec/changes/.status.yaml:
   ```yaml
   phase: VERIFY

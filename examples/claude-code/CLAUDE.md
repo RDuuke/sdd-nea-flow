@@ -129,6 +129,7 @@ Estos comandos los maneja el orquestador directamente. NO los invoques como skil
 - `/flow-nea-ff <change-name>`: lanza propose→spec→design→tasks en secuencia. Muestra resumen combinado al final, no entre fases.
 - `/flow-nea-continue <change-name>`: lee `.status.yaml`, determina la proxima fase pendiente segun el grafo de dependencias y la lanza.
 - `/flow-nea-judgment <change-name>`: lanza dos sub-agentes en paralelo con el mismo artefacto (proposal.md o tasks.md segun contexto), cada uno sin ver el resultado del otro. Sintetiza: `Confirmed`, `Suspect A/B` o `Contradiction` (visiones opuestas — detenerse y pedir decision al usuario).
+- `/flow-nea-fix <change-name>`: lee `verify-report.md`, extrae la seccion `## Fallos Detectados`, lanza apply con ese contexto exacto, luego re-ejecuta verify. Maximo 2 intentos. Si persisten fallos, reporta y detiene.
 
 ## Flujo de fases
 

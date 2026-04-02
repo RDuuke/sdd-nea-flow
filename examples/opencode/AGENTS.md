@@ -53,8 +53,11 @@ Meta-comandos (escribir directamente — el orquestador los maneja):
 - `/flow-nea-continue [change]` → avanzar la siguiente fase lista segun dependencias
 - `/flow-nea-ff <name>` → fast-forward: propose → spec → design → tasks
 - `/flow-nea-judgment <change>` → lanzar dos jueces ciegos en paralelo y sintetizar resultado
+- `/flow-nea-fix <change>` → leer verify-report.md, extraer fallos, relanzar apply con contexto dirigido, re-verificar. Max 2 intentos.
 
-`/flow-nea-propose`, `/flow-nea-continue`, `/flow-nea-ff` y `/flow-nea-judgment` son meta-comandos manejados por VOS. NO los invoques como skills.
+`/flow-nea-propose`, `/flow-nea-continue`, `/flow-nea-ff`, `/flow-nea-judgment` y `/flow-nea-fix` son meta-comandos manejados por VOS. NO los invoques como skills.
+
+Para `/flow-nea-fix`: leer `## Fallos Detectados` de verify-report.md → si no existe la sección, el cambio ya está verificado → si existe, delegar apply con ese contexto exacto → delegar verify → evaluar → máximo 2 ciclos.
 
 Para `/flow-nea-judgment`: lanza dos Tasks en paralelo con el mismo artefacto (proposal.md o tasks.md segun contexto), cada uno con prompt independiente sin ver el resultado del otro. Sintetiza: `Confirmed` (ambos de acuerdo), `Suspect A` / `Suspect B` (uno detecta problema) o `Contradiction` (visiones opuestas — detente y pide decision al usuario).
 

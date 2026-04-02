@@ -64,6 +64,7 @@ Meta-comandos (manejados por el orquestador, NO invocar como skills):
 - /flow-nea-ff <change-name> — fast-forward: propose → spec → design → tasks en secuencia
 - /flow-nea-continue <change-name> — retoma desde la proxima fase pendiente
 - /flow-nea-judgment <change-name> — revision dual con prompts independientes
+- /flow-nea-fix <change-name> — auto-correccion: extrae fallos de verify-report, relanza apply dirigido, re-verifica (max 2 ciclos)
 
 Persistencia (OpenSpec):
 

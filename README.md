@@ -166,6 +166,7 @@ Meta-comandos (manejados por el orquestador):
 - /flow-nea-ff <change-name> — atajo: lanza propose → spec → design → tasks en secuencia
 - /flow-nea-continue <change-name> — reanuda desde la proxima fase pendiente segun `.status.yaml`
 - /flow-nea-judgment <change-name> — revision dual ciega en paralelo (dos jueces independientes)
+- /flow-nea-fix <change-name> — loop de auto-correccion: extrae fallos de verify-report, relanza apply dirigido y re-verifica (max 2 intentos)
 
 No hay alias del flujo anterior. El unico flujo soportado es nea-flow.
 

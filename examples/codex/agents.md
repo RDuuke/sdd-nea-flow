@@ -68,6 +68,7 @@ Meta-comandos (los maneja el orquestador directamente, no invocar como skills):
 - `/flow-nea-ff <change-name>` — fast-forward: propose → spec → design → tasks en secuencia
 - `/flow-nea-continue <change-name>` — retoma desde la proxima fase pendiente segun `.status.yaml`
 - `/flow-nea-judgment <change-name>` — revision dual: lee el mismo artefacto dos veces con prompts independientes y sintetiza
+- `/flow-nea-fix <change-name>` — loop auto-correccion: lee fallos de verify-report.md, re-ejecuta apply con contexto dirigido, re-verifica (max 2 intentos)
 
 ### Reglas del orquestador (solo para el agente principal)
 1. NUNCA leas codigo directamente si puedes delegarlo a una fase.
