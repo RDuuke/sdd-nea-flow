@@ -7,8 +7,40 @@ Agrega este contenido a `~/.gemini/GEMINI.md` o `~/.gemini/system.md`.
 
 Coordinas el flujo SDD. Mantente LIGERO: delega trabajo pesado y solo mantiene estado.
 
+### Asignacion de modelos
+
+Lee esta tabla al inicio de sesion. Gemini CLI ejecuta las fases inline, pero si configuras modelos alternativos aplica esta guia:
+
+| Fase | Modelo recomendado | Razon |
+|------|--------------------|-------|
+| orchestrator | gemini-2.5-pro | Coordina y toma decisiones |
+| flow-nea-explore | gemini-2.5-flash | Lectura de codigo |
+| flow-nea-propose | gemini-2.5-pro | Decisiones arquitectonicas |
+| flow-nea-spec | gemini-2.5-flash | Escritura estructurada |
+| flow-nea-design | gemini-2.5-pro | Decisiones de arquitectura |
+| flow-nea-tasks | gemini-2.5-flash | Desglose mecanico |
+| flow-nea-apply | gemini-2.5-flash | Implementacion |
+| flow-nea-verify | gemini-2.5-flash | Validacion contra specs |
+| flow-nea-archive | gemini-2.5-flash | Copiar y cerrar |
+
 ### Modo de operacion
-- Delegar: nunca ejecutes trabajo de fase directamente como orquestador.
+
+Principio: **¿esto infla mi contexto sin necesidad?** Si si → leer skill y ejecutar con contexto fresco. Si no → hacer inline.
+
+| Accion | Inline | Ejecutar via skill |
+|--------|--------|-------------------|
+| Leer para decidir/verificar (1-3 archivos) | ✅ | — |
+| Leer para explorar/entender (4+ archivos) | — | ✅ flow-nea-explore |
+| Escribir atomico (un archivo, mecanico) | ✅ | — |
+| Ejecutar una fase completa del flujo | — | ✅ SKILL.md correspondiente |
+
+### Anti-patterns
+
+Estas acciones SIEMPRE inflan el contexto — nunca hacerlas inline:
+- Leer 4+ archivos para "entender" el codebase → usar flow-nea-explore
+- Escribir un feature en multiples archivos → usar flow-nea-apply con SKILL.md
+- Escribir specs/propuestas/design sin leer el SKILL.md de la fase
+
 - Gemini CLI no tiene sub-agentes nativos: lee el SKILL.md de cada fase y sigue sus instrucciones inline.
 
 ### Politica de artefactos
@@ -25,7 +57,7 @@ Coordinas el flujo SDD. Mantente LIGERO: delega trabajo pesado y solo mantiene e
 
 ### Comandos
 - `/flow-nea-init` — Inicializa el flujo en el proyecto
-- `/flow-nea-explore <topic>` — Explora el cambio
+- `/flow-nea-explore <change-name>` — Explora el cambio
 - `/flow-nea-propose <change-name>` — Crea propuesta
 - `/flow-nea-spec <change-name>` — Define especificaciones
 - `/flow-nea-design <change-name>` — Disena la solucion
@@ -33,7 +65,11 @@ Coordinas el flujo SDD. Mantente LIGERO: delega trabajo pesado y solo mantiene e
 - `/flow-nea-apply <change-name>` — Implementa cambios
 - `/flow-nea-verify <change-name>` — Verifica resultados
 - `/flow-nea-archive <change-name>` — Archiva el cambio
-- `/flow-nea-continue <change-name>` — Retoma un flujo interrumpido
+
+Meta-comandos (los maneja el orquestador directamente, no invocar como skills):
+- `/flow-nea-ff <change-name>` — fast-forward: propose → spec → design → tasks en secuencia
+- `/flow-nea-continue <change-name>` — retoma desde la proxima fase pendiente segun `.status.yaml`
+- `/flow-nea-judgment <change-name>` — revision dual: lee el mismo artefacto dos veces con prompts independientes y sintetiza
 
 ### Reglas del orquestador (solo para el agente principal)
 1. NUNCA leas codigo directamente si puedes delegarlo a una fase.
@@ -48,10 +84,11 @@ Coordinas el flujo SDD. Mantente LIGERO: delega trabajo pesado y solo mantiene e
 
 ### Grafo de dependencias
 ```
-proposal -> specs -> tasks -> apply -> verify -> archive
-             |
-           design
+INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
+                                     ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
+                             DESIGN ─┘
 ```
+SPEC y DESIGN son independientes (ambas leen PROPOSE). TASKS requiere ambas.
 
 ### Mapeo comando -> skill
 | Comando | Skill |
@@ -83,7 +120,11 @@ Para cada fase, lee el SKILL.md correspondiente y sigue sus instrucciones.
 
 ### Contrato de respuesta
 Cada fase debe responder con:
-`status`, `executive_summary`, `detailed_report` (opcional), `artifacts`, `next_recommended`, `risks`.
+`status`, `executive_summary`, `detailed_report` (opcional), `artifacts`, `next_recommended`, `risks`, `skill_resolution`.
+
+Verificar `skill_resolution` despues de cada fase:
+- `injected` → correcto
+- `fallback-registry`, `fallback-path`, o `none` → re-leer el SKILL.md completo e inyectarlo en la siguiente fase
 
 ### Actualizacion de estado fuera del flujo
 Cuando un artefacto OpenSpec es modificado fuera de una skill de fase (inline o por sub-agente general), el orquestador DEBE:
