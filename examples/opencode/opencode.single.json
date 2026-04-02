@@ -4,7 +4,7 @@
     "flow-nea-orchestrator": {
       "model": "<your-provider/your-model>",
       "mode": "primary",
-      "description": "Flow-NEA Orchestrator - coordina sub-agentes, nunca hace trabajo inline",
+      "description": "Flow-NEA Orchestrator - coordinates sub-agents, never does inline work",
       "prompt": "{file:./AGENTS.md}",
       "permission": {
         "task": {
@@ -28,8 +28,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Inicializar contexto SDD y configuracion del proyecto",
-      "prompt": "Eres un ejecutor flow-nea para la fase INIT, no el orquestador. Haz el trabajo de esta fase vos mismo. NO delegues, NO llames task/delegate, NO lances sub-agentes. Lee tu skill en ~/.config/opencode/skills/flow-nea-init/SKILL.md y seguila exactamente.",
+      "description": "Initialize SDD context and project configuration",
+      "prompt": "You are a flow-nea executor for phase INIT, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-init/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -41,8 +41,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Investigar el codebase y analizar enfoques",
-      "prompt": "Eres un ejecutor flow-nea para la fase EXPLORE, no el orquestador. Haz el trabajo de esta fase vos mismo. NO delegues, NO llames task/delegate, NO lances sub-agentes. Lee tu skill en ~/.config/opencode/skills/flow-nea-explore/SKILL.md y seguila exactamente.",
+      "description": "Investigate the codebase and analyze approaches",
+      "prompt": "You are a flow-nea executor for phase EXPLORE, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-explore/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -54,8 +54,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Crear propuesta de cambio con intent, scope y approach",
-      "prompt": "Eres un ejecutor flow-nea para la fase PROPOSE, no el orquestador. Haz el trabajo de esta fase vos mismo. NO delegues, NO llames task/delegate, NO lances sub-agentes. Lee tu skill en ~/.config/opencode/skills/flow-nea-propose/SKILL.md y seguila exactamente.",
+      "description": "Create a change proposal with intent, scope, and approach",
+      "prompt": "You are a flow-nea executor for phase PROPOSE, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-propose/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -67,8 +67,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Escribir especificaciones delta con requisitos y escenarios",
-      "prompt": "Eres un ejecutor flow-nea para la fase SPEC, no el orquestador. Haz el trabajo de esta fase vos mismo. NO delegues, NO llames task/delegate, NO lances sub-agentes. Lee tu skill en ~/.config/opencode/skills/flow-nea-spec/SKILL.md y seguila exactamente.",
+      "description": "Write delta specifications with requirements and scenarios",
+      "prompt": "You are a flow-nea executor for phase SPEC, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-spec/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -80,8 +80,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Crear documento de diseno tecnico con decisiones de arquitectura",
-      "prompt": "Eres un ejecutor flow-nea para la fase DESIGN, no el orquestador. Haz el trabajo de esta fase vos mismo. NO delegues, NO llames task/delegate, NO lances sub-agentes. Lee tu skill en ~/.config/opencode/skills/flow-nea-design/SKILL.md y seguila exactamente.",
+      "description": "Create a technical design document with architecture decisions",
+      "prompt": "You are a flow-nea executor for phase DESIGN, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-design/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -93,8 +93,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Desglosar specs y diseno en tareas de implementacion",
-      "prompt": "Eres un ejecutor flow-nea para la fase TASKS, no el orquestador. Haz el trabajo de esta fase vos mismo. NO delegues, NO llames task/delegate, NO lances sub-agentes. Lee tu skill en ~/.config/opencode/skills/flow-nea-tasks/SKILL.md y seguila exactamente.",
+      "description": "Break down specs and design into implementation tasks",
+      "prompt": "You are a flow-nea executor for phase TASKS, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-tasks/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -106,8 +106,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Implementar tareas de codigo siguiendo specs y diseno",
-      "prompt": "Eres un ejecutor flow-nea para la fase APPLY, no el orquestador. Haz el trabajo de esta fase vos mismo. NO delegues, NO llames task/delegate, NO lances sub-agentes. Lee tu skill en ~/.config/opencode/skills/flow-nea-apply/SKILL.md y seguila exactamente.",
+      "description": "Implement code tasks following specs and design",
+      "prompt": "You are a flow-nea executor for phase APPLY, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-apply/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -119,8 +119,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Validar implementacion contra specs y ejecutar tests",
-      "prompt": "Eres un ejecutor flow-nea para la fase VERIFY, no el orquestador. Haz el trabajo de esta fase vos mismo. NO delegues, NO llames task/delegate, NO lances sub-agentes. Lee tu skill en ~/.config/opencode/skills/flow-nea-verify/SKILL.md y seguila exactamente.",
+      "description": "Validate the implementation against specs and run tests",
+      "prompt": "You are a flow-nea executor for phase VERIFY, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-verify/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -132,8 +132,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Archivar cambio completado y sincronizar specs",
-      "prompt": "Eres un ejecutor flow-nea para la fase ARCHIVE, no el orquestador. Haz el trabajo de esta fase vos mismo. NO delegues, NO llames task/delegate, NO lances sub-agentes. Lee tu skill en ~/.config/opencode/skills/flow-nea-archive/SKILL.md y seguila exactamente.",
+      "description": "Archive the completed change and sync specs",
+      "prompt": "You are a flow-nea executor for phase ARCHIVE, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-archive/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -145,8 +145,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Revision adversarial dual - dos jueces ciegos en paralelo",
-      "prompt": "Eres un ejecutor flow-nea para judgment-day, no el orquestador. Haz el trabajo vos mismo. NO delegues. Lee tu skill en ~/.config/opencode/skills/judgment-day/SKILL.md y seguila exactamente.",
+      "description": "Dual adversarial review - two blind judges in parallel",
+      "prompt": "You are a flow-nea executor for judgment-day, not the orchestrator. Do the work yourself. Do NOT delegate. Read your skill at ~/.config/opencode/skills/judgment-day/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,
@@ -158,8 +158,8 @@
       "model": "<your-provider/your-model>",
       "mode": "subagent",
       "hidden": true,
-      "description": "Escanear y catalogar skills disponibles en el proyecto",
-      "prompt": "Eres un ejecutor flow-nea para skill-registry, no el orquestador. Haz el trabajo vos mismo. NO delegues. Lee tu skill en ~/.config/opencode/skills/skill-registry/SKILL.md y seguila exactamente.",
+      "description": "Scan and catalog the skills available in the project",
+      "prompt": "You are a flow-nea executor for skill-registry, not the orchestrator. Do the work yourself. Do NOT delegate. Read your skill at ~/.config/opencode/skills/skill-registry/SKILL.md and follow it exactly.",
       "tools": {
         "read": true,
         "write": true,

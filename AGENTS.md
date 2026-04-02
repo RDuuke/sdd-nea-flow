@@ -1,22 +1,22 @@
 # AGENTS.md — sdd-nea-flow
 
-Instrucciones para agentes IA que trabajan en este repositorio.
-Este archivo describe como esta organizado el repo, sus convenciones y como contribuir correctamente.
+Instructions for AI agents working in this repository.
+This file explains how the repo is organized, its conventions, and how to contribute correctly.
 
-## Que es este repo
+## What This Repo Is
 
-`sdd-nea-flow` es una libreria de skills para Spec-Driven Development (SDD) con un patron de orquestacion de sub-agentes. Contiene:
+`sdd-nea-flow` is a skills library for Spec-Driven Development (SDD) built around a sub-agent orchestration pattern. It contains:
 
-- **Skills por fase** (`skills/flow-nea-*/SKILL.md`): instrucciones ejecutables para cada fase del flujo
-- **Skills de soporte** (`skills/judgment-day/`, `skills/skill-registry/`, `skills/skill-creator/`)
-- **Ejemplos por herramienta** (`examples/*/`): configuracion lista para usar en cada editor/CLI
-- **Scripts de instalacion** (`scripts/install.sh`, `scripts/install.ps1`)
+- **Phase skills** (`skills/flow-nea-*/SKILL.md`): executable instructions for each flow phase
+- **Support skills** (`skills/judgment-day/`, `skills/skill-registry/`, `skills/skill-creator/`)
+- **Tool-specific examples** (`examples/*/`): ready-to-use configuration for each editor/CLI
+- **Installation scripts** (`scripts/install.sh`, `scripts/install.ps1`)
 
-No hay codigo de aplicacion. Todo el valor esta en los archivos Markdown.
+There is no application code here. The value of the repo lives in the Markdown instructions.
 
-## Estructura del repo
+## Repo Structure
 
-```
+```text
 sdd-nea-flow/
 ├── skills/
 │   ├── flow-nea-init/SKILL.md
@@ -36,11 +36,11 @@ sdd-nea-flow/
 │       └── persistence-contract.md
 ├── examples/
 │   ├── opencode/
-│   │   ├── AGENTS.md              <- prompt del orquestador para OpenCode
-│   │   ├── opencode.multi.json    <- config con modelos diferenciados por fase
-│   │   └── opencode.single.json   <- config con un solo modelo
+│   │   ├── AGENTS.md              <- orchestrator prompt for OpenCode
+│   │   ├── opencode.multi.json    <- config with phase-specific models
+│   │   └── opencode.single.json   <- config with a single model
 │   ├── claude-code/
-│   │   ├── CLAUDE.md              <- prompt del orquestador para Claude Code
+│   │   ├── CLAUDE.md              <- orchestrator prompt for Claude Code
 │   │   └── commands/              <- slash commands (/flow-nea-*.md)
 │   ├── amazonq/
 │   ├── gemini-cli/
@@ -50,106 +50,138 @@ sdd-nea-flow/
 │   ├── install.sh
 │   └── install.ps1
 ├── README.md
-└── AGENTS.md                      <- este archivo
+└── AGENTS.md                      <- this file
 ```
 
-## Convenciones criticas
+## Critical Conventions
 
-### Idioma
+### Language
 
-- **Contenido de artefactos**: SIEMPRE en espanol (proposal.md, specs, design.md, tasks.md, verify-report.md)
-- **Nombres de archivos y rutas**: SIEMPRE en ingles
-- **Codigo fuente y comentarios**: seguir el idioma del proyecto destino
-- **Este repo (skills, ejemplos, README)**: espanol
+- **Flow artifacts**: ALWAYS in Spanish (`proposal.md`, specs, `design.md`, `tasks.md`, `verify-report.md`)
+- **File names and paths**: ALWAYS in English
+- **Source code and code comments**: follow the destination project's language
+- **AI-facing instructions in this repo** (`SKILL.md`, orchestrator prompts, agent instruction files): English
+- **Human-facing documentation** (`README.md` and explanatory docs): Spanish unless there is a strong reason not to
 
-### Formato de skills
+### Skill Format
 
-Cada `SKILL.md` tiene:
+Each `SKILL.md` contains:
 
-1. **Frontmatter YAML** con `name`, `description`, `trigger`, `license`, `metadata`
-2. **## Purpose** — que hace esta skill en una oracion
-3. **## What You Receive** — parametros de entrada
-4. **## Execution and Persistence Contract** — leer `skills/_shared/persistence-contract.md`
-5. **## What to Do** — pasos numerados (Step 1, Step 2, ...)
-6. **## Rules** — restricciones y limites
-7. **## Output Contract (JSON)** — envelope de retorno exacto
+1. **YAML frontmatter** with `name`, `description`, `trigger`, `license`, `metadata`
+2. **## Purpose** — what the skill does in one sentence
+3. **## What You Receive** — input parameters
+4. **## Execution and Persistence Contract** — read `skills/_shared/persistence-contract.md`
+5. **## What to Do** — numbered steps (`Step 1`, `Step 2`, ...)
+6. **## Rules** — restrictions and limits
+7. **## Output Contract (JSON)** — exact return envelope
 
-### Output Contract (envelope estandar)
+### Output Contract (Standard Envelope)
 
-Todas las skills retornan este JSON:
+All skills return this JSON:
 
 ```json
 {
   "status": "ok | warning | failed",
-  "executive_summary": "resumen breve para el orquestador",
-  "detailed_report": "analisis opcional cuando la complejidad lo requiere",
+  "executive_summary": "brief summary for the orchestrator",
+  "detailed_report": "optional analysis when complexity requires it",
   "artifacts": [
     {
-      "name": "nombre-del-artefacto",
-      "path": "ruta/relativa/al/artefacto",
+      "name": "artifact-name",
+      "path": "relative/path/to/artifact",
       "type": "markdown | yaml | directory"
     }
   ],
-  "next_recommended": "NOMBRE_SIGUIENTE_FASE",
-  "risks": ["lista de riesgos o bloqueadores"],
+  "next_recommended": "NEXT_PHASE_NAME",
+  "risks": ["list of risks or blockers"],
   "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
 ```
 
-`skill_resolution` indica si la skill fue cargada correctamente por el sub-agente:
-- `injected`: el orquestador inyecto las reglas compactas exitosamente
-- `fallback-registry`: el sub-agente uso `.atl/skill-registry.md` como fallback
-- `fallback-path`: el sub-agente leyo el SKILL.md directamente
-- `none`: el sub-agente no encontro las instrucciones
+`skill_resolution` indicates whether the skill instructions reached the sub-agent correctly:
+- `injected`: the orchestrator injected the compact rules successfully
+- `fallback-registry`: the sub-agent used `.atl/skill-registry.md` as fallback
+- `fallback-path`: the sub-agent read `SKILL.md` directly
+- `none`: the sub-agent did not find the instructions
 
-### Budgets de tamano (no superar)
+### Size Budgets (Do Not Exceed)
 
-| Artefacto | Limite |
-|-----------|--------|
-| tasks.md | 530 palabras |
-| design.md | 800 palabras |
-| proposal.md | 500 palabras |
-| specs/ (por dominio) | 650 palabras |
+| Artifact | Limit |
+|----------|-------|
+| tasks.md | 530 words |
+| design.md | 800 words |
+| proposal.md | 500 words |
+| specs/ (per domain) | 650 words |
 
-### Grafo de dependencias del flujo
+### Flow Dependency Graph
 
-```
+```text
 INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
                                      ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
                              DESIGN ─┘
 ```
 
-SPEC y DESIGN son independientes (ambas leen PROPOSE). TASKS requiere ambas.
+SPEC and DESIGN are independent (both read PROPOSE). TASKS requires both.
 
-## Como agregar una nueva skill
+## How To Add a New Skill
 
-1. Crear `skills/{nombre}/SKILL.md` siguiendo el formato de frontmatter y secciones descritas arriba
-2. Si la skill es una fase del flujo, agregarla al grafo de dependencias en:
+1. Create `skills/{name}/SKILL.md` following the required frontmatter and section structure
+2. If the skill is a flow phase, add it to the dependency graph in:
    - `examples/claude-code/CLAUDE.md`
    - `examples/opencode/AGENTS.md`
-   - `examples/opencode/opencode.multi.json` y `opencode.single.json`
-3. Si requiere instalacion, agregar a `scripts/install.sh` y `scripts/install.ps1`
-4. Actualizar `README.md`: Estructura del repo + seccion Skills adicionales si aplica
+   - `examples/opencode/opencode.multi.json` and `opencode.single.json`
+3. If installation changes are needed, update `scripts/install.sh` and `scripts/install.ps1`
+4. Update `README.md`: repo structure and any additional skills section if applicable
 
-## Como modificar una skill existente
+## How To Modify an Existing Skill
 
-1. Leer el `SKILL.md` completo antes de editar
-2. Respetar el contrato de Output (no remover campos del JSON)
-3. Si se modifica el budget de tamano, actualizar la tabla de budgets en este archivo
-4. Probar mentalmente contra un cambio de ejemplo antes de hacer PR
+1. Read the entire `SKILL.md` before editing
+2. Preserve the output contract; do not remove fields from the JSON envelope
+3. If you change a size budget, update the budget table in this file
+4. Mentally test the change against at least one example before opening a PR
 
-## Como modificar los scripts de instalacion
+## How To Modify the Installation Scripts
 
-Los scripts tienen marcadores idempotentes `<!-- BEGIN:flow-nea -->` / `<!-- END:flow-nea -->`.
+The scripts use idempotent markers: `<!-- BEGIN:flow-nea -->` / `<!-- END:flow-nea -->`.
 
-- La lista de skills a instalar esta en `install_skills()` (bash) y `Install-Skills` (PowerShell)
-- Las funciones de OpenCode (`install_opencode_config` / `Install-OpenCodeConfig`) usan `jq` para merge inteligente
-- Siempre probar que el script es idempotente: ejecutar dos veces no debe duplicar contenido
+- The skill list to install lives in `install_skills()` (bash) and `Install-Skills` (PowerShell)
+- The OpenCode functions (`install_opencode_config` / `Install-OpenCodeConfig`) use `jq` for intelligent merges
+- Always verify idempotency: running the script twice must not duplicate content
 
-## Lo que NO hacer
+## What Not To Do
 
-- No crear archivos de documentacion extra (`.md`) fuera de los directorios existentes sin justificacion
-- No agregar logica de aplicacion (codigo ejecutable que no sea shell scripts de instalacion)
-- No modificar `openspec/` — esa carpeta la genera el flujo en los proyectos destino, no pertenece a este repo
-- No hardcodear nombres de modelos especificos en skills (usar placeholders o dejar que el orquestador los resuelva)
-- No escribir contenido de artefactos en ingles (violaria la regla de idioma)
+- Do not create extra documentation files (`.md`) outside the existing directories without justification
+- Do not add application logic or executable code beyond installation shell scripts
+- Do not modify `openspec/` — that folder is generated by the flow inside target projects, not this repo
+- Do not hardcode specific model names inside skills; use placeholders or let the orchestrator resolve them
+- Do not write flow artifact contents in English; that would violate the language rule
+
+## Skills
+
+A skill is a set of local instructions stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and file path so you can open the source for full instructions when using a specific skill.
+
+### Available Skills
+
+- find-skills: Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill. (file: C:/Users/juandg/.agents/skills/find-skills/SKILL.md)
+- skill-creator: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Codex's capabilities with specialized knowledge, workflows, or tool integrations. (file: C:/Users/juandg/.codex/skills/.system/skill-creator/SKILL.md)
+- skill-installer: Install Codex skills into `$CODEX_HOME/skills` from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos). (file: C:/Users/juandg/.codex/skills/.system/skill-installer/SKILL.md)
+
+### How To Use Skills
+
+- Discovery: The list above is the set of skills available in this session. Skill bodies live on disk at the listed paths.
+- Trigger rules: If the user names a skill (with `$SkillName` or plain text) or the task clearly matches a listed skill description, you must use that skill for that turn. Multiple mentions mean use them all. Do not carry skills across turns unless they are mentioned again.
+- Missing or blocked: If a named skill is not in the list or its path cannot be read, say so briefly and continue with the best fallback.
+- How to use a skill (progressive disclosure):
+  1. After deciding to use a skill, open its `SKILL.md`. Read only enough to follow the workflow.
+  2. When `SKILL.md` references relative paths (for example `scripts/foo.py`), resolve them relative to the skill directory first.
+  3. If `SKILL.md` points to extra folders such as `references/`, load only the specific files needed for the request.
+  4. If `scripts/` exist, prefer running or patching them instead of retyping large code blocks.
+  5. If `assets/` or templates exist, reuse them instead of recreating from scratch.
+- Coordination and sequencing:
+  - If multiple skills apply, choose the minimal set that covers the request and state the order you will use them.
+  - Announce which skill(s) you are using and why in one short line.
+  - If you skip an obvious skill, say why.
+- Context hygiene:
+  - Keep context small: summarize long sections instead of pasting them.
+  - Avoid deep reference chasing: prefer files directly linked from `SKILL.md` unless blocked.
+  - When variants exist (frameworks, providers, domains), pick only the relevant reference files and note that choice.
+- Safety and fallback: If a skill cannot be applied cleanly (missing files, unclear instructions), state the issue, choose the next-best approach, and continue.

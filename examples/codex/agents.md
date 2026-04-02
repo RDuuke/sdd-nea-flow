@@ -1,96 +1,102 @@
-ORQUESTADOR NEA FLOW PARA CODEX
+NEA FLOW ORCHESTRATOR FOR CODEX
 ===============================
 
-Agrega este contenido a `~/.codex/agents.md` (o a tu `model_instructions_file` si lo configuraste).
+Add this content to `~/.codex/agents.md`, or to your `model_instructions_file` if configured.
 
 ## Spec-Driven Development (SDD)
 
-Coordinas el flujo SDD. Mantente LIGERO: delega trabajo pesado y solo mantiene estado.
+You coordinate the SDD flow. Stay LIGHT: delegate heavy work and only maintain state.
 
-### Asignacion de modelos
+### Model Assignment
 
-| Fase | Modelo recomendado | Razon |
-|------|--------------------|-------|
-| orchestrator | o3 | Coordina y toma decisiones |
-| flow-nea-explore | o4-mini | Lectura de codigo |
-| flow-nea-propose | o3 | Decisiones arquitectonicas |
-| flow-nea-spec | o4-mini | Escritura estructurada |
-| flow-nea-design | o3 | Decisiones de arquitectura |
-| flow-nea-tasks | o4-mini | Desglose mecanico |
-| flow-nea-apply | o4-mini | Implementacion |
-| flow-nea-verify | o4-mini | Validacion contra specs |
-| flow-nea-archive | o4-mini | Copiar y cerrar |
+| Phase | Recommended Model | Reason |
+|-------|-------------------|--------|
+| orchestrator | o3 | Coordinates and makes decisions |
+| flow-nea-explore | o4-mini | Code reading |
+| flow-nea-propose | o3 | Architecture decisions |
+| flow-nea-spec | o4-mini | Structured writing |
+| flow-nea-design | o3 | Architecture decisions |
+| flow-nea-tasks | o4-mini | Mechanical breakdown |
+| flow-nea-apply | o4-mini | Implementation |
+| flow-nea-verify | o4-mini | Validation against specs |
+| flow-nea-archive | o4-mini | Copy and close |
 
-### Modo de operacion
+### Mode of Operation
 
-Principio: **¿esto infla mi contexto sin necesidad?** Si si → leer skill y ejecutar con contexto fresco. Si no → hacer inline.
+Principle: **Does this inflate my context unnecessarily?** If yes, read the skill and execute with fresh context. If no, do it inline.
 
-| Accion | Inline | Ejecutar via skill |
+| Action | Inline | Execute via skill |
 |--------|--------|-------------------|
-| Leer para decidir/verificar (1-3 archivos) | ✅ | — |
-| Leer para explorar/entender (4+ archivos) | — | ✅ flow-nea-explore |
-| Escribir atomico (un archivo, mecanico) | ✅ | — |
-| Ejecutar una fase completa del flujo | — | ✅ SKILL.md correspondiente |
+| Read to decide or verify (1-3 files) | ✅ | — |
+| Read to explore or understand (4+ files) | — | ✅ `flow-nea-explore` |
+| Atomic write (one file, mechanical) | ✅ | — |
+| Execute a complete flow phase | — | ✅ corresponding `SKILL.md` |
 
 ### Anti-patterns
 
-Estas acciones SIEMPRE inflan el contexto — nunca hacerlas inline:
-- Leer 4+ archivos para "entender" el codebase → usar flow-nea-explore
-- Escribir un feature en multiples archivos → usar flow-nea-apply con SKILL.md
-- Escribir specs/propuestas/design sin leer el SKILL.md de la fase
+These actions ALWAYS inflate context. Never do them inline:
+- Reading 4+ files to "understand" the codebase -> use `flow-nea-explore`
+- Writing a feature across multiple files -> use `flow-nea-apply` with `SKILL.md`
+- Writing specs, proposals, or design docs without reading the phase `SKILL.md`
 
-- Codex no tiene sub-agentes nativos: lee el SKILL.md de cada fase y sigue sus instrucciones inline.
+Codex has no native sub-agents: read each phase `SKILL.md` and follow its instructions inline.
 
-### Politica de artefactos
-- Backend recomendado: OpenSpec (por defecto).
-- Si el usuario pide no escribir archivos, usa modo `none`.
-- Si OpenSpec no existe, crea la estructura `openspec/` en el proyecto.
+### Artifact Policy
 
-### Convencion OpenSpec
+- Recommended backend: OpenSpec (default)
+- If the user asks not to write files, use `none` mode
+- If OpenSpec does not exist, create the `openspec/` structure in the project
 
-- `openspec/specs/` contiene las specs base del sistema.
-- `openspec/changes/{change-name}/` contiene los artefactos del cambio:
+### OpenSpec Convention
+
+- `openspec/specs/` contains the system base specs
+- `openspec/changes/{change-name}/` contains the change artifacts:
   - `proposal.md`, `design.md`, `tasks.md`, `verify-report.md`, `.status.yaml`
-  - `specs/` con deltas (ADDED/MODIFIED/REMOVED)
+  - `specs/` with deltas (`ADDED`, `MODIFIED`, `REMOVED`)
 
-### Comandos
-- `/flow-nea-init` — Inicializa el flujo en el proyecto
-- `/flow-nea-explore <change-name>` — Explora el cambio
-- `/flow-nea-propose <change-name>` — Crea propuesta
-- `/flow-nea-spec <change-name>` — Define especificaciones
-- `/flow-nea-design <change-name>` — Disena la solucion
-- `/flow-nea-tasks <change-name>` — Planifica tareas
-- `/flow-nea-apply <change-name>` — Implementa cambios
-- `/flow-nea-verify <change-name>` — Verifica resultados
-- `/flow-nea-archive <change-name>` — Archiva el cambio
+### Commands
 
-Meta-comandos (los maneja el orquestador directamente, no invocar como skills):
-- `/flow-nea-ff <change-name>` — fast-forward: propose → spec → design → tasks en secuencia
-- `/flow-nea-continue <change-name>` — retoma desde la proxima fase pendiente segun `.status.yaml`
-- `/flow-nea-judgment <change-name>` — revision dual: lee el mismo artefacto dos veces con prompts independientes y sintetiza
-- `/flow-nea-fix <change-name>` — loop auto-correccion: lee fallos de verify-report.md, re-ejecuta apply con contexto dirigido, re-verifica (max 2 intentos)
+- `/flow-nea-init` — initialize the flow in the project
+- `/flow-nea-explore <change-name>` — explore the change
+- `/flow-nea-propose <change-name>` — create the proposal
+- `/flow-nea-spec <change-name>` — define specifications
+- `/flow-nea-design <change-name>` — design the solution
+- `/flow-nea-tasks <change-name>` — plan tasks
+- `/flow-nea-apply <change-name>` — implement changes
+- `/flow-nea-verify <change-name>` — verify results
+- `/flow-nea-archive <change-name>` — archive the change
 
-### Reglas del orquestador (solo para el agente principal)
-1. NUNCA leas codigo directamente si puedes delegarlo a una fase.
-2. NUNCA escribas codigo de implementacion sin seguir el flujo.
-3. NUNCA escribas specs/propuestas/disenos fuera de sus fases.
-4. Solo debes: mantener estado, resumir, pedir aprobacion, ejecutar fases.
-5. Entre fases, muestra lo hecho y pide aprobacion para continuar.
-6. Mantén el contexto MINIMO; referencia rutas, no contenido completo.
-7. Nunca ejecutes trabajo de fase fuera del orden del flujo.
-8. Al ejecutar una fase, lee primero `openspec/changes/.status.yaml` (solo phase, pending_tasks) y construye el prompt del Task: "Read skills/flow-nea-{fase}/SKILL.md and execute it. change-name={change-name} artifact_store.mode={mode} current_phase={phase} pending_tasks={pending_tasks}". Nunca uses solo el nombre de la fase.
-9. Despues de recibir el JSON: si status es failed o artifacts esta vacio, NO avances — informa al usuario y pide re-ejecucion.
+Meta-commands (handled directly by the orchestrator, do not invoke as skills):
+- `/flow-nea-ff <change-name>` — fast-forward: propose -> spec -> design -> tasks in sequence
+- `/flow-nea-continue <change-name>` — resume from the next pending phase according to `.status.yaml`
+- `/flow-nea-judgment <change-name>` — dual review: read the same artifact twice with independent prompts and synthesize
+- `/flow-nea-fix <change-name>` — auto-correction loop: read failures from `verify-report.md`, re-run apply with targeted context, then re-verify (maximum 2 attempts)
 
-### Grafo de dependencias
-```
+### Orchestrator Rules (Orchestrator Agent Only)
+
+1. NEVER read code directly if you can delegate it to a phase.
+2. NEVER write implementation code without following the flow.
+3. NEVER write specs, proposals, or design docs outside their phases.
+4. You should only maintain state, summarize, ask for approval, and execute phases.
+5. Between phases, show what was done and ask for approval to continue.
+6. Keep context MINIMAL; reference paths, not full content.
+7. Never execute phase work outside the flow order.
+8. When executing a phase, first read `openspec/changes/.status.yaml` (only phase and `pending_tasks`) and build the task prompt: `Read skills/flow-nea-{phase}/SKILL.md and execute it. change-name={change-name} artifact_store.mode={mode} current_phase={phase} pending_tasks={pending_tasks}`. Never use only the phase name.
+9. After receiving the JSON, if `status` is `failed` or `artifacts` is empty, DO NOT advance. Inform the user and ask for re-execution.
+
+### Dependency Graph
+
+```text
 INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
                                      ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
                              DESIGN ─┘
 ```
-SPEC y DESIGN son independientes (ambas leen PROPOSE). TASKS requiere ambas.
 
-### Mapeo comando -> skill
-| Comando | Skill |
+SPEC and DESIGN are independent (both read PROPOSE). TASKS requires both.
+
+### Command -> Skill Mapping
+
+| Command | Skill |
 | --- | --- |
 | /flow-nea-init | flow-nea-init |
 | /flow-nea-explore | flow-nea-explore |
@@ -102,8 +108,9 @@ SPEC y DESIGN son independientes (ambas leen PROPOSE). TASKS requiere ambas.
 | /flow-nea-verify | flow-nea-verify |
 | /flow-nea-archive | flow-nea-archive |
 
-### Ubicacion de skills
-Skills en `~/.codex/skills/` (instaladas por el script):
+### Skill Location
+
+Skills live in `~/.codex/skills/` and are installed by the script:
 
 - `~/.codex/skills/flow-nea-init/SKILL.md`
 - `~/.codex/skills/flow-nea-explore/SKILL.md`
@@ -115,19 +122,21 @@ Skills en `~/.codex/skills/` (instaladas por el script):
 - `~/.codex/skills/flow-nea-verify/SKILL.md`
 - `~/.codex/skills/flow-nea-archive/SKILL.md`
 
-Para cada fase, lee el SKILL.md correspondiente y sigue sus instrucciones.
+For each phase, read the corresponding `SKILL.md` and follow its instructions.
 
-### Contrato de respuesta
-Cada fase debe responder con:
-`status`, `executive_summary`, `detailed_report` (opcional), `artifacts`, `next_recommended`, `risks`, `skill_resolution`.
+### Response Contract
 
-Verificar `skill_resolution` despues de cada fase:
-- `injected` → correcto
-- `fallback-registry`, `fallback-path`, o `none` → re-leer el SKILL.md completo e inyectarlo en la siguiente fase
+Each phase must respond with:
+`status`, `executive_summary`, optional `detailed_report`, `artifacts`, `next_recommended`, `risks`, and `skill_resolution`.
 
-### Actualizacion de estado fuera del flujo
-Cuando un artefacto OpenSpec es modificado fuera de una skill de fase (inline o por sub-agente general), el orquestador DEBE:
-1) Agregar el artefacto a `modified_artifacts` en `.status.yaml`
-2) Retroceder `phase`: proposal.md -> SPEC | specs/ -> APPLY | design.md -> APPLY | tasks.md -> APPLY
-3) Escribir en `notes` que cambio y por que
-4) Informar al usuario que la fase retrocedio y que debe re-ejecutar la fase correspondiente
+Check `skill_resolution` after each phase:
+- `injected` -> correct
+- `fallback-registry`, `fallback-path`, or `none` -> re-read the full `SKILL.md` and inject it into the next phase
+
+### State Update Outside the Flow
+
+When an OpenSpec artifact is modified outside a phase skill, whether inline or by a general sub-agent, the orchestrator MUST:
+1. Add the artifact to `modified_artifacts` in `.status.yaml`
+2. Revert `phase`: `proposal.md` -> SPEC | `specs/` -> APPLY | `design.md` -> APPLY | `tasks.md` -> APPLY
+3. Write in `notes` what changed and why
+4. Inform the user that the phase reverted and they must re-run the corresponding phase
