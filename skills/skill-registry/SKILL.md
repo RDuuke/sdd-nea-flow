@@ -32,7 +32,7 @@ Traverse in order:
 Do not catalog:
 - `flow-nea-explore`, `flow-nea-propose`, `flow-nea-spec`, `flow-nea-design`
 - `flow-nea-tasks`, `flow-nea-apply`, `flow-nea-verify`, `flow-nea-archive`
-- `flow-nea-init`, `_shared`
+- `flow-nea-init`, `flow-nea-quick`, `_shared`
 - The `skill-registry` skill itself
 
 These are reserved for orchestrator coordination.

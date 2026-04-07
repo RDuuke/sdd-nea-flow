@@ -42,8 +42,8 @@ phase skill with fresh phase-local context. If no, do it inline.
 | Bash for state (`git`, `gh`) | ✅ | — |
 | Bash for execution (test, build, install) | — | ✅ |
 
-Codex does not rely on native sub-agents in this integration. Treat each phase
-execution as an isolated work unit driven by its `SKILL.md`.
+Codex can support orchestrator plus sub-agent execution. In this integration,
+treat each phase as a bounded work unit driven by its `SKILL.md`.
 
 ### Anti-patterns
 
@@ -70,6 +70,7 @@ If OpenSpec does not exist, create the `openspec/` structure in the project.
 Skills:
 - `/flow-nea-init` -> initialize SDD context, detect stack, create `openspec/`
 - `/flow-nea-explore <change-name>` -> investigate the idea, read the codebase, compare approaches
+- `/flow-nea-quick <change-name>` -> create a minimal quick blueprint for a small, low-risk fix
 - `/flow-nea-apply [change]` -> implement tasks in batches and mark items on completion
 - `/flow-nea-verify [change]` -> validate implementation against specs
 - `/flow-nea-archive [change]` -> close the change and persist final state
@@ -83,6 +84,9 @@ Meta-commands handled by the orchestrator:
 
 Do NOT invoke `/flow-nea-propose`, `/flow-nea-continue`, `/flow-nea-ff`,
 `/flow-nea-judgment`, or `/flow-nea-fix` as skills.
+
+`/flow-nea-quick` is a real phase skill. Invoke `skills/flow-nea-quick/SKILL.md`
+for small, low-risk fixes that do not justify the full planning chain.
 
 ### Dependency Graph
 
@@ -155,8 +159,8 @@ Do not ignore fallback reports. They indicate the orchestrator dropped context.
 
 ## Phase Context Protocol
 
-Codex does not use native sub-agents here, but each phase should still behave
-like a fresh context unit.
+Each phase should behave like a fresh context unit, whether Codex runs it in a
+dedicated sub-agent or an isolated executor context.
 
 Rules:
 - pass only the artifacts and state needed for the target phase
@@ -170,6 +174,7 @@ Rules:
 |-------|-------|--------|
 | `flow-nea-explore` | codebase, existing context | `exploration.md` optional |
 | `flow-nea-propose` | exploration optional | `proposal.md` |
+| `flow-nea-quick` | codebase, config, affected area | `quick.md` |
 | `flow-nea-spec` | `proposal.md` | `specs/` delta artifacts |
 | `flow-nea-design` | `proposal.md` | `design.md` |
 | `flow-nea-tasks` | `specs/` + `design.md` | `tasks.md` |

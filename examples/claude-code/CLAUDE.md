@@ -66,6 +66,7 @@ Flow-NEA is the structured planning layer for substantial changes.
 Skills:
 - `/flow-nea-init` -> initialize SDD context, detect stack, create `openspec/`
 - `/flow-nea-explore <change-name>` -> investigate the idea, read the codebase, compare approaches
+- `/flow-nea-quick <change-name>` -> create a minimal quick blueprint for a small, low-risk fix
 - `/flow-nea-apply [change]` -> implement tasks in batches and mark items on completion
 - `/flow-nea-verify [change]` -> validate implementation against specs
 - `/flow-nea-archive [change]` -> close the change and persist final state
@@ -79,6 +80,9 @@ Meta-commands handled by the orchestrator:
 
 `/flow-nea-propose`, `/flow-nea-continue`, `/flow-nea-ff`, `/flow-nea-judgment`,
 and `/flow-nea-fix` are meta-commands handled by YOU. Do NOT invoke them as skills.
+
+`/flow-nea-quick` is a real phase skill. Invoke `skills/flow-nea-quick/SKILL.md`
+for small, low-risk fixes that do not justify the full planning chain.
 
 For `/flow-nea-fix`: read `## Fallos Detectados` from `verify-report.md` -> if
 the section does not exist, the change is already verified -> if it exists,
@@ -174,6 +178,7 @@ Rules:
 |-------|-------|--------|
 | `flow-nea-explore` | codebase, existing context | `exploration.md` optional |
 | `flow-nea-propose` | exploration optional | `proposal.md` |
+| `flow-nea-quick` | codebase, config, affected area | `quick.md` |
 | `flow-nea-spec` | `proposal.md` | `specs/` delta artifacts |
 | `flow-nea-design` | `proposal.md` | `design.md` |
 | `flow-nea-tasks` | `specs/` + `design.md` | `tasks.md` |

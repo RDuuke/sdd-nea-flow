@@ -26,12 +26,12 @@ a warning in the output envelope `risks` field.
 
 ## Purpose
 
-Implement assigned tasks, update task status, and report progress.
+Implement assigned work, update execution state, and report progress.
 
 ## What You Receive
 
 - Change name
-- Specific tasks to implement
+- Specific tasks to implement, or a quick blueprint to execute
 - Artifact store mode (openspec | none)
 
 ## Execution and Persistence Contract
@@ -46,10 +46,9 @@ Check `openspec/config.yaml` for `experimental.neabrain: true`.
 If enabled, consult the Neabrain index for paths and relationships before reading files.
 Otherwise, use direct relative paths from the project root.
 Read file bodies only when needed:
-- Specs (what)
-- Design (how)
-- Tasks (what to do next)
-- Relevant code and conventions
+- `tasks.md`, `design.md`, and `specs/` for the normal flow
+- `quick.md` for quick mode
+- relevant code and conventions
 
 ### Step 2: Detect TDD Mode
 
@@ -73,15 +72,34 @@ Do not wait for the orchestrator to specify them — this is the sub-agent's res
 If a skill file does not exist, skip it and proceed with general knowledge.
 Add `"Missing optional skill: {skill-name}"` to the `risks` field in your output.
 
-### Step 3: Implement Tasks
+### Step 3: Detect Execution Mode
+
+Normal mode:
+- `openspec/changes/{change-name}/tasks.md` exists
+
+Quick mode:
+- `openspec/changes/{change-name}/quick.md` exists and `tasks.md` does not exist, or
+- `.status.yaml` indicates `phase: QUICK`
+
+If quick mode is detected:
+- read `quick.md` as the single source of implementation scope
+- do not require `design.md` or `specs/`
+- implement only the blueprint described in `quick.md`
+
+### Step 4: Implement Work
 
 - Implement only assigned tasks
 - Follow existing code patterns
 - Keep batch small
 
-### Step 4: Mark Tasks Complete
+In quick mode:
 
-- If openspec mode, update openspec/changes/{change-name}/tasks.md
+- implement only the bounded fix defined in `quick.md`
+- do not invent additional work beyond the blueprint
+
+### Step 5: Persist Progress
+
+- If openspec mode and normal mode, update `openspec/changes/{change-name}/tasks.md`
 - Update openspec/changes/.status.yaml:
   ```yaml
   phase: APPLY
@@ -90,10 +108,12 @@ Add `"Missing optional skill: {skill-name}"` to the `risks` field in your output
   completed: false
   pending_tasks: ["list of unchecked task ids"]
   modified_artifacts: []
-  notes: ""
+  notes: "quick when applicable"
   ```
 
-### Step 5: Return Summary
+In quick mode, `pending_tasks` stays empty and `notes` should mention `quick`.
+
+### Step 6: Return Summary
 
 Return a structured envelope with: status, executive_summary,
 detailed_report (optional), artifacts, next_recommended, risks.
@@ -101,7 +121,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 ## Rules
 
 - Load coding skills autonomously based on files to be modified; do not wait for the orchestrator to specify them.
-- Always follow design decisions.
+- Always follow design decisions when `design.md` exists.
 - Use OpenSpec as the source of truth; do not copy code unless needed.
 - If blocked, stop and report.
 - In TDD mode, always write failing test first.
@@ -118,8 +138,8 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "tasks_pending": ["1.3"],
   "artifacts": [
     {
-      "name": "tasks",
-      "path": "openspec/changes/{change-name}/tasks.md",
+      "name": "tasks_or_quick_blueprint",
+      "path": "openspec/changes/{change-name}/tasks.md | openspec/changes/{change-name}/quick.md",
       "type": "markdown"
     }
   ],

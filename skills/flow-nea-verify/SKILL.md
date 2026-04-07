@@ -1,7 +1,7 @@
 ---
 name: flow-nea-verify
 description: >
-  Validate that implementation matches specs, design, and tasks using real execution.
+  Validate that implementation matches the declared change artifacts using real execution.
 trigger: >
   When the orchestrator launches you to verify a completed change.
 license: MIT
@@ -58,14 +58,29 @@ Read and follow: skills/_shared/persistence-contract.md
 
 ### Step 1: Check Completeness
 
-- Read tasks.md and list incomplete tasks
+- Normal mode: read `tasks.md` and list incomplete tasks
+- Quick mode: if `quick.md` exists and `tasks.md` does not, skip incomplete task checks
+
+Quick mode detection:
+
+- `openspec/changes/{change-name}/quick.md` exists and `tasks.md` does not exist, or
+- `.status.yaml` indicates the quick path and no normal planning artifacts were created
 
 ### Step 2: Behavioral Validation Matrix
+
+Normal mode:
 
 For each spec domain in `openspec/changes/{change-name}/specs/`:
 1. Read each requirement and its scenarios
 2. Search for a corresponding test (by name, description, or assertion)
 3. Assign a compliance status per scenario: COMPLIANT ✅ / FAILING ❌ / UNTESTED ❌ / PARTIAL ⚠️
+
+Quick mode:
+
+1. Read `quick.md`
+2. Use `## Verificacion` as the expected validation checklist
+3. Search for corresponding tests, assertions, build signals, or direct checks
+4. Build the same compliance matrix using each verification item as a row
 
 Build a matrix in the report:
 
@@ -84,9 +99,11 @@ Build a matrix in the report:
 
 ### Step 3: Check Design Coherence
 
-Verify design decisions were followed. For each decision in `design.md`:
+If `design.md` exists, verify design decisions were followed. For each decision:
 - Mark as ✅ implemented, ⚠️ partial, or ❌ missing
 - Flag any deviation as WARNING or CRITICAL depending on impact
+
+If running in quick mode and no `design.md` exists, skip this step silently.
 
 ### Step 4: Run Tests (Real Execution)
 
@@ -178,6 +195,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 ## Rules
 
 - Always execute tests; static analysis is not enough.
+- In quick mode, verification may come from `quick.md` plus real execution; do not invent missing specs.
 - Code that works but has no test = UNTESTED = FAILING. No exceptions.
 - Classify every issue as CRITICAL / WARNING / SUGGESTION.
 - If any CRITICAL issue exists: `status: failed`. Do not advance to ARCHIVE.

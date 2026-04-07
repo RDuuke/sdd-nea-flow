@@ -11,18 +11,22 @@ CONTEXT:
 - Note: If the orchestrator provides current_phase or pending_tasks in the prompt, use them; otherwise read .status.yaml
 
 TASK:
-1. Read openspec/changes/$ARGUMENTS/tasks.md - identify all unchecked [ ] tasks
-2. Read openspec/changes/$ARGUMENTS/design.md - understand technical approach and file changes
-3. Read openspec/changes/$ARGUMENTS/specs/ - understand acceptance criteria for each task
-4. Read openspec/config.yaml - check if TDD is configured (rules.apply.tdd)
-5. Check if coding skills are needed based on file types to modify:
+1. Detect execution mode:
+   - Normal flow: openspec/changes/$ARGUMENTS/tasks.md exists
+   - Quick flow: openspec/changes/$ARGUMENTS/quick.md exists and tasks.md does not
+2. Read the required planning artifacts:
+   - Normal flow -> tasks.md, design.md, specs/
+   - Quick flow -> quick.md only
+3. Read openspec/config.yaml - check if TDD is configured (rules.apply.tdd)
+4. Check if coding skills are needed based on file types to modify:
    - .ts files -> read skills/typescript-general/SKILL.md if it exists
    - *.test.ts -> read skills/testing/SKILL.md if it exists
    - .scss files -> read skills/scss/SKILL.md if it exists
-6. Implement ONE BATCH of tasks (max one phase at a time - do not implement everything at once)
+5. Implement ONE BATCH of work (max one phase at a time - do not implement everything at once)
    - If TDD: write failing test first (RED), then implement (GREEN), then refactor (REFACTOR)
    - Follow existing code patterns in the project
-7. Mark completed tasks as [x] in openspec/changes/$ARGUMENTS/tasks.md
-8. Update openspec/changes/.status.yaml: phase: APPLY, pending_tasks: [remaining unchecked task ids]
+   - In quick flow: implement only what quick.md describes
+6. If normal flow, mark completed tasks as [x] in openspec/changes/$ARGUMENTS/tasks.md
+7. Update openspec/changes/.status.yaml: phase: APPLY, pending_tasks: [remaining unchecked task ids or empty in quick flow], notes: "quick" if applicable
 
 Return structured output with: status, executive_summary, detailed_report (files changed), artifacts, tasks_completed, tasks_pending, next_recommended.

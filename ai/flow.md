@@ -5,6 +5,7 @@
 - `INIT`
 - `EXPLORE`
 - `PROPOSE`
+- `QUICK`
 - `SPEC`
 - `DESIGN`
 - `TASKS`
@@ -18,11 +19,14 @@
 INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
                                      ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
                              DESIGN ─┘
+
+INIT/EXPLORE -> QUICK -> APPLY -> VERIFY -> ARCHIVE
 ```
 
 Reglas:
 
 - `SPEC` y `DESIGN` leen desde `PROPOSE`
+- `QUICK` es una via rapida lateral para fixes pequenos y de bajo riesgo
 - `TASKS` requiere `SPEC` y `DESIGN`
 - `APPLY` implementa contra tareas y artefactos previos
 - `VERIFY` compara implementacion contra specs
@@ -35,6 +39,10 @@ Reglas:
 - `/flow-nea-judgment <change-name>`: revision dual ciega en paralelo
 - `/flow-nea-fix <change-name>`: relee fallos de verify y reintenta apply + verify
 
+## Via rapida
+
+- `/flow-nea-quick <change-name>`: crea `quick.md`, espera una sola aprobacion y luego pasa a `APPLY`
+
 ## Reglas de avance
 
 El orquestador no debe avanzar automaticamente si:
@@ -44,6 +52,8 @@ El orquestador no debe avanzar automaticamente si:
 - existen riesgos no resueltos
 - el usuario debe aprobar
 
+En `QUICK`, la aprobacion ocurre una sola vez sobre `quick.md` antes de `APPLY`.
+
 ## Reglas de regresion
 
 Si un artefacto OpenSpec se modifica fuera de la skill esperada, el sistema
@@ -52,6 +62,7 @@ debe registrar `modified_artifacts` y retroceder fase para forzar revalidacion.
 Reglas minimas:
 
 - `proposal.md` modificado -> volver a `SPEC`
+- `quick.md` modificado -> volver a `APPLY`
 - `specs/` modificadas -> volver a `APPLY`
 - `design.md` modificado -> volver a `APPLY`
 - `tasks.md` modificado -> volver a `APPLY`
@@ -73,6 +84,7 @@ al usuario.
 Las aprobaciones del usuario importan especialmente en:
 
 - despues de `EXPLORE`, si hay cambios de enfoque
+- despues de `QUICK`, antes de `APPLY`
 - despues de `PROPOSE`, `SPEC`, `DESIGN` y `TASKS`
 - cuando aparecen riesgos o bloqueadores
 - entre lotes grandes de `APPLY`
