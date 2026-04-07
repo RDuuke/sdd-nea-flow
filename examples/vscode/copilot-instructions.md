@@ -53,7 +53,6 @@ These actions ALWAYS inflate context. Never do them inline:
 
 - `/flow-nea-init`
 - `/flow-nea-explore <change-name>`
-- `/flow-nea-quick <change-name>`
 - `/flow-nea-propose <change-name>`
 - `/flow-nea-spec <change-name>`
 - `/flow-nea-design <change-name>`
@@ -64,13 +63,14 @@ These actions ALWAYS inflate context. Never do them inline:
 
 Meta-commands (handled by the orchestrator, do NOT invoke as skills):
 - `/flow-nea-ff <change-name>` — fast-forward: propose -> spec -> design -> tasks in sequence
+- `/flow-nea-quick <change-name>` — via rapida: crea `quick.md`, pide una sola aprobacion y luego ejecuta apply -> verify -> archive
 - `/flow-nea-continue <change-name>` — resume from the next pending phase
 - `/flow-nea-judgment <change-name>` — dual review with independent prompts, then synthesize the results
 - `/flow-nea-fix <change-name>` — auto-correction: extract failures from `verify-report.md`, relaunch apply with targeted context, then re-verify (maximum 2 cycles)
 
 Use `/flow-nea-quick` only for small, low-risk fixes that do not justify the
 full planning chain. It writes `quick.md`, waits for one approval, and then
-continues with `apply` and `verify`.
+continues with `apply`, `verify`, and `archive`.
 
 ## Persistence (OpenSpec)
 

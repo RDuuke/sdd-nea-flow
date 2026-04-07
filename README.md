@@ -122,7 +122,7 @@ Meta-comandos:
 
 Atajo de via rapida:
 
-- `/flow-nea-quick <change-name>` - genera un blueprint minimo para fixes pequenos y de bajo riesgo
+- `/flow-nea-quick <change-name>` - genera `quick.md`, pide una sola aprobacion y luego ejecuta apply -> verify -> archive
 
 Dependencias del flujo:
 
@@ -138,7 +138,8 @@ Para reglas detalladas de avance, regresion y retries, lee
 [`ai/flow.md`](ai/flow.md).
 
 Usa `quick` solo cuando el cambio es pequeno, de bajo riesgo y no necesita
-`proposal.md`, `specs/`, `design.md` ni `tasks.md`.
+`proposal.md`, `specs/`, `design.md` ni `tasks.md`, pero igual requiere cierre
+completo con verificacion y archivado.
 
 ## Requisitos
 

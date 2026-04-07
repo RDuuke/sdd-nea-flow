@@ -46,13 +46,13 @@ SDD is the structured planning layer for significant changes.
 Skills (appear in autocomplete):
 - `/flow-nea-init` -> initialize SDD context, detect stack, create `openspec/`
 - `/flow-nea-explore <change-name>` -> investigate the idea, read the codebase, compare approaches
-- `/flow-nea-quick <change-name>` -> create a minimal quick blueprint for a small, low-risk fix
 - `/flow-nea-apply [change]` -> implement tasks in batches and mark items on completion
 - `/flow-nea-verify [change]` -> validate implementation against specs
 - `/flow-nea-archive [change]` -> close the change and persist final state
 
 Meta-commands (type directly; the orchestrator handles them):
 - `/flow-nea-propose <change>` -> create a change proposal via sub-agent
+- `/flow-nea-quick <change>` -> generate `quick.md`, ask for one approval, then run apply -> verify -> archive
 - `/flow-nea-continue [change]` -> advance to the next ready phase according to dependencies
 - `/flow-nea-ff <name>` -> fast-forward: propose -> spec -> design -> tasks
 - `/flow-nea-judgment <change>` -> launch two blind judges in parallel and synthesize the result
@@ -60,8 +60,9 @@ Meta-commands (type directly; the orchestrator handles them):
 
 `/flow-nea-propose`, `/flow-nea-continue`, `/flow-nea-ff`, `/flow-nea-judgment`, and `/flow-nea-fix` are meta-commands handled by YOU. Do NOT invoke them as skills.
 
-`/flow-nea-quick` is a real phase skill. Invoke `skills/flow-nea-quick/SKILL.md`
-for small, low-risk fixes that do not justify the full planning chain.
+`/flow-nea-quick` is a meta-command handled by YOU. Internally it invokes
+`skills/flow-nea-quick/SKILL.md` to create `quick.md`, then after the single
+approval gate it must run `APPLY -> VERIFY -> ARCHIVE`.
 
 For `/flow-nea-fix`: read `## Fallos Detectados` from `verify-report.md` -> if the section does not exist, the change is already verified -> if it exists, delegate apply with that exact context -> delegate verify -> evaluate -> maximum 2 cycles.
 
