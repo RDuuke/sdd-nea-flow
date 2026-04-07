@@ -169,15 +169,15 @@ El instalador pregunta que herramienta usas y copia las skills al lugar correcto
 | --- | --- | --- |
 | OpenCode | sub-agentes reales | instalar skills + `examples/opencode/AGENTS.md` + una variante JSON |
 | Claude Code | sub-agentes reales | instalar skills + `commands/` + `examples/claude-code/CLAUDE.md` |
-| Codex | inline | instalar skills + `examples/codex/agents.md` |
-| Gemini CLI | inline | instalar skills + `examples/gemini-cli/GEMINI.md` |
+| Codex | orquestador + sub-agentes | instalar skills + `examples/codex/agents.md` |
+| Gemini CLI | orquestador + sub-agentes | instalar skills + `examples/gemini-cli/GEMINI.md` |
 | VS Code | prompts/contexto | instalar skills + `examples/vscode/copilot-instructions.md` |
 
 Regla rapida:
 
 - si quieres el modelo mas fiel al patron, usa OpenCode
 - si quieres Anthropic CLI con delegacion real, usa Claude Code
-- si quieres una adaptacion inline, usa Codex o Gemini CLI
+- si quieres un flujo equivalente en Codex o Gemini, usa sus prompts de orquestador con el mismo patron por fase
 - si quieres integrarlo en tu editor, usa VS Code
 
 Referencias por herramienta:
