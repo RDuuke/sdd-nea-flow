@@ -51,13 +51,14 @@ apoya en `CLAUDE.md` y slash commands del proyecto o del usuario.
 
 ### Codex
 
-Ejecuta las skills inline. No replica sub-agentes reales, pero puede seguir el
-patron si lee la skill correcta y mantiene separacion entre fases.
+Puede estructurarse como orquestador con sub-agentes por fase. En este repo,
+su ejemplo usa el mismo patron de fases, skill resolution y contexto acotado
+que Claude, adaptado al entorno de Codex.
 
 ### Gemini CLI
 
-Misma limitacion general que Codex: mas ejecucion inline, menos aislamiento
-real de contexto.
+Puede seguir el mismo patron de orquestador y sub-agentes por fase que Codex,
+adaptado a las capacidades del entorno Gemini CLI.
 
 ### VS Code
 
