@@ -104,6 +104,7 @@ Comandos del flujo:
 
 - `/flow-nea-init`
 - `/flow-nea-explore <change-name>`
+- `/flow-nea-quick <change-name>`
 - `/flow-nea-propose <change-name>`
 - `/flow-nea-spec <change-name>`
 - `/flow-nea-design <change-name>`
@@ -119,16 +120,25 @@ Meta-comandos:
 - `/flow-nea-judgment <change-name>` - revision dual ciega en paralelo
 - `/flow-nea-fix <change-name>` - relee fallos de verify y reintenta apply
 
+Atajo de via rapida:
+
+- `/flow-nea-quick <change-name>` - genera un blueprint minimo para fixes pequenos y de bajo riesgo
+
 Dependencias del flujo:
 
 ```text
 INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
                                      ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
                              DESIGN ─┘
+
+INIT/EXPLORE -> QUICK -> APPLY -> VERIFY -> ARCHIVE
 ```
 
 Para reglas detalladas de avance, regresion y retries, lee
 [`ai/flow.md`](ai/flow.md).
+
+Usa `quick` solo cuando el cambio es pequeno, de bajo riesgo y no necesita
+`proposal.md`, `specs/`, `design.md` ni `tasks.md`.
 
 ## Requisitos
 
@@ -208,6 +218,7 @@ openspec/
 └── changes/
     ├── {change-name}/
     │   ├── proposal.md
+    │   ├── quick.md
     │   ├── specs/
     │   ├── design.md
     │   ├── tasks.md

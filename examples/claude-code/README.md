@@ -165,6 +165,7 @@ tu-proyecto/
       flow-nea-design.md
       flow-nea-tasks.md
       flow-nea-apply.md
+      flow-nea-quick.md
       flow-nea-verify.md
       flow-nea-archive.md
       flow-nea-continue.md
@@ -195,6 +196,7 @@ tu-proyecto/
 2. Ejecuta `/flow-nea-init` para inicializar el contexto (crea openspec/)
 3. Usa los comandos del flujo:
    - `/flow-nea-explore <topic>` — investigar antes de proponer
+   - `/flow-nea-quick <name>` — via rapida para un fix pequeno y de bajo riesgo
    - `/flow-nea-propose <name>` — crear propuesta
    - `/flow-nea-ff <name>` — fast-forward: propose+spec+design+tasks en secuencia
    - `/flow-nea-apply <name>` — implementar codigo

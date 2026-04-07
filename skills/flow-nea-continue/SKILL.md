@@ -26,7 +26,9 @@ Read and follow: skills/_shared/persistence-contract.md
 
 Primary source: read openspec/changes/.status.yaml
 - Use `phase` and `change` fields directly.
-- If `awaiting_approval: true` in status, stop and tell the user: "La propuesta está lista. Por favor revísala en openspec/changes/{change-name}/proposal.md y confirma para continuar a SPEC."
+- If `awaiting_approval: true` in status:
+  - if `phase: QUICK`, stop and tell the user: "El quick blueprint está listo. Por favor revísalo en openspec/changes/{change-name}/quick.md y confirma para continuar a APPLY."
+  - otherwise, stop and tell the user: "La propuesta está lista. Por favor revísala en openspec/changes/{change-name}/proposal.md y confirma para continuar a SPEC."
 - If any field is missing (`pending_tasks`, `modified_artifacts`, `notes`, `schema_version`), fill with defaults and rewrite the file with the full template before continuing.
 
 If .status.yaml is missing, check for legacy .status.json:
@@ -40,6 +42,7 @@ Fallback (if neither file exists), infer from files (first match wins):
 | tasks.md all items checked | VERIFY |
 | tasks.md has unchecked items | APPLY |
 | tasks.md exists | APPLY |
+| quick.md exists | APPLY |
 | design.md exists | TASKS |
 | specs/ folder exists | DESIGN |
 | proposal.md exists | SPEC |
@@ -58,9 +61,15 @@ Tell the user:
 
 Invoke the next phase skill as the orchestrator would normally do, passing change-name and artifact_store.mode.
 
+Next phase mapping:
+
+- `QUICK` -> `APPLY`
+- `VERIFY` -> `ARCHIVE`
+- standard phases follow the normal dependency chain
+
 ## Rules
 
-- Never skip phases.
+- Never skip phases inside the selected path.
 - If tasks.md has unchecked items, resume APPLY not VERIFY.
 - If a required artifact is missing, report it and stop.
 - All artifact content MUST be written in Spanish.

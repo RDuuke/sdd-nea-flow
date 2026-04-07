@@ -15,7 +15,8 @@ Crea una nueva skill cuando el comportamiento:
 2. Seguir el formato de frontmatter y secciones ya usado
 3. Definir entradas, pasos, reglas y output contract
 4. Integrarla en prompts o ejemplos si aplica
-5. Actualizar documentacion relevante
+5. Actualizar `README.md` y `ai/` si cambia el mapa del flujo
+6. Si agrega un slash command, actualizar tambien los wrappers en `examples/`
 
 ## Como modificar una skill existente
 
@@ -47,6 +48,7 @@ Antes de abrir un PR:
 - evitar duplicacion larga entre `README.md` y `ai/`
 - confirmar que ejemplos por herramienta no contradicen a las skills
 - validar que la documentacion humana no cambie reglas runtime sin tocar la fuente operativa
+- si la skill introduce un artefacto OpenSpec nuevo, documentarlo en `ai/persistence.md` o `ai/flow.md`
 
 ## Anti-patrones
 

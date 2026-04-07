@@ -22,6 +22,7 @@ openspec/
     ├── {change-name}/
     │   ├── exploration.md
     │   ├── proposal.md
+    │   ├── quick.md
     │   ├── specs/
     │   │   └── {domain}/spec.md
     │   ├── design.md
@@ -37,6 +38,11 @@ openspec/
 ### `proposal.md`
 
 Explica por que existe el cambio, su alcance y el enfoque propuesto.
+
+### `quick.md`
+
+Artefacto minimo para la via rapida. Resume objetivo, area afectada, blueprint,
+riesgos y verificacion de un fix pequeno y de bajo riesgo.
 
 ### `design.md`
 
@@ -76,6 +82,7 @@ Los budgets del repo siguen siendo:
 | `tasks.md` | 530 palabras |
 | `design.md` | 800 palabras |
 | `proposal.md` | 500 palabras |
+| `quick.md` | 350 palabras |
 | `specs/` por dominio | 650 palabras |
 
 ## Cambios que fuerzan regresion de fase
@@ -83,6 +90,7 @@ Los budgets del repo siguen siendo:
 Si se modifica fuera de la skill correspondiente:
 
 - `proposal.md` -> forzar nueva fase `SPEC`
+- `quick.md` -> forzar nueva fase `APPLY`
 - `specs/` -> forzar nueva fase `APPLY`
 - `design.md` -> forzar nueva fase `APPLY`
 - `tasks.md` -> forzar nueva fase `APPLY`
