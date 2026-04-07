@@ -41,7 +41,7 @@ Reglas:
 
 ## Via rapida
 
-- `/flow-nea-quick <change-name>`: crea `quick.md`, espera una sola aprobacion y luego pasa a `APPLY`
+- `/flow-nea-quick <change-name>`: crea `quick.md`, espera una sola aprobacion y luego ejecuta `APPLY -> VERIFY -> ARCHIVE`
 
 ## Reglas de avance
 
@@ -53,6 +53,8 @@ El orquestador no debe avanzar automaticamente si:
 - el usuario debe aprobar
 
 En `QUICK`, la aprobacion ocurre una sola vez sobre `quick.md` antes de `APPLY`.
+Despues de esa aprobacion, la via rapida no termina en implementacion parcial:
+debe cerrar con `VERIFY` y `ARCHIVE` si la validacion sale bien.
 
 ## Reglas de regresion
 
