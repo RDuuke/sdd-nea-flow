@@ -187,6 +187,16 @@ Code that implements the feature without a passing test is UNTESTED = FAILING.
   notes: ""
   ```
 
+### Step 7.5: NeaBrain Capture (if enabled)
+
+If `experimental.neabrain: true` and NeaBrain available:
+- Call `nbn_capture_passive` with:
+  - `content`: `"[VERIFY] [{change-name}]: {status}\n\n{executive_summary}\n\nFallos: {lista de fallos o 'ninguno'}\n\nArchivos afectados: {lista}"`
+  - `project`: active project name
+  - `topic`: `"verify"`
+  - `tags`: [change-name, "verify", status]
+If unavailable, skip silently.
+
 ### Step 8: Return Summary
 
 Return a structured envelope with: status, executive_summary,

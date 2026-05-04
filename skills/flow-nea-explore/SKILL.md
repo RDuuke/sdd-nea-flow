@@ -34,11 +34,18 @@ Read and follow: skills/_shared/persistence-contract.md
 - Is it a new feature, bug fix, or refactor?
 - What domain does it touch?
 
-### Step 2: Investigate the Codebase
+### Step 1.5: NeaBrain Enrichment (if enabled)
 
 Check `openspec/config.yaml` for `experimental.neabrain: true`.
-If enabled, consult the Neabrain index for paths and relationships before reading files.
-Otherwise, use direct relative paths from the project root.
+If enabled and NeaBrain MCP available (see persistence-contract.md availability check):
+- Call `nbn_search` with query = `"{topic} {change-name}"` and the active project name.
+- If results found, inject as context under heading `## Conocimiento previo relevante`.
+- Prior observations enrich analysis only — never override what real code says.
+If disabled or unavailable, skip silently.
+
+### Step 2: Investigate the Codebase
+
+Use direct relative paths from the project root.
 Read relevant code only when needed to understand:
 - Current architecture and patterns
 - Files/modules affected
@@ -68,6 +75,16 @@ persistence-contract.md), write:
 If no change-name is provided or is invalid, return analysis inline only (no
 artifact). The topic itself is NOT used as a change-name for persistence
 purposes.
+
+### Step 4.5: NeaBrain Capture (if enabled)
+
+If `experimental.neabrain: true` and change-name valid and NeaBrain available:
+- Call `nbn_capture_passive` with:
+  - `content`: `"[EXPLORE] [{change-name}]: {titulo}\n\n{hallazgos clave}\n\nArchivos afectados: {lista}"`
+  - `project`: active project name
+  - `topic`: `"explore"`
+  - `tags`: [change-name, "explore"]
+If unavailable, skip silently.
 
 ### Step 5: Return Structured Analysis
 

@@ -55,6 +55,9 @@ El orquestador no debe avanzar automaticamente si:
 En `QUICK`, la aprobacion ocurre una sola vez sobre `quick.md` antes de `APPLY`.
 Despues de esa aprobacion, la via rapida no termina en implementacion parcial:
 debe cerrar con `VERIFY` y `ARCHIVE` si la validacion sale bien.
+Si `VERIFY` falla, el orquestador intenta hasta 2 ciclos de fix automatico (misma
+logica que `/flow-nea-fix`) antes de detenerse. Si sigue fallando, deriva al usuario
+a `/flow-nea-fix` para intervencion manual. El cambio nunca queda en el limbo.
 
 ## Reglas de regresion
 

@@ -29,13 +29,19 @@ WORKFLOW:
 4. When the user explicitly approves:
    - Update `openspec/changes/.status.yaml` to keep `phase: QUICK` and set `awaiting_approval: false`
    - Launch `/flow-nea-apply` logic for `{argument}`
+   - If apply returns `status: failed`, STOP and report the error.
    - If apply succeeds, launch `/flow-nea-verify` logic for `{argument}`
-   - If verify returns `status: ok`, launch `/flow-nea-archive` logic for `{argument}`
-5. Finalization rules:
-   - If verify returns `warning` or `failed`, STOP and show the verification result. Do not archive.
-   - If archive succeeds, tell the user the quick flow is complete and archived.
+5. If verify returns `status: ok`, launch `/flow-nea-archive` logic for `{argument}`. Tell the user the quick flow is complete and archived.
+6. If verify returns `warning` or `failed`, attempt up to 2 fix cycles before stopping:
+   a. Read `openspec/changes/{argument}/verify-report.md` and extract `## Fallos Detectados`.
+   b. Launch apply with targeted fix context: fix ONLY the failing items listed, do not rewrite unrelated code.
+   c. Re-run verify.
+   d. If verify is now `ok`, go to step 5 (archive).
+   e. If still failing after 2 cycles, STOP: show remaining failures and tell the user:
+      "El quick flow no pudo auto-corregirse. Usa `/flow-nea-fix {argument}` para continuar manualmente."
 
 RULES:
 - `flow-nea-quick` has a single approval gate on `quick.md`
 - After approval, the orchestrator must run `APPLY -> VERIFY -> ARCHIVE`
+- If verify fails, attempt up to 2 targeted fix cycles before stopping
 - Never archive if verify is not `ok`

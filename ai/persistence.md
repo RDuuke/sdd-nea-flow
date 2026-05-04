@@ -1,5 +1,23 @@
 # Persistencia y OpenSpec
 
+## Modelo dual: OpenSpec + NeaBrain
+
+OpenSpec y NeaBrain son complementarios. No se reemplazan.
+
+| Responsabilidad | OpenSpec | NeaBrain |
+|---|---|---|
+| Artefactos de flujo (proposal, specs, design, tasks) | ✅ fuente de verdad | ❌ |
+| Coordinacion de fase (.status.yaml) | ✅ | ❌ |
+| Git-versionable, human-readable | ✅ | ❌ SQLite binario |
+| Memoria cross-change (patrones, ADRs) | ❌ aislado por cambio | ✅ |
+| Busqueda semantica entre cambios anteriores | ❌ | ✅ FTS5 |
+| Contexto persistente entre sesiones | ❌ | ✅ sessions + observations |
+
+Activar NeaBrain: `experimental.neabrain: true` en `openspec/config.yaml`.
+Ver protocolo completo en `skills/_shared/persistence-contract.md`.
+
+Instalacion: `neabrain setup claude-code --install`
+
 ## Rol de OpenSpec
 
 OpenSpec es el backend de artefactos recomendado por `nea-flow`. Se usa para:

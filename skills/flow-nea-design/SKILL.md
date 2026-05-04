@@ -29,9 +29,7 @@ Read and follow: skills/_shared/persistence-contract.md
 
 ### Step 1: Read the Codebase
 
-Check `openspec/config.yaml` for `experimental.neabrain: true`.
-If enabled, consult the Neabrain index for paths and relationships before reading files.
-Otherwise, use direct relative paths from the project root.
+Use direct relative paths from the project root.
 Read file bodies only when needed.
 Identify patterns, entry points, and dependencies relevant to the change.
 
@@ -86,6 +84,17 @@ Rationale: ...
   modified_artifacts: []
   notes: ""
   ```
+
+### Step 3.5: NeaBrain Capture (if enabled)
+
+If `experimental.neabrain: true` and NeaBrain available:
+- For each entry in `## Architecture Decisions`, call `nbn_capture_passive` with:
+  - `content`: `"[ADR] [{change-name}]: {decision title}\n\nChoice: {choice}\nRationale: {rationale}\n\nArchivos afectados: {lista}"`
+  - `project`: active project name
+  - `topic`: `"architecture-decisions"`
+  - `tags`: [change-name, "adr"]
+- One observation per decision, not one per design.md.
+If unavailable, skip silently.
 
 ### Step 4: Return Summary
 

@@ -35,6 +35,7 @@ INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
 | PROPOSE | SPEC + DESIGN | launch both (SPEC reads proposal, DESIGN reads proposal) |
 | SPEC or DESIGN | TASKS | only when BOTH spec and design artifacts exist |
 | TASKS | APPLY | always |
+| QUICK | APPLY | awaiting_approval: false (blueprint already approved) |
 | APPLY | APPLY or VERIFY | if pending_tasks is empty → VERIFY, else → APPLY next batch |
 | VERIFY | ARCHIVE | always |
 | ARCHIVE | — | tell user the change is complete |

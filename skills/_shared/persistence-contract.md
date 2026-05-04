@@ -124,7 +124,52 @@ If the key is absent or false, the feature is disabled.
 
 ```yaml
 experimental:
-  neabrain: false  # Set to true to enable Neabrain index for path/relationship lookup
+  neabrain: false  # Set to true to enable NeaBrain transversal memory integration
+```
+
+### NeaBrain Integration Protocol
+
+When `experimental.neabrain: true`, skills call NeaBrain MCP tools at specific
+moments. OpenSpec remains the source of truth for flow artifacts. NeaBrain adds
+cross-change persistent memory.
+
+#### Availability check
+
+Before every NeaBrain operation, verify MCP tool is reachable (call `nbn_config_show`).
+If unavailable (MCP not configured, binary not found, call fails): skip silently,
+continue with OpenSpec only. Never fail a phase because NeaBrain is unavailable.
+
+#### Project naming
+
+1. Use `project` field from `openspec/config.yaml` if present.
+2. Otherwise use repository root folder name.
+3. Fallback: `"nea-flow"`.
+
+#### Capture per phase
+
+| Phase | Moment | Tool | topic | tags |
+|-------|--------|------|-------|------|
+| EXPLORE | before investigate | `nbn_search` | — | — |
+| EXPLORE | after save | `nbn_capture_passive` | `explore` | [change-name, "explore"] |
+| DESIGN | after persist | `nbn_capture_passive` | `architecture-decisions` | [change-name, "adr"] |
+| VERIFY | after persist | `nbn_capture_passive` | `verify` | [change-name, "verify", status] |
+| ARCHIVE | after persist | `nbn_capture_passive` | `completed-changes` | [change-name, "archive"] |
+
+#### Enrichment vs. capture
+
+- **Enrichment** (EXPLORE pre-query): call `nbn_search` with topic + change-name.
+  Inject found observations as context. Prior observations must not override what real code says.
+- **Capture** (post-phase): call `nbn_capture_passive` (no user confirmation).
+  Content always in Spanish.
+
+#### Observation content format
+
+```text
+[PHASE] [{change-name}]: {titulo}
+
+{un párrafo con hallazgo, decisión o resultado}
+
+Archivos afectados: {lista separada por comas}
 ```
 
 ## Security Guidelines

@@ -64,6 +64,16 @@ openspec/changes/{change-name}/ -> openspec/changes/archive/YYYY-MM-DD-{change-n
   notes: ""
   ```
 
+### Step 3.5: NeaBrain Capture (if enabled)
+
+If `experimental.neabrain: true` and NeaBrain available:
+- Call `nbn_capture_passive` with:
+  - `content`: `"[ARCHIVE] [{change-name}]: cambio completado\n\n{executive_summary}\n\nDecisiones clave: {resumen de ADRs si existen}\n\nArchivos afectados: {lista de archivos modificados}"`
+  - `project`: active project name
+  - `topic`: `"completed-changes"`
+  - `tags`: [change-name, "archive"]
+If unavailable, skip silently.
+
 ### Step 4: Return Summary
 
 Return a structured envelope with: status, executive_summary,
