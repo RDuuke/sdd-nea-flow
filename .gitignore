@@ -2,3 +2,4 @@
 .vscode/
 .amazonq
 .claude
+dist/
