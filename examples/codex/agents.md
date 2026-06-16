@@ -114,6 +114,7 @@ the default model and continue.
 | Phase | Recommended Model | Reason |
 |-------|-------------------|--------|
 | orchestrator | o3 | Coordinates and makes decisions |
+| flow-nea-status | o4-mini | Read-only state engine |
 | flow-nea-explore | o4-mini | Code reading |
 | flow-nea-propose | o3 | Architecture decisions |
 | flow-nea-spec | o4-mini | Structured writing |
@@ -173,6 +174,7 @@ Rules:
 
 | Phase | Reads | Writes |
 |-------|-------|--------|
+| `flow-nea-status` | `.status.yaml` + artifact tree | — (read-only) |
 | `flow-nea-explore` | codebase, existing context | `exploration.md` optional |
 | `flow-nea-propose` | exploration optional | `proposal.md` |
 | `flow-nea-quick` | codebase, config, affected area | `quick.md` |
@@ -188,13 +190,21 @@ OpenSpec instead of reconstructing them from chat history.
 
 ## State Protocol
 
-Before each phase, read `openspec/changes/.status.yaml` to obtain:
-- `change` (active `change-name`)
-- `current_phase`
-- `pending_tasks`
-- `awaiting_approval`
+Before each phase, execute `flow-nea-status` (read-only). It returns the
+canonical envelope (`current_phase`, `next_phase`, `task_progress`,
+`awaiting_approval`, `missing_dependencies`, `action_context`).
 
-If `awaiting_approval: true`, STOP and ask the user for confirmation.
+Codex environments without sub-agent routing can run `flow-nea-status`
+inline using its `SKILL.md` — the skill never writes, so inline execution
+is safe.
+
+Decision rules:
+- `action_context.blocked: true` -> STOP, surface `action_context.reason`.
+- `awaiting_approval: true` -> STOP, ask for confirmation. If `notes`
+  mentions `review_budget`, the question MUST quote the diff size and the
+  sensitive paths touched.
+- `missing_dependencies` non-empty -> regress and re-run the predecessor.
+- Otherwise -> advance to `next_recommended`.
 
 ## Response Validation
 
@@ -209,6 +219,11 @@ If `awaiting_approval: true`, STOP and ask the user for confirmation.
 - If `status` is `failed` or `artifacts` is empty, DO NOT advance
 - If `risks` is not empty, show each risk and ask before continuing
 - If approval is required, STOP and ask for confirmation
+- If `review_budget.tripped: true`, STOP and ask: "El cambio toca {N}
+  líneas (límite {limit}) y/o paths sensibles [{paths}]. ¿Continuar a
+  VERIFY, dividir en un PR menor, o abortar?"
+- If `tdd_evidence.mode == "strict"` and any task lacks RED + GREEN,
+  surface the gaps before advancing to VERIFY
 
 ## Execution Log
 

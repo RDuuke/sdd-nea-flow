@@ -53,12 +53,43 @@ Read file bodies only when needed:
 ### Step 2: Detect TDD Mode
 
 Detect TDD from (priority order):
-1) openspec/config.yaml -> rules.apply.tdd
-2) skills/testing/SKILL.md (if present, TDD patterns apply)
-3) Existing test patterns
-Default: standard mode
+1) openspec/config.yaml -> gates.apply.tdd (canonical)
+2) openspec/config.yaml -> rules.apply.tdd (legacy fallback, deprecated)
+3) skills/testing/SKILL.md (if present, TDD patterns apply)
+4) Existing test patterns
+Default: `false` (standard mode).
 
-If TDD is active, use RED -> GREEN -> REFACTOR.
+Recognized values:
+- `false` -> standard mode, no gate.
+- `true` or `"strict"` -> strict TDD gate active (see Step 4).
+
+### Step 2.1: Strict TDD Gate (only if active)
+
+When the strict gate is active, EACH task in the batch must walk a four-step
+cycle. Production code MUST NOT be written before a failing test exists.
+
+For each task:
+
+1. **RED** — write the test, run it, confirm it fails.
+2. **GREEN** — write the minimum code that makes the test pass.
+3. **TRIANGULATE** (optional) — add a second test covering an edge case.
+4. **REFACTOR** — clean up; all tests stay green.
+
+Record evidence in `openspec/changes/{change-name}/apply-progress.md` using
+this exact format (append per task):
+
+```markdown
+## Tarea {id} — {titulo corto}
+
+- **RED:** test `{archivo}::{nombre}` falla con: `{mensaje corto}`
+- **GREEN:** implementacion en `{archivos}`; test pasa.
+- **TRIANGULATE:** test `{archivo}::{nombre}` cubre `{caso}`. (omitir si no aplica)
+- **REFACTOR:** `{notas}` (omitir si no aplica)
+```
+
+If the gate is active and you cannot honor it for a task (e.g., test
+infrastructure missing), STOP that task, mark `status: warning`, and report
+the obstacle in `risks`. Do not silently fall back to standard mode.
 
 ### Step 2.5: Load Coding Skills (autonomous)
 
@@ -97,6 +128,39 @@ In quick mode:
 - implement only the bounded fix defined in `quick.md`
 - do not invent additional work beyond the blueprint
 
+### Step 4.5: Review Budget Check
+
+Read `openspec/config.yaml -> gates.apply.review_budget` (falling back to
+the legacy path `rules.apply.review_budget` if present). Defaults:
+
+```yaml
+review_budget:
+  max_diff_lines: 0          # 0 = gate disabled
+  sensitive_paths: []        # empty = gate disabled
+```
+
+If `max_diff_lines > 0`:
+
+1. Run `git diff --numstat HEAD` to compute total added + removed lines for
+   the current working tree (or the commits made in this batch).
+2. If total > `max_diff_lines`, the gate trips.
+
+If `sensitive_paths` is non-empty:
+
+1. List the files modified in this batch.
+2. If any file matches any glob in `sensitive_paths`, the gate trips.
+
+When the gate trips:
+
+- Set output `status: warning`.
+- Add risk: `"Review budget exceeded: {n} lines (limit {limit}); sensitive paths touched: [...]. Manual review recommended before PR."`
+- Set `awaiting_approval: true` in `.status.yaml` and add `notes: "review_budget"`.
+- Do NOT advance phase. `next_recommended` stays `APPLY` until user confirms,
+  unless all tasks are complete in which case it becomes `VERIFY`.
+
+If git is not available or the repo is not a git working tree, skip this
+check silently and add a single risk: `"Review budget skipped: git unavailable"`.
+
 ### Step 5: Persist Progress
 
 - If openspec mode and normal mode, update `openspec/changes/{change-name}/tasks.md`
@@ -104,14 +168,15 @@ In quick mode:
   ```yaml
   phase: APPLY
   change: "{change-name}"
-  awaiting_approval: false
+  awaiting_approval: false   # true if review_budget gate tripped
   completed: false
   pending_tasks: ["list of unchecked task ids"]
   modified_artifacts: []
-  notes: "quick when applicable"
+  notes: ""                  # "quick" | "review_budget" | "tdd_strict" as applicable
   ```
 
 In quick mode, `pending_tasks` stays empty and `notes` should mention `quick`.
+If the review budget gate tripped, `notes` MUST include `review_budget`.
 
 ### Step 6: Return Summary
 
@@ -124,7 +189,11 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Always follow design decisions when `design.md` exists.
 - Use OpenSpec as the source of truth; do not copy code unless needed.
 - If blocked, stop and report.
-- In TDD mode, always write failing test first.
+- In strict TDD mode, always write the failing test first AND record evidence
+  in `apply-progress.md` for every completed task. Missing evidence = the task
+  is NOT done.
+- When the review budget gate trips, set `awaiting_approval: true` and stop;
+  do not auto-advance.
 - All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
@@ -136,6 +205,19 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "detailed_report": "Technical summary and notes.",
   "tasks_completed": ["1.1", "1.2"],
   "tasks_pending": ["1.3"],
+  "tdd_evidence": {
+    "mode": "off | strict",
+    "tasks": [
+      { "id": "1.1", "red": true, "green": true, "triangulate": false, "refactor": false }
+    ]
+  },
+  "review_budget": {
+    "checked": true,
+    "tripped": false,
+    "diff_lines": 137,
+    "limit": 400,
+    "sensitive_paths_touched": []
+  },
   "artifacts": [
     {
       "name": "tasks_or_quick_blueprint",
@@ -148,3 +230,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
 ```
+
+Omit `tdd_evidence` when the strict gate is off, and `review_budget` when the
+gate is disabled. Both fields are additive; consumers that ignore them MUST
+keep working.

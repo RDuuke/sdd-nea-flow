@@ -30,9 +30,27 @@ sub-agentes especializados por fase. Cada sub-agente debe:
 
 Ademas de las fases, existen skills auxiliares:
 
+- `flow-nea-status`: motor de estado read-only. Devuelve fase actual,
+  progreso de tareas, dependencias faltantes y `action_context`. El
+  orquestador y `flow-nea-continue` lo consumen en vez de releer
+  `.status.yaml` a mano.
 - `judgment-day`: revision dual ciega
 - `skill-registry`: indice compacto de skills
 - `skill-creator`: bootstrap para nuevas skills
+
+## Gates configurables (opt-in)
+
+Dos compuertas viven en `openspec/config.yaml -> gates.apply`:
+
+- `tdd`: cuando es `true` o `"strict"`, `flow-nea-apply` recorre
+  RED -> GREEN -> TRIANGULATE -> REFACTOR por tarea y registra evidencia en
+  `apply-progress.md`. `flow-nea-verify` audita esa evidencia.
+- `review_budget`: limita el tamano del diff (`max_diff_lines`) y/o
+  bloquea rutas sensibles (`sensitive_paths`). Si se excede, `apply` deja
+  `awaiting_approval: true` y el orquestador pregunta antes de avanzar.
+
+Ambos gates estan desactivados por defecto. Cambios existentes siguen
+funcionando sin tocar nada.
 
 ## Diferencias por herramienta
 
