@@ -228,13 +228,17 @@ After each phase, append an entry to
 `openspec/changes/{change-name}/.execution-log.md`:
 
 ```markdown
-### {PHASE} — {timestamp}
+### {PHASE} — {YYYY-MM-DD HH:MM}
 - **Status:** {ok | warning | failed}
 - **Summary:** {executive_summary}
 - **Artifacts:** {names or "none"}
 - **Risks:** {list or "none"}
 - **Retried:** {yes | no}
 ```
+
+The timestamp MUST include both date AND time (e.g. `2026-06-16 15:42`).
+Date-only entries are non-conformant; default the time to `00:00` only as a
+last resort and note it in the entry.
 
 ## Response Handling
 
@@ -263,6 +267,28 @@ If an OpenSpec artifact is modified outside a skill:
 1. Add it to `modified_artifacts` in `.status.yaml`
 2. Revert phase: `proposal.md` -> SPEC | `specs/` -> APPLY | `design.md` -> APPLY | `tasks.md` -> APPLY
 3. Inform the user
+
+## Mini-phase: SPEC-FIX (out-of-band correction)
+
+`flow-nea-tasks` is expected to catch spec ↔ design contradictions upstream
+(its Step 1.5 coherence check). Even so, APPLY occasionally surfaces a late
+divergence — e.g. a spec asserts integer steps but the implementation
+follows design's fractional math.
+
+When APPLY detects such a divergence, do this BEFORE running VERIFY:
+
+1. Pause the APPLY -> VERIFY transition.
+2. Decide which artifact is wrong: usually the spec, sometimes the design.
+3. Delegate a single short edit to the corresponding skill (`flow-nea-spec`
+   or `flow-nea-design`) with a tight scope: "reconcile {scenario} with
+   {design decision}".
+4. Append an entry to `.execution-log.md` named `SPEC-FIX` (or `DESIGN-FIX`)
+   with the divergence and the reconciliation.
+5. Continue to VERIFY.
+
+This is a corrective patch, not a regular phase. Do NOT add SPEC-FIX to the
+dependency graph or status workflow. Use it only when APPLY produces a
+working implementation that contradicts a spec written before design existed.
 
 ## Apply Strategy
 

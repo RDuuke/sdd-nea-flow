@@ -47,6 +47,15 @@ If mode is none, do not create project files.
 If openspec/config.yaml is missing, create it with agnostic placeholders, then
 fill the context with the detected values in the same run.
 
+**REQUIRED:** the generated `config.yaml` MUST contain ALL top-level blocks
+from the template below, including `gates:` and `experimental:`. Do NOT
+omit blocks because their defaults are "disabled" — downstream skills rely
+on the presence of `gates.apply.tdd`, `gates.apply.review_budget` and
+`gates.verify.coverage_threshold`. Missing blocks = misconfigured project.
+
+Validate after writing: if any of these keys is absent, rewrite the file
+with the full template before returning.
+
 Base template:
 
 ```yaml
@@ -98,6 +107,19 @@ experimental:
 ### Step 4: Persist Context (openspec mode only)
 
 - Save detected context into openspec/config.yaml.
+- **Post-write validation:** re-read the file and assert that all of the
+  following keys exist:
+  - `schema`
+  - `context`
+  - `rules.proposal`, `rules.specs`, `rules.design`, `rules.tasks`,
+    `rules.apply`, `rules.verify`, `rules.archive`
+  - `gates.apply.tdd`, `gates.apply.review_budget.max_diff_lines`,
+    `gates.apply.review_budget.sensitive_paths`
+  - `gates.verify.coverage_threshold`
+  - `experimental.neabrain`
+
+  If ANY key is missing, rewrite the file with the full template and add a
+  warning to `risks` describing which keys were missing on the first pass.
 - Write openspec/changes/.status.yaml:
   ```yaml
   schema_version: "1.3"

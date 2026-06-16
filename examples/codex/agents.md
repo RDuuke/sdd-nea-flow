@@ -231,13 +231,15 @@ After each phase, append an entry to
 `openspec/changes/{change-name}/.execution-log.md`:
 
 ```markdown
-### {PHASE} — {timestamp}
+### {PHASE} — {YYYY-MM-DD HH:MM}
 - **Status:** {ok | warning | failed}
 - **Summary:** {executive_summary}
 - **Artifacts:** {names or "none"}
 - **Risks:** {list or "none"}
 - **Retried:** {yes | no}
 ```
+
+Timestamp MUST include date AND time (e.g. `2026-06-16 15:42`).
 
 ## Retry and Recovery
 
@@ -246,6 +248,23 @@ After each phase, append an entry to
 - If an OpenSpec artifact was modified outside its expected phase, add it to
   `modified_artifacts` and revert phase:
   `proposal.md` -> SPEC | `specs/` -> APPLY | `design.md` -> APPLY | `tasks.md` -> APPLY
+
+## Mini-phase: SPEC-FIX (out-of-band correction)
+
+`flow-nea-tasks` runs a coherence check (its Step 1.5) to catch spec ↔ design
+contradictions before APPLY. When a late divergence still surfaces during
+APPLY (e.g. spec asserts integer steps, implementation follows design's
+fractional math), do this before VERIFY:
+
+1. Pause APPLY -> VERIFY.
+2. Decide which artifact is wrong (usually the spec).
+3. Delegate a single short edit to `flow-nea-spec` or `flow-nea-design`
+   scoped to "reconcile {scenario} with {design decision}".
+4. Append an entry to `.execution-log.md` named `SPEC-FIX` (or `DESIGN-FIX`).
+5. Continue to VERIFY.
+
+SPEC-FIX is a corrective patch, not a regular phase. Do not add it to the
+dependency graph.
 
 ## Apply Strategy
 

@@ -103,12 +103,28 @@ completes a phase. Format:
 - **Retried:** {yes | no}
 ```
 
+Concrete example (note the timestamp REQUIRES hour and minutes):
+
+```markdown
+### APPLY — 2026-06-16 15:42
+
+- **Status:** ok
+- **Summary:** Implemented tasks 1.1–3.7. 29 tests passing.
+- **Artifacts:** src/token-bucket.js, tests/token-bucket.test.js, apply-progress.md
+- **Risks:** none
+- **Retried:** no
+```
+
 Rules:
 - Create the file on first entry (do not fail if it does not exist yet).
 - Always append; never overwrite previous entries.
 - If mode is `none`, skip logging (no file persistence available).
 - The log is informational only — never use it to determine flow state
   (use `.status.yaml` for that).
+- The timestamp MUST include both date AND time (`YYYY-MM-DD HH:MM`).
+  Date-only entries (e.g. `2026-06-16`) are non-conformant; if the
+  orchestrator only has a date, default the time to `00:00` only as a
+  last resort and add a `Retried` field comment explaining why.
 
 ## File Access Rules
 
