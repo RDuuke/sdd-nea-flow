@@ -22,33 +22,29 @@ Read and follow: skills/_shared/persistence-contract.md
 
 ## What to Do
 
-### Step 1: Detect Last Completed Phase
+### Step 1: Query State
 
-Primary source: read openspec/changes/.status.yaml
-- Use `phase` and `change` fields directly.
-- If `awaiting_approval: true` in status:
-  - if `phase: QUICK`, stop and tell the user: "El quick blueprint está listo. Por favor revísalo en openspec/changes/{change-name}/quick.md y confirma para continuar a APPLY."
-  - otherwise, stop and tell the user: "La propuesta está lista. Por favor revísala en openspec/changes/{change-name}/proposal.md y confirma para continuar a SPEC."
-- If any field is missing (`pending_tasks`, `modified_artifacts`, `notes`, `schema_version`), fill with defaults and rewrite the file with the full template before continuing.
+Invoke `flow-nea-status` (read-only) and consume its envelope. Do not
+re-implement phase detection here — `flow-nea-status` is the single source
+of truth for `current_phase`, `next_phase`, `task_progress`, and
+`action_context`.
 
-If .status.yaml is missing, check for legacy .status.json:
-- If found, migrate values to .status.yaml with full template (including new fields), delete .status.json, and continue.
+If `action_context.blocked: true`:
+- `reason == "awaiting_approval"` and current phase is QUICK:
+  stop and tell the user: "El quick blueprint está listo. Por favor revísalo en openspec/changes/{change-name}/quick.md y confirma para continuar a APPLY."
+- `reason == "awaiting_approval"` (other phases): stop and tell the user:
+  "La propuesta está lista. Por favor revísala en openspec/changes/{change-name}/proposal.md y confirma para continuar a SPEC."
+- `reason` mentions `review_budget`: stop and tell the user: "El cambio
+  excede el presupuesto de revisión. Aprueba en `.status.yaml.notes` o
+  reduce el alcance antes de continuar."
+- Any other blocking reason: surface it verbatim to the user and stop.
 
-Fallback (if neither file exists), infer from files (first match wins):
+If `.status.yaml` is missing fields against the current schema, write the
+full template before resuming (this is the one persistence side-effect this
+skill performs — `flow-nea-status` itself stays read-only).
 
-| Condition | Resume at |
-|---|---|
-| verify-report.md exists | ARCHIVE |
-| tasks.md all items checked | VERIFY |
-| tasks.md has unchecked items | APPLY |
-| tasks.md exists | APPLY |
-| quick.md exists | APPLY |
-| design.md exists | TASKS |
-| specs/ folder exists | DESIGN |
-| proposal.md exists | SPEC |
-| exploration.md exists | PROPOSE |
-| openspec/config.yaml only | EXPLORE |
-| Nothing | INIT |
+If `.status.json` (legacy) exists and `.status.yaml` does not, migrate the
+legacy file to the current template here and delete the JSON.
 
 ### Step 2: Report State
 

@@ -20,11 +20,13 @@ completas por si mismo salvo tareas triviales.
 Responsabilidades:
 
 - detectar cuando conviene usar el flujo
-- leer estado actual de `openspec/changes/.status.yaml`
-- lanzar la fase correcta
+- delegar a `flow-nea-status` para conocer la fase actual y dependencias
+  (no lee `.status.yaml` directamente)
+- lanzar la fase correcta segun el envelope de status
 - validar respuestas de sub-agentes
 - mostrar resumenes y riesgos
-- pedir aprobacion cuando corresponde
+- pedir aprobacion cuando corresponde, incluyendo gates de presupuesto
+  de revision y evidencia TDD
 
 ### 2. Skills de fase
 

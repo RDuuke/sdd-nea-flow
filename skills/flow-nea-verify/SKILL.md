@@ -97,6 +97,27 @@ Build a matrix in the report:
 
 **Key rule**: UNTESTED equals FAILING. Code that works but has no test = NOT COMPLIANT.
 
+### Step 2.5: Audit TDD Evidence (if strict TDD active)
+
+Read `openspec/config.yaml -> gates.apply.tdd` (or the legacy
+`rules.apply.tdd`). If value is `true` or `"strict"`:
+
+1. Read `openspec/changes/{change-name}/apply-progress.md`.
+2. For each task marked complete (`- [x]`) in `tasks.md`, verify a matching
+   `## Tarea {id}` section exists in `apply-progress.md` with at least RED
+   and GREEN entries.
+3. Missing or incomplete evidence:
+   - If `apply-progress.md` is entirely missing -> WARNING, risk:
+     `"Strict TDD active but apply-progress.md missing"`.
+   - Per-task gap -> WARNING per task, listed in the report under
+     `## Evidencia TDD`.
+
+This audit issues WARNINGs, never CRITICAL — so changes created before the
+gate existed do not break archival. Future improvement (post 1.x): promote to
+CRITICAL once `apply-progress.md` is universal.
+
+If strict TDD is not active, skip this step silently.
+
 ### Step 3: Check Design Coherence
 
 If `design.md` exists, verify design decisions were followed. For each decision:
@@ -127,7 +148,8 @@ If not found, report as warning.
 ### Step 5.5: Code Coverage (optional)
 
 Detect coverage command from:
-1) openspec/config.yaml -> rules.verify.coverage_command
+1) openspec/config.yaml -> gates.verify.coverage_command (canonical) or
+   rules.verify.coverage_command (legacy fallback)
 2) package.json scripts.coverage or scripts["test:coverage"]
 3) pytest --cov (if pytest is detected)
 If not found, skip this step (do not report as warning).
@@ -137,10 +159,36 @@ If a coverage command is found:
 - Include the coverage percentage in verify-report.md under a
   `## Cobertura de Codigo` section.
 - If coverage is below the threshold configured in
-  `openspec/config.yaml -> rules.verify.coverage_threshold` (default: 80%),
+  `openspec/config.yaml -> gates.verify.coverage_threshold` (legacy
+  `rules.verify.coverage_threshold`, default: 80%),
   set status to `warning` and add a risk: "Cobertura por debajo del umbral:
   {actual}% < {threshold}%".
 - If no threshold is configured and no coverage command is found, skip silently.
+
+### Step 5.6: Review Workload Report
+
+Read `openspec/config.yaml -> gates.apply.review_budget` (or legacy
+`rules.apply.review_budget`). If the gate is
+configured (max_diff_lines > 0 or sensitive_paths non-empty):
+
+1. Re-compute diff stats vs the change's base ref (`git merge-base` against
+   the main branch, falling back to `HEAD~`).
+2. Cross-reference modified files against `sensitive_paths`.
+3. Include a `## Carga de Revisión` section in `verify-report.md`:
+
+   ```markdown
+   ## Carga de Revisión
+
+   - Líneas modificadas: {n} (límite: {limit})
+   - Paths sensibles tocados: {lista o "ninguno"}
+   - Estado: dentro del presupuesto | excedido (aprobación pendiente) | excedido (aprobado)
+   ```
+
+4. If excedido and `.status.yaml.notes` does NOT contain explicit approval
+   text (e.g. `"review_budget: approved"`), add a WARNING risk:
+   `"Review budget exceeded without explicit approval"`.
+
+If the gate is disabled or git is unavailable, omit this section silently.
 
 ### Step 6: Final Compliance Summary
 

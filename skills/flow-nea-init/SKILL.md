@@ -77,9 +77,23 @@ rules:
   archive:
     - Warn before destructive merges
 
+gates:
+  apply:
+    tdd: false                 # false | true | "strict" — enables RED/GREEN evidence gate
+    review_budget:
+      max_diff_lines: 0        # 0 disables the diff size gate
+      sensitive_paths: []      # e.g. ["**/auth/**", "**/payments/**", "**/.env*"]
+  verify:
+    coverage_threshold: 80     # only used when a coverage command is detected
+
 experimental:
   neabrain: false
 ```
+
+> **Note:** `rules.<phase>` keeps free-form prose guidance for each phase.
+> `gates.<phase>` carries the structured, machine-read flags (TDD, review
+> budget, coverage). Skills MUST read gates from `gates.<phase>` and ignore
+> `rules` for behavior decisions.
 
 ### Step 4: Persist Context (openspec mode only)
 

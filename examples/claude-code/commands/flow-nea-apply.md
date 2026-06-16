@@ -17,7 +17,7 @@ TASK:
 2. Read the required planning artifacts:
    - Normal flow -> tasks.md, design.md, specs/
    - Quick flow -> quick.md only
-3. Read openspec/config.yaml - check if TDD is configured (rules.apply.tdd)
+3. Read openspec/config.yaml - check if TDD is configured (gates.apply.tdd, falling back to legacy rules.apply.tdd)
 4. Check if coding skills are needed based on file types to modify:
    - .ts files -> read skills/typescript-general/SKILL.md if it exists
    - *.test.ts -> read skills/testing/SKILL.md if it exists

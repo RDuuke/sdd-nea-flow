@@ -119,6 +119,7 @@ Agent call. If the assigned model is not available, use `sonnet` and continue.
 | Phase | Model | Reason |
 |-------|-------|--------|
 | orchestrator | opus | Coordinates and makes decisions |
+| flow-nea-status | haiku | Read-only state engine |
 | flow-nea-explore | sonnet | Reads code, structural analysis |
 | flow-nea-propose | opus | Architecture decisions |
 | flow-nea-spec | sonnet | Structured writing |
@@ -177,6 +178,7 @@ Rules:
 
 | Phase | Reads | Writes |
 |-------|-------|--------|
+| `flow-nea-status` | `.status.yaml` + artifact tree | — (read-only) |
 | `flow-nea-explore` | codebase, existing context | `exploration.md` optional |
 | `flow-nea-propose` | exploration optional | `proposal.md` |
 | `flow-nea-quick` | codebase, config, affected area | `quick.md` |
@@ -192,13 +194,24 @@ OpenSpec instead of reconstructing them from chat history.
 
 ## State Protocol
 
-Before each phase, read `openspec/changes/.status.yaml` to obtain:
-- `change` (active `change-name`)
-- `current_phase`
-- `pending_tasks`
-- `awaiting_approval`
+Before each phase, delegate to `flow-nea-status` (model: `haiku`, read-only).
+Do NOT read `.status.yaml` inline. The status skill is the single source of
+truth for `current_phase`, `next_phase`, `task_progress`, `awaiting_approval`,
+`missing_dependencies`, and `action_context`.
 
-If `awaiting_approval: true`, STOP and ask the user for confirmation.
+Use its envelope to decide the next move:
+
+- If `action_context.blocked: true` -> STOP and surface
+  `action_context.reason` to the user.
+- If `awaiting_approval: true` -> STOP and ask the user for confirmation.
+  When `notes` mentions `review_budget`, the question MUST quote the diff
+  size and any sensitive paths touched (see Response Handling below).
+- If `missing_dependencies` is non-empty -> regress phase and re-delegate
+  the missing predecessor.
+- Otherwise, advance to `next_recommended`.
+
+Status delegation is cheap (haiku, read-only) and happens at most once per
+phase boundary; it does not need to fire on every tool call.
 
 ## Response Validation
 
@@ -228,6 +241,12 @@ After each phase, append an entry to
 - If `status: failed` or `artifacts` is empty, DO NOT advance. Inform the user.
 - If `risks` is not empty, show each risk and ask before continuing.
 - If `user_approval_required: true`, STOP and ask for confirmation.
+- If the response includes `review_budget.tripped: true`, STOP and ask the
+  user verbatim: "El cambio toca {N} líneas (límite {limit}) y/o paths
+  sensibles [{paths}]. ¿Continuar a VERIFY, dividir en un PR menor, o
+  abortar?". Do not auto-advance.
+- If the response includes `tdd_evidence.mode == "strict"` and any task lacks
+  RED + GREEN, surface those tasks before advancing to VERIFY.
 
 ## Retry on Transient Failures
 
