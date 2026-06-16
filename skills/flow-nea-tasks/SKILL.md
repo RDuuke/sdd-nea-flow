@@ -35,6 +35,36 @@ Otherwise, use direct relative paths from the project root.
 Read file bodies only when needed.
 Identify files to create/modify/delete and dependency order.
 
+### Step 1.5: Coherence Check (spec ↔ design)
+
+Before writing tasks, cross-read `specs/*/spec.md` and `design.md` and flag
+contradictions. Catching them upstream avoids a post-hoc SPEC-FIX cycle later.
+
+Run this checklist:
+
+1. **Behavior contract.** For each scenario in `specs/<domain>/spec.md`,
+   confirm that `design.md` does not override its expected outcome. If a spec
+   says "returns N for input X" and design implies a different algorithm with
+   a different N, that's a contradiction.
+2. **Naming.** Function/class names in design must match the names asserted
+   by spec scenarios.
+3. **Error messages.** When a spec demands a literal error message, design
+   must not propose a different phrasing.
+4. **Quantities and tolerances.** Specs that assert exact numbers (counts,
+   timeouts, fractions) must align with the design's algorithm precision
+   (e.g. integer steps vs fractional math).
+5. **Data shapes.** Input/output types in design must match spec assertions
+   (e.g. spec says `boolean`, design must not return a `Promise<boolean>`).
+
+If you find a contradiction:
+
+- Return `status: warning`, `next_recommended: "DESIGN"` (or `"SPEC"`
+  depending on which side is wrong), and list each contradiction in `risks`.
+- Do NOT write `tasks.md`.
+- Let the orchestrator decide which artifact to revise.
+
+If there are no contradictions, proceed to Step 2.
+
 ### Step 2: Write tasks.md (openspec mode)
 
 openspec/changes/{change-name}/tasks.md
