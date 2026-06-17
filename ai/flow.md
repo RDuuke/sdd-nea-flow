@@ -99,6 +99,35 @@ Las aprobaciones del usuario importan especialmente en:
 Cuando `tasks.md` es largo, `APPLY` debe ejecutarse por lotes y registrar
 progreso incremental para evitar cambios grandes sin control.
 
+## Capa de iniciativa (upstream)
+
+Capa que corre por encima del flujo de cambios, en un repositorio dedicado por
+iniciativa. Ingiere documentos en `sources/01..06` y produce specs generales.
+Es un grafo aparte, con su propio estado en `initiative/.status.yaml`:
+
+```text
+INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC -> (DECOMPOSE futuro)
+```
+
+- `INITIATIVE-INIT` (`flow-nea-initiative-init`): scaffold de `sources/` +
+  `initiative/`, escribe `config.yaml`/`.status.yaml`, valida la Definition of
+  Ready (no bloquea por DoR; reporta vacios como `risks`).
+- `INTAKE` (`flow-nea-initiative-intake`): inventaria y lee `sources/` con
+  degradacion gracil (archivos ilegibles -> `needs-conversion`, nunca falla la
+  fase), consolida `intake.md` + `source-index.md`. Activa el gate de revision
+  humana (`gates.intake.require_human_review`) antes de SPEC.
+- `SPEC` (`flow-nea-initiative-spec`): escribe specs generales (Features de
+  Azure) y emite `impact-map.yaml` con HU candidatas por proyecto cl00xx.
+- `flow-nea-initiative-status`: motor de estado read-only de esta capa.
+
+Mapeo conceptual a Azure DevOps (solo metadata, sin API): iniciativa ≈ Epic,
+spec general = Feature, change candidato = Historia de Usuario.
+
+La costura con el flujo per-proyecto es `initiative/impact-map.yaml`. El paso
+DECOMPOSE (sembrar el seed de cada HU en `openspec/changes/` del cl00xx) esta
+fuera de alcance hoy; esta capa solo produce el mapa. Detalle del contrato de
+artefactos en [`persistence.md`](persistence.md).
+
 ## Fuente de verdad de runtime
 
 La semantica operativa final del flujo vive en:

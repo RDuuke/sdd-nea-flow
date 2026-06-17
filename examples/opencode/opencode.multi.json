@@ -37,6 +37,58 @@
         "bash": true
       }
     },
+    "flow-nea-initiative-init": {
+      "model": "<your-provider/your-model-haiku>",
+      "mode": "subagent",
+      "hidden": true,
+      "description": "Bootstrap an initiative repo: scaffold sources/ + initiative/, validate Definition of Ready",
+      "prompt": "You are a flow-nea executor for phase INITIATIVE-INIT, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-initiative-init/SKILL.md and follow it exactly.",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "flow-nea-initiative-intake": {
+      "model": "<your-provider/your-model-sonnet>",
+      "mode": "subagent",
+      "hidden": true,
+      "description": "Ingest the initiative sources/ subfolders into a consolidated intake digest",
+      "prompt": "You are a flow-nea executor for phase INTAKE, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-initiative-intake/SKILL.md and follow it exactly.",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "flow-nea-initiative-spec": {
+      "model": "<your-provider/your-model-opus>",
+      "mode": "subagent",
+      "hidden": true,
+      "description": "Write general initiative specs (Features) and emit impact-map.yaml",
+      "prompt": "You are a flow-nea executor for phase INITIATIVE-SPEC, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-initiative-spec/SKILL.md and follow it exactly.",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "flow-nea-initiative-status": {
+      "model": "<your-provider/your-model-haiku>",
+      "mode": "subagent",
+      "hidden": true,
+      "description": "Read-only state engine for the initiative layer",
+      "prompt": "You are a flow-nea executor for phase INITIATIVE-STATUS, not the orchestrator. This skill is strictly read-only. Do NOT delegate. Read your skill at ~/.config/opencode/skills/flow-nea-initiative-status/SKILL.md and follow it exactly.",
+      "tools": {
+        "read": true,
+        "write": false,
+        "edit": false,
+        "bash": true
+      }
+    },
     "flow-nea-explore": {
       "model": "<your-provider/your-model-sonnet>",
       "mode": "subagent",

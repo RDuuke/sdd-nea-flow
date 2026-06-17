@@ -9,7 +9,7 @@
 > Un orquestador + sub-agentes especializados para desarrollo estructurado.
 > Cero dependencias. Solo Markdown. Funciona en cualquier lugar.
 
-Version: 2.0.2
+Version: 2.1.0 (capa de iniciativa: experimental)
 
 Links rapidos: [Instalacion](#instalacion) • [Herramientas](#herramientas) • [Documentacion tecnica](#documentacion-tecnica)
 
@@ -141,6 +141,39 @@ Usa `quick` solo cuando el cambio es pequeno, de bajo riesgo y no necesita
 `proposal.md`, `specs/`, `design.md` ni `tasks.md`, pero igual requiere cierre
 completo con verificacion y archivado.
 
+## Capa de iniciativa (upstream, experimental)
+
+Capa que corre por encima del flujo de cambios, en un **repositorio dedicado por
+iniciativa** (ej. `compra-de-cartera`). Ingiere documentos de negocio/producto en
+`sources/` y produce specs generales, dejando una costura para un futuro pipeline
+de descomposicion. Es distinta del flujo per-proyecto descrito arriba.
+
+Mapeo conceptual a Azure DevOps (solo metadata, sin API en esta fase):
+
+| Artefacto de iniciativa | Work item de Azure |
+|---|---|
+| iniciativa | Epic (opcional, reservado) |
+| spec general (`initiative/specs/{domain}/spec.md`) | Feature |
+| change candidato (`initiative/impact-map.yaml`) | Historia de Usuario (HU) |
+
+Comandos:
+
+- `/flow-nea-initiative-init <slug>` - scaffold de `sources/` + `initiative/`, config/estado y Definition of Ready
+- `/flow-nea-initiative-intake <slug>` - ingiere `sources/01..06` a `intake.md` + `source-index.md` (degradacion gracil para pdf/docx/img)
+- `/flow-nea-initiative-spec <slug>` - escribe specs generales (Features) y emite `impact-map.yaml` (HU candidatas)
+- `/flow-nea-initiative-ff <slug>` - meta-comando: init -> intake, se detiene en el gate de revision humana antes de spec
+
+Dependencias de la capa de iniciativa:
+
+```text
+INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
+```
+
+La costura con el flujo per-proyecto es `initiative/impact-map.yaml`. El paso
+DECOMPOSE/seed esta fuera de alcance hoy: esta capa solo emite el mapa, nunca
+escribe dentro de los proyectos cl00xx. El estado vive en
+`initiative/.status.yaml` (no en `openspec/`).
+
 ## Requisitos
 
 - OpenCode, Gemini CLI, Codex, Claude Code o VS Code
@@ -150,6 +183,7 @@ completo con verificacion y archivado.
 ## Estructura del repo
 
 - `skills/flow-nea-*/`: skills de cada fase del flujo
+- `skills/flow-nea-initiative-*/`: capa upstream de iniciativa (init, intake, spec, status)
 - `skills/judgment-day/`: revision dual ciega en paralelo
 - `skills/skill-registry/`: indice compacto de skills
 - `skills/skill-creator/`: bootstrap para crear nuevas skills

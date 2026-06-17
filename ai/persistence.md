@@ -113,7 +113,40 @@ Si se modifica fuera de la skill correspondiente:
 - `design.md` -> forzar nueva fase `APPLY`
 - `tasks.md` -> forzar nueva fase `APPLY`
 
+## Persistencia de la capa de iniciativa
+
+La capa upstream usa un backend propio, `initiative/`, separado de `openspec/`.
+Vive en un repositorio dedicado por iniciativa (junto a `sources/`). Contrato
+completo en [`skills/_shared/initiative-persistence-contract.md`](../skills/_shared/initiative-persistence-contract.md).
+
+Estructura:
+
+```text
+<repo-iniciativa>/
+  sources/01..06/            # input humano (read-only para las skills)
+  initiative/
+    config.yaml              # identidad + mapeo Azure + gates + target_projects
+    .status.yaml             # estado (schema 1.0: INIT | INTAKE | SPEC)
+    intake/intake.md         # digest consolidado de las 6 subcarpetas
+    intake/source-index.md   # inventario auditable + legibilidad
+    specs/{domain}/spec.md   # specs generales = Features de Azure
+    impact-map.yaml          # costura: Features -> HU candidatas por cl00xx
+    .execution-log.md
+```
+
+Reglas clave:
+
+- Modo `initiative`: escritura solo dentro de `initiative/`. Lectura permitida en
+  `sources/` y referencia read-only a los proyectos cl00xx registrados.
+- Estado en `initiative/.status.yaml`, nunca en `openspec/changes/.status.yaml`.
+- `impact-map.yaml` es el unico artefacto que consume el futuro pipeline de
+  descomposicion; cada `change_candidate` es una HU ligada a un proyecto cl00xx,
+  o queda en `unmapped_scope`. Esta capa nunca siembra changes en los proyectos.
+- Mapeo conceptual a Azure (solo metadata): iniciativa ≈ Epic, spec = Feature,
+  change candidato = Historia de Usuario.
+
 ## Lo que no pertenece a este repo
 
-No debe existir una carpeta `openspec/` mantenida manualmente en este repo.
-`openspec/` pertenece a los proyectos destino donde corre el flujo.
+No debe existir una carpeta `openspec/` ni `initiative/` mantenida manualmente en
+este repo plantilla. `openspec/` pertenece a los proyectos destino donde corre el
+flujo de cambios; `initiative/` pertenece a cada repositorio de iniciativa.
