@@ -89,6 +89,10 @@ Read this table at session start, cache it, and pass the model in each sub-agent
 | Phase | Recommended Model | Reason |
 |-------|-------------------|--------|
 | orchestrator | claude-opus | Coordinates and makes decisions |
+| flow-nea-initiative-init | claude-haiku | Scaffold + Definition of Ready |
+| flow-nea-initiative-intake | claude-sonnet | Read/extract initiative sources |
+| flow-nea-initiative-spec | claude-opus | Synthesize Features + impact-map |
+| flow-nea-initiative-status | claude-haiku | Read-only initiative state engine |
 | flow-nea-explore | claude-sonnet | Code reading |
 | flow-nea-propose | claude-opus | Architecture decisions |
 | flow-nea-spec | claude-sonnet | Structured writing |
@@ -169,3 +173,38 @@ If the user describes a multi-file change without using commands, suggest:
 "This looks like a good candidate for the flow. Do you want me to start with `/flow-nea-ff <suggested-name>`?"
 
 Do not force the flow for single-file edits, quick fixes, or questions about the code.
+
+## Initiative Layer (upstream)
+
+A separate UPSTREAM layer runs in a dedicated **initiative repository** (one repo
+per initiative, e.g. `compra-de-cartera`). It ingests business/product sources and
+produces general specs, distinct from the per-project change flow above.
+
+Azure DevOps mapping (metadata only, NO API in this phase): initiative ≈ Epic,
+general spec (`initiative/specs/{domain}/spec.md`) = Feature, change candidate
+(`initiative/impact-map.yaml`) = User Story (HU).
+
+### Sub-graph (runs in the initiative repo)
+
+```text
+INITIATIVE-INIT -> INTAKE -> [human-review gate] -> SPEC -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
+```
+
+The seam to the per-project flow is `initiative/impact-map.yaml`. DECOMPOSE/seed is
+OUT OF SCOPE; this layer only emits the map, never writes into cl00xx.
+
+### Commands
+
+- `/flow-nea-initiative-init <slug>` -> scaffold `sources/`+`initiative/`, config/status, Definition of Ready
+- `/flow-nea-initiative-intake <slug>` -> ingest `sources/01..06` -> `intake.md` + `source-index.md`
+- `/flow-nea-initiative-spec <slug>` -> general specs (Features) + `impact-map.yaml`
+- `/flow-nea-initiative-ff <slug>` -> meta-command: init -> intake, STOP at human-review gate before spec
+
+### State Protocol (initiative layer)
+
+- State lives in `initiative/.status.yaml` (schema 1.0: `phase: INIT|INTAKE|SPEC`),
+  NOT in `openspec/changes/.status.yaml`.
+- Delegate to `flow-nea-initiative-status` (haiku, read-only) for phase/gaps/gate.
+- INTAKE sets `awaiting_approval: true` when `gates.intake.require_human_review`:
+  STOP and ask the user to review `intake.md` before SPEC.
+- Surface Definition-of-Ready gaps from init; do not force SPEC.
