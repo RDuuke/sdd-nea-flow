@@ -91,7 +91,8 @@ Read this table at session start, cache it, and pass the model in each sub-agent
 | orchestrator | claude-opus | Coordinates and makes decisions |
 | flow-nea-initiative-init | claude-haiku | Scaffold + Definition of Ready |
 | flow-nea-initiative-intake | claude-sonnet | Read/extract initiative sources |
-| flow-nea-initiative-spec | claude-opus | Synthesize Features + impact-map |
+| flow-nea-initiative-spec | claude-opus | Detailed Features + capabilities |
+| flow-nea-initiative-hu | claude-sonnet | Decompose Features into User Stories + impact-map |
 | flow-nea-initiative-status | claude-haiku | Read-only initiative state engine |
 | flow-nea-explore | claude-sonnet | Code reading |
 | flow-nea-propose | claude-opus | Architecture decisions |
@@ -187,8 +188,12 @@ general spec (`initiative/specs/{domain}/spec.md`) = Feature, change candidate
 ### Sub-graph (runs in the initiative repo)
 
 ```text
-INITIATIVE-INIT -> INTAKE -> [human-review gate] -> SPEC -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
+INITIATIVE-INIT -> INTAKE -> [human-review gate] -> SPEC (Features) -> HU (User Stories) -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
 ```
+
+SPEC writes detailed Features (capabilities `CAP-xxx`). HU decomposes Features into
+User Stories (`HU-xxx`) written INSIDE the Feature spec and emits the lean
+`initiative/impact-map.yaml`. HU is orchestrator-driven and batchable per Feature.
 
 The seam to the per-project flow is `initiative/impact-map.yaml`. DECOMPOSE/seed is
 OUT OF SCOPE; this layer only emits the map, never writes into cl00xx.
@@ -197,7 +202,8 @@ OUT OF SCOPE; this layer only emits the map, never writes into cl00xx.
 
 - `/flow-nea-initiative-init <slug>` -> scaffold `sources/`+`initiative/`, config/status, Definition of Ready
 - `/flow-nea-initiative-intake <slug>` -> ingest `sources/01..06` -> `intake.md` + `source-index.md`
-- `/flow-nea-initiative-spec <slug>` -> general specs (Features) + `impact-map.yaml`
+- `/flow-nea-initiative-spec <slug>` -> detailed general specs (Features + capabilities)
+- `/flow-nea-initiative-hu <slug>` -> decompose Features into User Stories (inside specs) + `impact-map.yaml`
 - `/flow-nea-initiative-ff <slug>` -> meta-command: init -> intake, STOP at human-review gate before spec
 
 ### State Protocol (initiative layer)

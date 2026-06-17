@@ -106,7 +106,7 @@ iniciativa. Ingiere documentos en `sources/01..06` y produce specs generales.
 Es un grafo aparte, con su propio estado en `initiative/.status.yaml`:
 
 ```text
-INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC -> (DECOMPOSE futuro)
+INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC (Features) -> HU (Historias) -> (DECOMPOSE futuro)
 ```
 
 - `INITIATIVE-INIT` (`flow-nea-initiative-init`): scaffold de `sources/` +
@@ -116,9 +116,14 @@ INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC -> (DECOMPOSE futuro
   degradacion gracil (archivos ilegibles -> `needs-conversion`, nunca falla la
   fase), consolida `intake.md` + `source-index.md`. Activa el gate de revision
   humana (`gates.intake.require_human_review`) antes de SPEC.
-- `SPEC` (`flow-nea-initiative-spec`): escribe specs generales (Features de
-  Azure) y emite `impact-map.yaml` con HU candidatas por proyecto cl00xx.
-- `flow-nea-initiative-status`: motor de estado read-only de esta capa.
+- `SPEC` (`flow-nea-initiative-spec`): escribe specs generales detalladas
+  (Features de Azure con capacidades `CAP-xxx`). No escribe HU ni impact-map.
+- `HU` (`flow-nea-initiative-hu`): descompone los Features en Historias de
+  Usuario (`HU-xxx`) con cuerpo completo, escritas DENTRO del spec del Feature,
+  y emite el `impact-map.yaml` (indice liviano de routing por HU). Es manejada
+  por el orquestador y puede ejecutarse por lotes (un Feature a la vez).
+- `flow-nea-initiative-status`: motor de estado read-only + lint del
+  `impact-map.yaml` (cobertura, sincronizacion HU, slugs unicos, refs validas).
 
 Mapeo conceptual a Azure DevOps (solo metadata, sin API): iniciativa ≈ Epic,
 spec general = Feature, change candidato = Historia de Usuario.

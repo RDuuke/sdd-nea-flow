@@ -129,8 +129,8 @@ Estructura:
     .status.yaml             # estado (schema 1.0: INIT | INTAKE | SPEC)
     intake/intake.md         # digest consolidado de las 6 subcarpetas
     intake/source-index.md   # inventario auditable + legibilidad
-    specs/{domain}/spec.md   # specs generales = Features de Azure
-    impact-map.yaml          # costura: Features -> HU candidatas por cl00xx
+    specs/{domain}/spec.md   # Feature de Azure + Historias de Usuario (HU) dentro
+    impact-map.yaml          # indice liviano de routing por HU (lo consume el pipeline)
     .execution-log.md
 ```
 
@@ -139,9 +139,12 @@ Reglas clave:
 - Modo `initiative`: escritura solo dentro de `initiative/`. Lectura permitida en
   `sources/` y referencia read-only a los proyectos cl00xx registrados.
 - Estado en `initiative/.status.yaml`, nunca en `openspec/changes/.status.yaml`.
-- `impact-map.yaml` es el unico artefacto que consume el futuro pipeline de
-  descomposicion; cada `change_candidate` es una HU ligada a un proyecto cl00xx,
-  o queda en `unmapped_scope`. Esta capa nunca siembra changes en los proyectos.
+- El cuerpo de cada HU vive DENTRO del spec del Feature (`specs/{domain}/spec.md`,
+  seccion `## Historias de Usuario`). `impact-map.yaml` es un indice liviano de
+  routing: una entrada por HU con `id`, `spec_ref` (ancla al cuerpo),
+  `target_project`, `proposed_change_name`, metadata Azure y `status`. Es el unico
+  artefacto que consume el futuro pipeline de descomposicion; capacidades sin
+  proyecto quedan en `unmapped_scope`. Esta capa nunca siembra changes.
 - Mapeo conceptual a Azure (solo metadata): iniciativa ≈ Epic, spec = Feature,
   change candidato = Historia de Usuario.
 

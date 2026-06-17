@@ -122,7 +122,8 @@ Agent call. If the assigned model is not available, use `sonnet` and continue.
 | flow-nea-status | haiku | Read-only state engine |
 | flow-nea-initiative-init | haiku | Scaffold + Definition of Ready |
 | flow-nea-initiative-intake | sonnet | Read/extract initiative sources |
-| flow-nea-initiative-spec | opus | Synthesize Features + impact-map |
+| flow-nea-initiative-spec | opus | Detailed Features + capabilities |
+| flow-nea-initiative-hu | sonnet | Decompose Features into User Stories + impact-map |
 | flow-nea-initiative-status | haiku | Read-only initiative state engine |
 | flow-nea-explore | sonnet | Reads code, structural analysis |
 | flow-nea-propose | opus | Architecture decisions |
@@ -323,8 +324,13 @@ Conceptual mapping to Azure DevOps (metadata only, NO API in this phase):
 ### Dependency Sub-graph (runs in the initiative repo)
 
 ```text
-INITIATIVE-INIT -> INTAKE -> [human-review gate] -> SPEC -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
+INITIATIVE-INIT -> INTAKE -> [human-review gate] -> SPEC (Features) -> HU (User Stories) -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
 ```
+
+SPEC writes the detailed Features (capabilities `CAP-xxx`). HU decomposes each
+Feature into User Stories (`HU-xxx`) written INSIDE the Feature spec and emits
+the lean `initiative/impact-map.yaml` routing index. HU is orchestrator-driven
+and may be batched per Feature (pass a `feature=FEAT-{domain}` filter).
 
 The seam between this layer and the per-project flow (`INIT -> ... -> ARCHIVE`
 inside each cl00xx) is `initiative/impact-map.yaml`. DECOMPOSE/seed is OUT OF
@@ -335,7 +341,8 @@ SCOPE today; the initiative layer only emits the map, never writes into cl00xx.
 Skills:
 - `/flow-nea-initiative-init <slug>` -> scaffold `sources/`+`initiative/`, write config/status, validate Definition of Ready
 - `/flow-nea-initiative-intake <slug>` -> ingest `sources/01..06` into `intake.md` + `source-index.md` (graceful degradation for pdf/docx/img)
-- `/flow-nea-initiative-spec <slug>` -> write general specs (Features) + emit `impact-map.yaml` (candidate HUs)
+- `/flow-nea-initiative-spec <slug>` -> write detailed general specs (Features + capabilities)
+- `/flow-nea-initiative-hu <slug>` -> decompose Features into User Stories (inside specs) + emit `impact-map.yaml`
 
 Meta-command handled by the orchestrator:
 - `/flow-nea-initiative-ff <slug>` -> run init -> intake, then STOP at the human-review gate before spec
@@ -357,5 +364,6 @@ Meta-command handled by the orchestrator:
 |-------|-------|--------|
 | `flow-nea-initiative-init` | repo root, existing `initiative/` | `initiative/config.yaml`, `.status.yaml`, scaffold |
 | `flow-nea-initiative-intake` | `sources/01..06` | `initiative/intake/intake.md`, `source-index.md` |
-| `flow-nea-initiative-spec` | `initiative/intake/intake.md`, `config.yaml` | `initiative/specs/`, `impact-map.yaml` |
+| `flow-nea-initiative-spec` | `initiative/intake/intake.md`, `config.yaml` | `initiative/specs/` (Features + capabilities) |
+| `flow-nea-initiative-hu` | `initiative/specs/`, `config.yaml` | HU inside `initiative/specs/`, `initiative/impact-map.yaml` |
 | `flow-nea-initiative-status` | `initiative/.status.yaml` + tree | — (read-only) |

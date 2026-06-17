@@ -73,7 +73,7 @@ Template:
 
 ```yaml
 schema_version: "1.0"
-phase: INIT          # INIT | INTAKE | SPEC
+phase: INIT          # INIT | INTAKE | SPEC | HU
 initiative: null     # slug of the active initiative
 awaiting_approval: false
 completed: false
@@ -90,7 +90,8 @@ Phase inference (first match wins) when `.status.yaml` is missing:
 
 | Condition | Phase |
 |---|---|
-| `initiative/impact-map.yaml` AND `initiative/specs/` non-empty | SPEC |
+| `initiative/impact-map.yaml` exists | HU |
+| `initiative/specs/` non-empty (no `impact-map.yaml`) | SPEC |
 | `initiative/intake/intake.md` exists | INTAKE |
 | `initiative/config.yaml` exists | INIT |
 | nothing | INIT |

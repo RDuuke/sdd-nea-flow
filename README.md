@@ -160,14 +160,19 @@ Comandos:
 
 - `/flow-nea-initiative-init <slug>` - scaffold de `sources/` + `initiative/`, config/estado y Definition of Ready
 - `/flow-nea-initiative-intake <slug>` - ingiere `sources/01..06` a `intake.md` + `source-index.md` (degradacion gracil para pdf/docx/img)
-- `/flow-nea-initiative-spec <slug>` - escribe specs generales (Features) y emite `impact-map.yaml` (HU candidatas)
+- `/flow-nea-initiative-spec <slug>` - escribe specs generales detalladas (Features + capacidades `CAP-xxx`)
+- `/flow-nea-initiative-hu <slug>` - descompone los Features en Historias de Usuario (`HU-xxx`, dentro del spec) y emite `impact-map.yaml`
 - `/flow-nea-initiative-ff <slug>` - meta-comando: init -> intake, se detiene en el gate de revision humana antes de spec
 
 Dependencias de la capa de iniciativa:
 
 ```text
-INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
+INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC (Features) -> HU (Historias) -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
 ```
+
+El cuerpo de cada HU vive dentro del spec del Feature; `impact-map.yaml` es un
+indice liviano de routing (IDs, `spec_ref`, proyecto destino, metadata Azure,
+estado) que consumira el pipeline de descomposicion.
 
 La costura con el flujo per-proyecto es `initiative/impact-map.yaml`. El paso
 DECOMPOSE/seed esta fuera de alcance hoy: esta capa solo emite el mapa, nunca
