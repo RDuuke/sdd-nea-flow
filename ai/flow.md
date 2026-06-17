@@ -106,7 +106,7 @@ iniciativa. Ingiere documentos en `sources/01..06` y produce specs generales.
 Es un grafo aparte, con su propio estado en `initiative/.status.yaml`:
 
 ```text
-INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC (Features) -> HU (Historias) -> (DECOMPOSE futuro)
+INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC (Features) -> HU (Historias) -> (ENRICH opcional) -> (DECOMPOSE futuro)
 ```
 
 - `INITIATIVE-INIT` (`flow-nea-initiative-init`): scaffold de `sources/` +
@@ -119,11 +119,18 @@ INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC (Features) -> HU (Hi
 - `SPEC` (`flow-nea-initiative-spec`): escribe specs generales detalladas
   (Features de Azure con capacidades `CAP-xxx`). No escribe HU ni impact-map.
 - `HU` (`flow-nea-initiative-hu`): descompone los Features en Historias de
-  Usuario (`HU-xxx`) con cuerpo completo, escritas DENTRO del spec del Feature,
-  y emite el `impact-map.yaml` (indice liviano de routing por HU). Es manejada
-  por el orquestador y puede ejecutarse por lotes (un Feature a la vez).
+  Usuario, **una carpeta por HU** (`specs/{domain}/hu/HU-xxx/` con `HU-xxx.md` +
+  `assets/`), mantiene una tabla de contenido en el Feature spec, marca las HU
+  que requieren arquitecto y/o disenador, y emite el `impact-map.yaml` (indice
+  liviano de routing por HU). La usa PMO; puede ejecutarse por lotes.
+- `ENRICH` (`flow-nea-initiative-enrich`): pase de especialista fuera de banda.
+  El arquitecto (`/flow-nea-initiative-arch`) completa `## Notas de arquitecto`;
+  el disenador (`/flow-nea-initiative-design`) completa `## Diseño (UX/UI)` con
+  enlaces Figma y assets. Actualiza `enrichment.{role}.status` (pending -> done)
+  en la HU, el impact-map y la TOC; no mueve la fase almacenada (como SPEC-FIX).
 - `flow-nea-initiative-status`: motor de estado read-only + lint del
-  `impact-map.yaml` (cobertura, sincronizacion HU, slugs unicos, refs validas).
+  `impact-map.yaml` (cobertura, sincronizacion HU, slugs unicos, refs validas) y
+  reporte de `enrichment_pending` por rol.
 
 Mapeo conceptual a Azure DevOps (solo metadata, sin API): iniciativa ≈ Epic,
 spec general = Feature, change candidato = Historia de Usuario.

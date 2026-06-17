@@ -45,8 +45,13 @@ If mode is unknown, treat it as `none` and report it as unresolved.
       intake.md             # consolidated digest of the 6 source subfolders
       source-index.md       # auditable inventory of files + readability
     specs/
-      {domain}/spec.md      # GENERAL specs = Azure Features
-    impact-map.yaml         # seam: Features -> candidate User Stories per cl00xx
+      {domain}/
+        spec.md             # Azure Feature + capabilities (CAP-xxx) + HU table of contents
+        hu/
+          HU-xxx/
+            HU-xxx.md        # User Story body + architect & design notes
+            assets/          # external docs / Figma exports for this HU
+    impact-map.yaml         # seam: lean routing index, one entry per HU (-> cl00xx)
     .execution-log.md
 ```
 

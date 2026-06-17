@@ -92,7 +92,7 @@ target_projects:           # MANUAL registry of external cl00xx projects
 
 gates:
   intake:
-    require_human_review: true
+    require_human_review: true   # set false for unattended/PMO-absent runs (auto-approve intake)
   spec:
     require_impact_map: true
 ```

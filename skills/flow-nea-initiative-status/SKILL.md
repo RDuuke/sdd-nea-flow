@@ -77,9 +77,9 @@ Report `impact_map_valid` (boolean) and `validation_errors` (list of strings):
 
 1. **Coverage:** every `CAP-xxx` in `initiative/specs/**/spec.md` is referenced by
    a `user_stories[].capability` OR appears in `unmapped_scope`.
-2. **HU sync:** every `HU-xxx` heading in the specs has exactly one
-   `user_stories` entry, and every entry's `spec_ref` resolves to an existing
-   file + matching anchor.
+2. **HU sync:** every `hu/HU-xxx/HU-xxx.md` folder has exactly one `user_stories`
+   entry whose `spec_ref` resolves to that file, and a TOC row in the Feature
+   `spec.md`.
 3. **Project validity:** every `target_project.id` exists in
    `config.yaml` `target_projects`.
 4. **Slug rules:** every `proposed_change_name` is a valid slug
@@ -91,20 +91,28 @@ If the map is absent, set `impact_map_valid: null`. Any failure -> add a clear
 message to `validation_errors` and set `impact_map_valid: false`; also surface a
 short summary under `risks`. This step never writes.
 
+Also compute `enrichment_pending` from the map: list HU ids where
+`enrichment.architecture.status == pending` or `enrichment.design.status ==
+pending`, grouped by role. The orchestrator uses this to route the architect
+(`/flow-nea-initiative-arch`) or designer (`/flow-nea-initiative-design`).
+
 ### Step 4: Determine Next Phase
 
 Dependency graph:
 
 ```text
-INIT -> INTAKE -> [human-review gate] -> SPEC -> HU -> (DECOMPOSE futuro)
+INIT -> INTAKE -> [human-review gate] -> SPEC -> HU -> (ENRICH opcional) -> (DECOMPOSE futuro)
 ```
 
 Special cases:
 - If `awaiting_approval: true`, `next_phase` equals `current_phase` and
   `action_context.blocked: true` with reason `"awaiting_approval"`.
 - After SPEC, `next_phase` is `HU`.
-- After HU, `next_phase` is `DECOMPOSE` (out of scope; report it but do not
-  attempt to run it).
+- After HU: if `enrichment_pending` is non-empty, `next_phase` is `ENRICH`
+  (specialist pass, out-of-band — does not change the main `phase`). Otherwise
+  `next_phase` is `DECOMPOSE` (out of scope; report it but do not run it).
+- `ENRICH` is an optional specialist pass (architect/designer) like SPEC-FIX; it
+  never advances the stored `phase`.
 
 ### Step 5: Action Context
 
@@ -133,6 +141,9 @@ Populate `action_context`:
   "awaiting_approval": true,
   "artifacts_present": ["config.yaml", "intake/intake.md", "source-index.md"],
   "missing_dependencies": [],
+  "impact_map_valid": null,
+  "validation_errors": [],
+  "enrichment_pending": { "architecture": [], "design": [] },
   "action_context": {
     "blocked": true,
     "reason": "awaiting_approval",
