@@ -122,7 +122,9 @@ Agent call. If the assigned model is not available, use `sonnet` and continue.
 | flow-nea-status | haiku | Read-only state engine |
 | flow-nea-initiative-init | haiku | Scaffold + Definition of Ready |
 | flow-nea-initiative-intake | sonnet | Read/extract initiative sources |
-| flow-nea-initiative-spec | opus | Synthesize Features + impact-map |
+| flow-nea-initiative-spec | opus | Detailed Features + capabilities |
+| flow-nea-initiative-hu | sonnet | Decompose Features into User Stories + impact-map |
+| flow-nea-initiative-enrich | opus | Architect/designer enrichment of a HU |
 | flow-nea-initiative-status | haiku | Read-only initiative state engine |
 | flow-nea-explore | sonnet | Reads code, structural analysis |
 | flow-nea-propose | opus | Architecture decisions |
@@ -323,8 +325,22 @@ Conceptual mapping to Azure DevOps (metadata only, NO API in this phase):
 ### Dependency Sub-graph (runs in the initiative repo)
 
 ```text
-INITIATIVE-INIT -> INTAKE -> [human-review gate] -> SPEC -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
+INITIATIVE-INIT -> INTAKE -> [human-review gate] -> SPEC (Features) -> HU (User Stories) -> (ENRICH opcional) -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
 ```
+
+SPEC writes the detailed Features (capabilities `CAP-xxx`). HU decomposes each
+Feature into User Stories — **one folder per HU** (`specs/{domain}/hu/HU-xxx/`
+with `HU-xxx.md` + `assets/`) — keeps a table of contents in the Feature spec,
+flags HUs needing an architect and/or designer, and emits the lean
+`initiative/impact-map.yaml`. HU is orchestrator-driven, batchable per Feature.
+
+This flow is run by **PMO**. After HU, the orchestrator surfaces the flagged HUs
+(`architecture_candidates`, `design_candidates`) and asks PMO to confirm. A
+specialist then enters out-of-band:
+- architect -> `/flow-nea-initiative-arch <slug> HU-xxx` (fills `## Notas de arquitecto`)
+- designer -> `/flow-nea-initiative-design <slug> HU-xxx` (fills `## Diseño (UX/UI)`, Figma links, assets)
+ENRICH updates the HU's `enrichment.{role}.status` (pending -> done) and never
+moves the stored phase (like SPEC-FIX).
 
 The seam between this layer and the per-project flow (`INIT -> ... -> ARCHIVE`
 inside each cl00xx) is `initiative/impact-map.yaml`. DECOMPOSE/seed is OUT OF
@@ -335,10 +351,28 @@ SCOPE today; the initiative layer only emits the map, never writes into cl00xx.
 Skills:
 - `/flow-nea-initiative-init <slug>` -> scaffold `sources/`+`initiative/`, write config/status, validate Definition of Ready
 - `/flow-nea-initiative-intake <slug>` -> ingest `sources/01..06` into `intake.md` + `source-index.md` (graceful degradation for pdf/docx/img)
-- `/flow-nea-initiative-spec <slug>` -> write general specs (Features) + emit `impact-map.yaml` (candidate HUs)
+- `/flow-nea-initiative-spec <slug>` -> write detailed general specs (Features + capabilities)
+- `/flow-nea-initiative-hu <slug>` -> decompose Features into User Stories (one folder per HU) + emit `impact-map.yaml`
+- `/flow-nea-initiative-arch <slug> HU-xxx` -> architect enriches a HU (`## Notas de arquitecto`)
+- `/flow-nea-initiative-design <slug> HU-xxx` -> designer enriches a HU (`## Diseño (UX/UI)`, Figma links, assets)
 
-Meta-command handled by the orchestrator:
-- `/flow-nea-initiative-ff <slug>` -> run init -> intake, then STOP at the human-review gate before spec
+Meta-commands handled by the orchestrator:
+- `/flow-nea-initiative-ff <slug>` -> ATTENDED: run init -> intake, then STOP at the human-review gate before spec
+- `/flow-nea-initiative-auto <slug>` -> UNATTENDED: run init -> intake -> spec -> hu end-to-end WITHOUT stopping at the human-review gate (use when PMO is absent). Stops only on failure or empty `01-negocio`/`02-producto`. ENRICH and DECOMPOSE are NOT run.
+
+### Unattended / auto-approval
+
+When PMO is absent, the human-review gate after INTAKE can be auto-approved two ways:
+1. Set `gates.intake.require_human_review: false` in `initiative/config.yaml` —
+   INTAKE then sets `awaiting_approval: false` and the flow continues to SPEC.
+2. Run `/flow-nea-initiative-auto <slug>` — the orchestrator overrides the gate
+   for that single run (it does not edit config) and chains SPEC + HU.
+
+In unattended mode the orchestrator accepts the HU skill's enrichment flags
+as-is (no PMO confirmation) and reports `architecture_candidates` /
+`design_candidates` so specialists can be routed later. It must still STOP and
+report if INIT finds empty `01-negocio`/`02-producto` (no real input to ingest)
+or any phase returns `status: failed`.
 
 ### State Protocol (initiative layer)
 
@@ -351,11 +385,27 @@ Meta-command handled by the orchestrator:
 - If init reports Definition-of-Ready gaps (empty `01-negocio`/`02-producto`,
   placeholder `target_projects`), surface them and do not force SPEC.
 
+### Quality rules (initiative layer)
+
+- Sources dir is ALWAYS `sources/`. `resources/` is general-repo data — skills
+  ignore it (never read/inventory).
+- Anti-invención: every claim traces to a source or is marked `[sin confirmar]`/GAP.
+  INTAKE builds a `## Glosario` (acronyms expanded only if the sources define them);
+  SPEC/HU reuse those canonical names. Never fabricate figures/thresholds/names.
+- SPEC altitude: CAP statements are business outcomes; technical/regulatory facts
+  live in `## Decisiones técnicas`. Every CAP needs a testable AC; gating CAPs need
+  a measurable threshold.
+- INTAKE marks `[CRITICAL]` gaps; HU turns them into `status: blocked` HUs with
+  `blockers[]` in the impact-map. `flow-nea-initiative-status` reports
+  `blocked_hus`, `enrichment_pending`, and `placeholder_projects`.
+
 ### Phase Read/Write Rules (initiative layer)
 
 | Phase | Reads | Writes |
 |-------|-------|--------|
 | `flow-nea-initiative-init` | repo root, existing `initiative/` | `initiative/config.yaml`, `.status.yaml`, scaffold |
 | `flow-nea-initiative-intake` | `sources/01..06` | `initiative/intake/intake.md`, `source-index.md` |
-| `flow-nea-initiative-spec` | `initiative/intake/intake.md`, `config.yaml` | `initiative/specs/`, `impact-map.yaml` |
+| `flow-nea-initiative-spec` | `initiative/intake/intake.md`, `config.yaml` | `initiative/specs/` (Features + capabilities) |
+| `flow-nea-initiative-hu` | `initiative/specs/`, `config.yaml` | HU folders under `initiative/specs/{domain}/hu/`, spec TOC, `initiative/impact-map.yaml` |
+| `flow-nea-initiative-enrich` | one HU file + `impact-map.yaml` | that HU file + `assets/`, its `impact-map` entry, spec TOC row |
 | `flow-nea-initiative-status` | `initiative/.status.yaml` + tree | — (read-only) |

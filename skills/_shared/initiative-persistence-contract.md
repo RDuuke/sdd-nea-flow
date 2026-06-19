@@ -41,12 +41,19 @@ If mode is unknown, treat it as `none` and report it as unresolved.
   initiative/
     config.yaml             # identity + Azure mapping + gates + target_projects
     .status.yaml            # initiative-layer state (schema 1.0)
+    glossary.md             # external glossary; SPEC/HU link terms by anchor (#sigla)
     intake/
       intake.md             # consolidated digest of the 6 source subfolders
       source-index.md       # auditable inventory of files + readability
+      needs-review.md       # files a human must fix (encoding/format)
     specs/
-      {domain}/spec.md      # GENERAL specs = Azure Features
-    impact-map.yaml         # seam: Features -> candidate User Stories per cl00xx
+      {domain}/
+        spec.md             # Azure Feature + capabilities (CAP-xxx) + HU table of contents
+        hu/
+          HU-xxx/
+            HU-xxx.md        # User Story body + architect & design notes
+            assets/          # external docs / Figma exports for this HU
+    impact-map.yaml         # seam: lean routing index, one entry per HU (-> cl00xx)
     .execution-log.md
 ```
 
@@ -73,7 +80,7 @@ Template:
 
 ```yaml
 schema_version: "1.0"
-phase: INIT          # INIT | INTAKE | SPEC
+phase: INIT          # INIT | INTAKE | SPEC | HU
 initiative: null     # slug of the active initiative
 awaiting_approval: false
 completed: false
@@ -90,7 +97,8 @@ Phase inference (first match wins) when `.status.yaml` is missing:
 
 | Condition | Phase |
 |---|---|
-| `initiative/impact-map.yaml` AND `initiative/specs/` non-empty | SPEC |
+| `initiative/impact-map.yaml` exists | HU |
+| `initiative/specs/` non-empty (no `impact-map.yaml`) | SPEC |
 | `initiative/intake/intake.md` exists | INTAKE |
 | `initiative/config.yaml` exists | INIT |
 | nothing | INIT |
@@ -103,15 +111,16 @@ Read from `initiative/config.yaml` under `gates`:
 gates:
   intake:
     require_human_review: true   # INTAKE never auto-advances to SPEC
-  spec:
-    require_impact_map: true      # SPEC must emit impact-map.yaml
+  hu:
+    require_impact_map: true      # HU must emit impact-map.yaml (SPEC writes Features only)
 ```
 
 - When `gates.intake.require_human_review: true`, after INTAKE persists its
   artifacts the skill sets `awaiting_approval: true` and stops. SPEC must not run
   until the orchestrator clears the gate.
-- When `gates.spec.require_impact_map: true`, SPEC returns `status: warning` if it
-  did not produce `impact-map.yaml`.
+- When `gates.hu.require_impact_map: true`, the HU phase returns `status: warning`
+  if it did not produce `impact-map.yaml`. SPEC writes Features only and NEVER
+  owns the impact-map (legacy `gates.spec.require_impact_map` is removed).
 
 ## Execution Log
 
@@ -135,7 +144,11 @@ to determine flow state (use `.status.yaml`).
 
 ## File Access Rules
 
+- The sources directory is ALWAYS `sources/` (fixed convention).
 - Skills MAY read anywhere under `sources/` and `initiative/`.
+- **`resources/` is NOT an initiative input.** It belongs to the general
+  repository; skills MUST NOT read, inventory, or scaffold it. Same for any
+  directory other than `sources/` and `initiative/`.
 - Skills MAY read (read-only) the registered cl00xx project paths from
   `config.yaml` `target_projects` to sanity-check references. They MUST NOT write
   outside `initiative/`.
@@ -163,5 +176,19 @@ to determine flow state (use `.status.yaml`).
 - Always verify path existence before reading or writing.
 - All artifact content MUST be written in Spanish. Keep filenames and paths in
   English.
+- **Anti-fabricación (transversal).** Every assertion in any artifact MUST trace
+  to a source under `sources/`, or be explicitly marked `[sin confirmar]`, a GAP,
+  or a supuesto. Never invent figures, thresholds, names, or acronym expansions.
+  Acronyms expand to their full name only if the sources define it; the intake
+  `## Glosario` is the canonical reference reused downstream.
+- **HU lifecycle:** `status ∈ {proposed, blocked, seeded, closed, rejected}`
+  (+`created-in-azure` metadata). `seeded` and `closed` are LOCKED — the HU lives
+  in/was developed in the cl00xx project; never modify its body on a re-run, create
+  a successor (`supersedes`/`superseded_by`) instead.
+- **Glossary:** the canonical glossary is the external `initiative/glossary.md`
+  (one `## Term` per entry → anchor `#term`). Artifacts link terms to it on first
+  use with a path relative to their own depth.
+- **History:** each Feature spec and HU keeps a `## Historial` (dated revision
+  lines). `impact-map` carries `revision`/`last_updated` per HU.
 - The change pipeline that consumes `impact-map.yaml` (a future DECOMPOSE phase)
   is OUT OF SCOPE here. These skills only produce the seam, never seed cl00xx.

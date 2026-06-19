@@ -106,19 +106,34 @@ iniciativa. Ingiere documentos en `sources/01..06` y produce specs generales.
 Es un grafo aparte, con su propio estado en `initiative/.status.yaml`:
 
 ```text
-INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC -> (DECOMPOSE futuro)
+INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC (Features) -> HU (Historias) -> (ENRICH opcional) -> (DECOMPOSE futuro)
 ```
 
 - `INITIATIVE-INIT` (`flow-nea-initiative-init`): scaffold de `sources/` +
   `initiative/`, escribe `config.yaml`/`.status.yaml`, valida la Definition of
   Ready (no bloquea por DoR; reporta vacios como `risks`).
-- `INTAKE` (`flow-nea-initiative-intake`): inventaria y lee `sources/` con
-  degradacion gracil (archivos ilegibles -> `needs-conversion`, nunca falla la
-  fase), consolida `intake.md` + `source-index.md`. Activa el gate de revision
-  humana (`gates.intake.require_human_review`) antes de SPEC.
-- `SPEC` (`flow-nea-initiative-spec`): escribe specs generales (Features de
-  Azure) y emite `impact-map.yaml` con HU candidatas por proyecto cl00xx.
-- `flow-nea-initiative-status`: motor de estado read-only de esta capa.
+- `INTAKE` (`flow-nea-initiative-intake`): lee SOLO `sources/` (ignora
+  `resources/`), con degradacion gracil — errores de encoding (no UTF-8) o
+  formatos binarios NO rompen la fase; se clasifican (`encoding` /
+  `unsupported-format` / `empty`) y se listan en `intake/needs-review.md` para que
+  un humano los arregle. Consolida `intake.md` (incl. `## Glosario`) +
+  `source-index.md`. Activa el gate de revision humana antes de SPEC. No fabrica.
+- `SPEC` (`flow-nea-initiative-spec`): escribe specs generales detalladas
+  (Features de Azure con capacidades `CAP-xxx`). No escribe HU ni impact-map.
+- `HU` (`flow-nea-initiative-hu`): descompone los Features en Historias de
+  Usuario, **una carpeta por HU** (`specs/{domain}/hu/HU-xxx/` con `HU-xxx.md` +
+  `assets/.gitkeep`), mantiene la TOC en el Feature spec, marca las HU que
+  requieren arquitecto y/o disenador, marca `blocked` + `blockers[]` las que
+  dependen de un gap `[CRITICAL]`, y emite el `impact-map.yaml` (schema 2.2). En
+  re-run ACTUALIZA por identidad (bump `revision`), no duplica. La usa PMO; por lotes.
+- `ENRICH` (`flow-nea-initiative-enrich`): pase de especialista fuera de banda.
+  El arquitecto (`/flow-nea-initiative-arch`) completa `## Notas de arquitecto`;
+  el disenador (`/flow-nea-initiative-design`) completa `## Diseño (UX/UI)` con
+  enlaces Figma y assets. Actualiza `enrichment.{role}.status` (pending -> done)
+  en la HU, el impact-map y la TOC; no mueve la fase almacenada (como SPEC-FIX).
+- `flow-nea-initiative-status`: motor de estado read-only + lint del
+  `impact-map.yaml` (cobertura, sincronizacion HU, slugs unicos, refs validas) y
+  reporte de `enrichment_pending` por rol.
 
 Mapeo conceptual a Azure DevOps (solo metadata, sin API): iniciativa ≈ Epic,
 spec general = Feature, change candidato = Historia de Usuario.

@@ -76,6 +76,32 @@
         "bash": true
       }
     },
+    "flow-nea-initiative-hu": {
+      "model": "<your-provider/your-model>",
+      "mode": "subagent",
+      "hidden": true,
+      "description": "Decompose Features into User Stories (inside specs) and emit impact-map.yaml",
+      "prompt": "You are a flow-nea executor for phase HU, not the orchestrator. Do the work of this phase yourself. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-initiative-hu/SKILL.md and follow it exactly.",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "flow-nea-initiative-enrich": {
+      "model": "<your-provider/your-model>",
+      "mode": "subagent",
+      "hidden": true,
+      "description": "Architect/designer enrichment of a single User Story",
+      "prompt": "You are a flow-nea executor for phase ENRICH, not the orchestrator. Do the work of this phase yourself for the given role (architecture|design) and HU. Do NOT delegate, do NOT call task/delegate, and do NOT launch sub-agents. Read your skill at ~/.config/opencode/skills/flow-nea-initiative-enrich/SKILL.md and follow it exactly.",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
     "flow-nea-initiative-status": {
       "model": "<your-provider/your-model>",
       "mode": "subagent",

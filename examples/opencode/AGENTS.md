@@ -91,7 +91,9 @@ Read this table at session start, cache it, and pass the model in each sub-agent
 | orchestrator | claude-opus | Coordinates and makes decisions |
 | flow-nea-initiative-init | claude-haiku | Scaffold + Definition of Ready |
 | flow-nea-initiative-intake | claude-sonnet | Read/extract initiative sources |
-| flow-nea-initiative-spec | claude-opus | Synthesize Features + impact-map |
+| flow-nea-initiative-spec | claude-opus | Detailed Features + capabilities |
+| flow-nea-initiative-hu | claude-sonnet | Decompose Features into User Stories + impact-map |
+| flow-nea-initiative-enrich | claude-opus | Architect/designer enrichment of a HU |
 | flow-nea-initiative-status | claude-haiku | Read-only initiative state engine |
 | flow-nea-explore | claude-sonnet | Code reading |
 | flow-nea-propose | claude-opus | Architecture decisions |
@@ -187,8 +189,17 @@ general spec (`initiative/specs/{domain}/spec.md`) = Feature, change candidate
 ### Sub-graph (runs in the initiative repo)
 
 ```text
-INITIATIVE-INIT -> INTAKE -> [human-review gate] -> SPEC -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
+INITIATIVE-INIT -> INTAKE -> [human-review gate] -> SPEC (Features) -> HU (User Stories) -> (ENRICH opcional) -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
 ```
+
+SPEC writes detailed Features (capabilities `CAP-xxx`). HU decomposes Features into
+User Stories — one folder per HU (`specs/{domain}/hu/HU-xxx/` with `HU-xxx.md` +
+`assets/`) — keeps a TOC in the Feature spec, flags HUs needing architect/designer,
+and emits the lean `initiative/impact-map.yaml`. Run by PMO; batchable per Feature.
+
+ENRICH is an out-of-band specialist pass: architect (`/flow-nea-initiative-arch`)
+or designer (`/flow-nea-initiative-design`) fills the HU's notes / Figma links and
+flips `enrichment.{role}.status`. It never moves the stored phase.
 
 The seam to the per-project flow is `initiative/impact-map.yaml`. DECOMPOSE/seed is
 OUT OF SCOPE; this layer only emits the map, never writes into cl00xx.
@@ -197,12 +208,32 @@ OUT OF SCOPE; this layer only emits the map, never writes into cl00xx.
 
 - `/flow-nea-initiative-init <slug>` -> scaffold `sources/`+`initiative/`, config/status, Definition of Ready
 - `/flow-nea-initiative-intake <slug>` -> ingest `sources/01..06` -> `intake.md` + `source-index.md`
-- `/flow-nea-initiative-spec <slug>` -> general specs (Features) + `impact-map.yaml`
-- `/flow-nea-initiative-ff <slug>` -> meta-command: init -> intake, STOP at human-review gate before spec
+- `/flow-nea-initiative-spec <slug>` -> detailed general specs (Features + capabilities)
+- `/flow-nea-initiative-hu <slug>` -> decompose Features into User Stories (one folder per HU) + `impact-map.yaml`
+- `/flow-nea-initiative-arch <slug> HU-xxx` -> architect enriches a HU
+- `/flow-nea-initiative-design <slug> HU-xxx` -> designer enriches a HU (Figma links, assets)
+- `/flow-nea-initiative-ff <slug>` -> meta-command (ATTENDED): init -> intake, STOP at human-review gate before spec
+- `/flow-nea-initiative-auto <slug>` -> meta-command (UNATTENDED): init -> intake (auto-approved) -> spec -> hu, no stop. For PMO-absent runs. ENRICH/DECOMPOSE not run.
+
+Unattended: set `gates.intake.require_human_review: false` for permanent
+auto-approval, or use `/flow-nea-initiative-auto` to override the gate for one
+run. In unattended mode accept the HU skill's enrichment flags as-is and report
+`architecture_candidates`/`design_candidates` for later routing; still STOP on
+`status: failed` or empty `01-negocio`/`02-producto`.
+
+### Quality rules (initiative layer)
+
+- Sources dir is ALWAYS `sources/`; `resources/` is general-repo data (skills ignore it).
+- Anti-invención: claims trace to a source or are `[sin confirmar]`/GAP. INTAKE builds
+  a `## Glosario` (acronyms expanded only if sources define them); SPEC/HU reuse it.
+- SPEC altitude: CAP = business outcome; technical facts -> `## Decisiones técnicas`.
+  Every CAP needs a testable AC; gating CAPs need a measurable threshold.
+- `[CRITICAL]` intake gaps -> HU `status: blocked` + `blockers[]`. The status skill
+  reports `blocked_hus`, `enrichment_pending`, `placeholder_projects`.
 
 ### State Protocol (initiative layer)
 
-- State lives in `initiative/.status.yaml` (schema 1.0: `phase: INIT|INTAKE|SPEC`),
+- State lives in `initiative/.status.yaml` (schema 1.0: `phase: INIT|INTAKE|SPEC|HU`),
   NOT in `openspec/changes/.status.yaml`.
 - Delegate to `flow-nea-initiative-status` (haiku, read-only) for phase/gaps/gate.
 - INTAKE sets `awaiting_approval: true` when `gates.intake.require_human_review`:

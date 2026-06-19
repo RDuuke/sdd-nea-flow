@@ -160,14 +160,26 @@ Comandos:
 
 - `/flow-nea-initiative-init <slug>` - scaffold de `sources/` + `initiative/`, config/estado y Definition of Ready
 - `/flow-nea-initiative-intake <slug>` - ingiere `sources/01..06` a `intake.md` + `source-index.md` (degradacion gracil para pdf/docx/img)
-- `/flow-nea-initiative-spec <slug>` - escribe specs generales (Features) y emite `impact-map.yaml` (HU candidatas)
-- `/flow-nea-initiative-ff <slug>` - meta-comando: init -> intake, se detiene en el gate de revision humana antes de spec
+- `/flow-nea-initiative-spec <slug>` - escribe specs generales detalladas (Features + capacidades `CAP-xxx`)
+- `/flow-nea-initiative-hu <slug>` - descompone los Features en Historias de Usuario (una carpeta por `HU-xxx`) y emite `impact-map.yaml`
+- `/flow-nea-initiative-arch <slug> HU-xxx` - el arquitecto enriquece una HU (`## Notas de arquitecto`)
+- `/flow-nea-initiative-design <slug> HU-xxx` - el disenador enriquece una HU (`## Diseño (UX/UI)`, enlaces Figma, assets)
+- `/flow-nea-initiative-ff <slug>` - meta-comando (atendido): init -> intake, se detiene en el gate de revision humana antes de spec
+- `/flow-nea-initiative-auto <slug>` - meta-comando (desatendido): init -> intake (auto-aprobado) -> spec -> hu de corrido, para cuando PMO esta ausente. No corre ENRICH ni DECOMPOSE.
 
 Dependencias de la capa de iniciativa:
 
 ```text
-INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
+INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC (Features) -> HU (Historias) -> (ENRICH opcional) -> (DECOMPOSE futuro) ⤳ seed de HU en cl00xx
 ```
+
+Lo usa el equipo **PMO**. Cada HU es una carpeta (`specs/{domain}/hu/HU-xxx/`
+con `HU-xxx.md` + `assets/`); el Feature spec lleva una tabla de contenido con
+enlaces. La fase HU marca las historias que requieren **arquitecto** y/o
+**disenador**; estos entran despues con su comando (ENRICH) para completar notas
+tecnicas o enlaces de Figma. `impact-map.yaml` es un indice liviano de routing
+(IDs, `spec_ref` al archivo de la HU, proyecto destino, metadata Azure,
+enriquecimiento, estado) que consumira el pipeline de descomposicion.
 
 La costura con el flujo per-proyecto es `initiative/impact-map.yaml`. El paso
 DECOMPOSE/seed esta fuera de alcance hoy: esta capa solo emite el mapa, nunca
