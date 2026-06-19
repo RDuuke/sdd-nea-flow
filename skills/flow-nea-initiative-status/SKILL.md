@@ -91,10 +91,17 @@ If the map is absent, set `impact_map_valid: null`. Any failure -> add a clear
 message to `validation_errors` and set `impact_map_valid: false`; also surface a
 short summary under `risks`. This step never writes.
 
-Also compute `enrichment_pending` from the map: list HU ids where
-`enrichment.architecture.status == pending` or `enrichment.design.status ==
-pending`, grouped by role. The orchestrator uses this to route the architect
-(`/flow-nea-initiative-arch`) or designer (`/flow-nea-initiative-design`).
+Also compute, from the map (schema 2.1/2.2):
+- `enrichment_pending`: HU ids where `enrichment.architecture.status == pending` or
+  `enrichment.design.status == pending`, grouped by role — for routing the
+  architect (`/flow-nea-initiative-arch`) or designer (`/flow-nea-initiative-design`).
+- `blocked_hus`: HU ids with `status: blocked` (and their `blockers[]` refs).
+- `placeholder_projects`: distinct `target_project.id` with `status: placeholder`
+  (or id `cl0000`) — warn that the impact-map maps to a non-existent project.
+
+Additional checks: every `status: blocked` HU has ≥1 `blockers[]` entry; every
+`hu/HU-xxx/assets/` has a `.gitkeep`; no two HUs share identity
+(`feature`+`capability`+intent) — a duplicate is a `validation_errors` entry.
 
 ### Step 4: Determine Next Phase
 
@@ -144,6 +151,8 @@ Populate `action_context`:
   "impact_map_valid": null,
   "validation_errors": [],
   "enrichment_pending": { "architecture": [], "design": [] },
+  "blocked_hus": [],
+  "placeholder_projects": [],
   "action_context": {
     "blocked": true,
     "reason": "awaiting_approval",

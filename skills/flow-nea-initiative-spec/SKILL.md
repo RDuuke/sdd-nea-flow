@@ -74,22 +74,28 @@ For each domain write `initiative/specs/{domain}/spec.md`:
 
 ## Reglas de negocio
 - RN1: {regla derivada de las fuentes}
-- RN2: ...
+- RN2: {si esta Feature gatea una fase aguas abajo, define aquí el UMBRAL medible del gate}
 
 ## Capacidades
 
 ### CAP-001 — {Nombre}
 El producto SHALL {resultado a nivel negocio/usuario}.
 - **Motivación:** {valor de negocio}
-- **Restricciones:** {negocio/regulatorias, NO técnicas}
+- **Restricciones:** {límites de negocio/regulatorios — NO detalle técnico}
 - **Criterios de aceptación (Feature):**
-  - DADO {situación} CUANDO {evento} ENTONCES {resultado observable}
+  - DADO {situación} CUANDO {evento} ENTONCES {resultado observable}  (≥1 obligatorio, testeable)
 
 ### CAP-002 — {Nombre}
 ...
 
+## Decisiones técnicas (insumo para diseño/HU)
+<!-- Hechos técnicos/regulatorios obligatorios (servicios cloud, formatos, tablas
+origen, protocolos, IaC). NO van en el enunciado de los CAP; viven aquí. -->
+- {dato técnico citado de la fuente}  (fuente)
+
 ## Supuestos y dependencias
 - {supuesto / dependencia / "ninguna"}
+- {si un CAP depende de otra Feature: "CAP-00X depende de FEAT-otra.CAP-00Y"}
 
 ## Fuera de alcance
 - {lo que esta Feature NO cubre}
@@ -100,19 +106,34 @@ _Pendiente: las HU se generan en la fase HU._
 ```
 
 Leave the `## Historias de Usuario (HU)` section as a placeholder; the HU phase
-fills it. Each capability MUST carry ≥1 Feature-level acceptance criterion
-(happy + edge where it applies).
+fills it.
 
-Altitude rule (mirrors flow-nea-spec "WHAT not HOW"): no endpoints, tables,
-classes, or libraries. Use RFC 2119 keywords (SHALL/SHOULD).
+**Altitude guardrail (CAP = negocio).** The CAP statement (first sentence of each
+`### CAP-xxx`) MUST be a business outcome (WHAT/WHY). Technical or
+regulatory-required facts — cloud service names (S3, Glue, Lambda), source table
+names (SIIL01…), protocols, file formats, IaC tools (SAM, cfn-guard) — do NOT
+belong in the CAP statement or its Restricciones; move them to `## Decisiones
+técnicas`. Use RFC 2119 keywords (SHALL/SHOULD).
+
+**Glosario + anti-invención.** Use the canonical full names from
+`intake.md` `## Glosario`; expand an acronym on first use only if the glossary
+defines it. Do NOT invent expansions, figures, thresholds, system or people
+names. Anything not in the sources -> `[sin confirmar]` or a GAP note, never
+fabricated.
 
 ### Step 4: Self-Validate Before Returning
 
 Checks; any failure -> `status: warning`, list under `risks`:
 1. Every Feature has `FEAT-{domain}` and ≥1 `CAP-xxx`.
 2. `CAP-xxx` unique within each Feature.
-3. Each capability has ≥1 acceptance criterion.
-4. No technical detail leaked (no endpoints/tables/classes).
+3. **Every capability has ≥1 testable acceptance criterion** (DADO/CUANDO/ENTONCES).
+   A CAP without AC is incomplete — warn and do not advance to HU.
+4. **Gate threshold:** if a CAP blocks a downstream phase, a `RN` defines a
+   measurable threshold (no vague "incumplimiento material"). Missing -> warn.
+5. **Altitude:** scan CAP statements/Restricciones for technical signals (cloud
+   service, table, protocol, IaC, file format). If found in a CAP -> warn and
+   move them to `## Decisiones técnicas`.
+6. No invented content (every claim traces to a source or is marked `[sin confirmar]`).
 
 ### Step 5: Persist State (initiative mode only)
 
@@ -138,12 +159,16 @@ Return the JSON envelope with a per-domain table:
 
 ## Rules
 
-- Specs are detailed but stay at business altitude — no implementation detail.
+- Specs are detailed but stay at business altitude — technical/regulatory facts go
+  to `## Decisiones técnicas`, never in the CAP statement.
+- Every CAP has ≥1 testable AC; gating CAPs declare a measurable threshold in RN.
+- Use glossary canonical names; never invent expansions, figures, names — unknown
+  is `[sin confirmar]` or a GAP.
 - Do NOT write User Stories or `impact-map.yaml`; that is the HU phase.
 - Leave the `## Historias de Usuario (HU)` placeholder in each spec.
 - Never write outside `initiative/`.
 - All artifact content MUST be written in Spanish.
-- Size budget: each Feature spec under 900 words (capabilities only; HU added later).
+- Size budget: each Feature spec under 1000 words (capabilities only; HU added later).
 
 ## Output Contract (JSON)
 

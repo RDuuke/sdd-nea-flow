@@ -43,7 +43,8 @@ anything; return `status: failed` with a sanitized suggestion.
 
 ### Step 2: Scaffold Structure (initiative mode only)
 
-If the directories do not exist, create them:
+The sources directory is ALWAYS `sources/` (fixed convention). If it does not
+exist, scaffold it with the 6 convention subfolders:
 
 ```text
 sources/01-negocio/  sources/02-producto/  sources/03-reuniones/
@@ -51,9 +52,15 @@ sources/04-referencias/  sources/05-ux-ui/  sources/06-docs-tecnicos/
 initiative/  initiative/intake/  initiative/specs/
 ```
 
-In each `sources/NN-*/` write a short `README.md` (Spanish) explaining what
-goes there (see the ingest mapping in `flow-nea-initiative-intake`). Do NOT
-create placeholder specs or fake source documents.
+**`resources/` is NOT an input.** It belongs to the general repository; the
+initiative skills must IGNORE it (never scaffold, inventory, or read it). Same
+for any directory other than `sources/` and `initiative/`.
+
+In each `sources/NN-*/` write a short `README.md` (Spanish) explaining what goes
+there (see the ingest mapping in `flow-nea-initiative-intake`). Do NOT create
+placeholder specs or fake source documents. The `01..06` subfolders are a
+convention — if the user keeps a partial layout, intake maps whatever exists; do
+not force-create beyond the initial scaffold.
 
 If `initiative/` already exists, report what exists before writing; preserve
 existing `config.yaml` content and only fill the `context` block.
@@ -87,18 +94,20 @@ context: |
 sources_root: sources
 
 target_projects:           # MANUAL registry of external cl00xx projects
-  - id: cl0000
+  - id: cl0000             # PLACEHOLDER — replace with a real project id
     path: ../cl0000
+    status: placeholder    # placeholder | confirmed
 
 gates:
   intake:
     require_human_review: true   # set false for unattended/PMO-absent runs (auto-approve intake)
-  spec:
-    require_impact_map: true
+  hu:
+    require_impact_map: true     # HU owns impact-map.yaml (SPEC writes Features only)
 ```
 
 Fill `initiative.name` with the validated slug. Leave `target_projects` with a
-single placeholder entry for the user to edit.
+single placeholder entry (`status: placeholder`) for the user to edit. NOTE: the
+impact-map is emitted by the HU phase, not SPEC — the gate lives under `gates.hu`.
 
 ### Step 4: Validate Definition of Ready (DoR)
 
@@ -109,8 +118,11 @@ DoR items — they are warnings that gate quality, not blockers for init:
 2. `sources/01-negocio` non-empty (objective + scope).
 3. `sources/02-producto` non-empty (minimum features).
 4. Success metrics / initiative-level acceptance criteria present in `01-negocio`.
-5. At least one real entry in `target_projects` (placeholder `cl0000` counts as missing).
-6. Business glossary / domains hinted in `02-producto` (used later to name Features).
+5. At least one real entry in `target_projects` (any entry with `status:
+   placeholder` or id `cl0000` counts as MISSING — warn that the impact-map will
+   map HUs to a non-existent project).
+6. Business glossary / domains hinted in `02-producto` (used later to name Features
+   and to build the intake `## Glosario`).
 7. Azure mapping filled (`azure.organization`, `azure.project`, `azure.area_path`).
 
 Each missing item -> add to `risks` and set `status: warning`. All present ->

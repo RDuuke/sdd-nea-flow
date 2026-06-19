@@ -221,9 +221,19 @@ run. In unattended mode accept the HU skill's enrichment flags as-is and report
 `architecture_candidates`/`design_candidates` for later routing; still STOP on
 `status: failed` or empty `01-negocio`/`02-producto`.
 
+### Quality rules (initiative layer)
+
+- Sources dir is ALWAYS `sources/`; `resources/` is general-repo data (skills ignore it).
+- Anti-invención: claims trace to a source or are `[sin confirmar]`/GAP. INTAKE builds
+  a `## Glosario` (acronyms expanded only if sources define them); SPEC/HU reuse it.
+- SPEC altitude: CAP = business outcome; technical facts -> `## Decisiones técnicas`.
+  Every CAP needs a testable AC; gating CAPs need a measurable threshold.
+- `[CRITICAL]` intake gaps -> HU `status: blocked` + `blockers[]`. The status skill
+  reports `blocked_hus`, `enrichment_pending`, `placeholder_projects`.
+
 ### State Protocol (initiative layer)
 
-- State lives in `initiative/.status.yaml` (schema 1.0: `phase: INIT|INTAKE|SPEC`),
+- State lives in `initiative/.status.yaml` (schema 1.0: `phase: INIT|INTAKE|SPEC|HU`),
   NOT in `openspec/changes/.status.yaml`.
 - Delegate to `flow-nea-initiative-status` (haiku, read-only) for phase/gaps/gate.
 - INTAKE sets `awaiting_approval: true` when `gates.intake.require_human_review`:

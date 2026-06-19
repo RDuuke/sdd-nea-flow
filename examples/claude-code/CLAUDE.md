@@ -385,6 +385,20 @@ or any phase returns `status: failed`.
 - If init reports Definition-of-Ready gaps (empty `01-negocio`/`02-producto`,
   placeholder `target_projects`), surface them and do not force SPEC.
 
+### Quality rules (initiative layer)
+
+- Sources dir is ALWAYS `sources/`. `resources/` is general-repo data — skills
+  ignore it (never read/inventory).
+- Anti-invención: every claim traces to a source or is marked `[sin confirmar]`/GAP.
+  INTAKE builds a `## Glosario` (acronyms expanded only if the sources define them);
+  SPEC/HU reuse those canonical names. Never fabricate figures/thresholds/names.
+- SPEC altitude: CAP statements are business outcomes; technical/regulatory facts
+  live in `## Decisiones técnicas`. Every CAP needs a testable AC; gating CAPs need
+  a measurable threshold.
+- INTAKE marks `[CRITICAL]` gaps; HU turns them into `status: blocked` HUs with
+  `blockers[]` in the impact-map. `flow-nea-initiative-status` reports
+  `blocked_hus`, `enrichment_pending`, and `placeholder_projects`.
+
 ### Phase Read/Write Rules (initiative layer)
 
 | Phase | Reads | Writes |

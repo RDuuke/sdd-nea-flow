@@ -112,17 +112,20 @@ INITIATIVE-INIT -> INTAKE -> [gate revision humana] -> SPEC (Features) -> HU (Hi
 - `INITIATIVE-INIT` (`flow-nea-initiative-init`): scaffold de `sources/` +
   `initiative/`, escribe `config.yaml`/`.status.yaml`, valida la Definition of
   Ready (no bloquea por DoR; reporta vacios como `risks`).
-- `INTAKE` (`flow-nea-initiative-intake`): inventaria y lee `sources/` con
-  degradacion gracil (archivos ilegibles -> `needs-conversion`, nunca falla la
-  fase), consolida `intake.md` + `source-index.md`. Activa el gate de revision
-  humana (`gates.intake.require_human_review`) antes de SPEC.
+- `INTAKE` (`flow-nea-initiative-intake`): lee SOLO `sources/` (ignora
+  `resources/`), con degradacion gracil — errores de encoding (no UTF-8) o
+  formatos binarios NO rompen la fase; se clasifican (`encoding` /
+  `unsupported-format` / `empty`) y se listan en `intake/needs-review.md` para que
+  un humano los arregle. Consolida `intake.md` (incl. `## Glosario`) +
+  `source-index.md`. Activa el gate de revision humana antes de SPEC. No fabrica.
 - `SPEC` (`flow-nea-initiative-spec`): escribe specs generales detalladas
   (Features de Azure con capacidades `CAP-xxx`). No escribe HU ni impact-map.
 - `HU` (`flow-nea-initiative-hu`): descompone los Features en Historias de
   Usuario, **una carpeta por HU** (`specs/{domain}/hu/HU-xxx/` con `HU-xxx.md` +
-  `assets/`), mantiene una tabla de contenido en el Feature spec, marca las HU
-  que requieren arquitecto y/o disenador, y emite el `impact-map.yaml` (indice
-  liviano de routing por HU). La usa PMO; puede ejecutarse por lotes.
+  `assets/.gitkeep`), mantiene la TOC en el Feature spec, marca las HU que
+  requieren arquitecto y/o disenador, marca `blocked` + `blockers[]` las que
+  dependen de un gap `[CRITICAL]`, y emite el `impact-map.yaml` (schema 2.2). En
+  re-run ACTUALIZA por identidad (bump `revision`), no duplica. La usa PMO; por lotes.
 - `ENRICH` (`flow-nea-initiative-enrich`): pase de especialista fuera de banda.
   El arquitecto (`/flow-nea-initiative-arch`) completa `## Notas de arquitecto`;
   el disenador (`/flow-nea-initiative-design`) completa `## Diseño (UX/UI)` con
