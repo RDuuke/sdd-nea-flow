@@ -93,9 +93,12 @@ El producto SHALL {resultado a nivel negocio/usuario}.
 origen, protocolos, IaC). NO van en el enunciado de los CAP; viven aquí. -->
 - {dato técnico citado de la fuente}  (fuente)
 
+## Dependencias y orden
+- **Orden:** {N}  <!-- secuencia sugerida de esta Feature en la iniciativa -->
+- **Depende de:** {FEAT-otra, ... | "ninguna"}  <!-- Features que deben ir antes -->
+
 ## Supuestos y dependencias
 - {supuesto / dependencia / "ninguna"}
-- {si un CAP depende de otra Feature: "CAP-00X depende de FEAT-otra.CAP-00Y"}
 
 ## Fuera de alcance
 - {lo que esta Feature NO cubre}
@@ -103,6 +106,9 @@ origen, protocolos, IaC). NO van en el enunciado de los CAP; viven aquí. -->
 ## Historias de Usuario (HU)
 <!-- Esta sección la completa flow-nea-initiative-hu. No escribir HU aquí. -->
 _Pendiente: las HU se generan en la fase HU._
+
+## Historial
+- {YYYY-MM-DD} rev 1: creación de la Feature.
 ```
 
 Leave the `## Historias de Usuario (HU)` section as a placeholder; the HU phase
@@ -116,10 +122,19 @@ belong in the CAP statement or its Restricciones; move them to `## Decisiones
 técnicas`. Use RFC 2119 keywords (SHALL/SHOULD).
 
 **Glosario + anti-invención.** Use the canonical full names from
-`intake.md` `## Glosario`; expand an acronym on first use only if the glossary
-defines it. Do NOT invent expansions, figures, thresholds, system or people
-names. Anything not in the sources -> `[sin confirmar]` or a GAP note, never
-fabricated.
+`initiative/glossary.md`. On the FIRST use of a glossary term in the spec, link it
+relative to the file: a Feature spec lives at `initiative/specs/{domain}/spec.md`,
+so link `[SFC](../../glossary.md#sfc)` (anchor = lowercased term). Expand an
+acronym only if the glossary defines it. Do NOT invent expansions, figures,
+thresholds, system or people names. Anything not in the sources -> `[sin
+confirmar]` or a GAP note, never fabricated.
+
+**Order & dependencies.** Fill `## Dependencias y orden` with a suggested `Orden`
+and the Features this one depends on. Keep it consistent with the `order` /
+`depends_on` the HU phase will carry into the impact-map.
+
+**Historial.** Maintain `## Historial`: on first write add `rev 1: creación`; on a
+later update append a dated line describing what changed (keep prior lines).
 
 ### Step 4: Self-Validate Before Returning
 

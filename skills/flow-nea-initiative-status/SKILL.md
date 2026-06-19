@@ -99,9 +99,12 @@ Also compute, from the map (schema 2.1/2.2):
 - `placeholder_projects`: distinct `target_project.id` with `status: placeholder`
   (or id `cl0000`) — warn that the impact-map maps to a non-existent project.
 
-Additional checks: every `status: blocked` HU has ≥1 `blockers[]` entry; every
-`hu/HU-xxx/assets/` has a `.gitkeep`; no two HUs share identity
-(`feature`+`capability`+intent) — a duplicate is a `validation_errors` entry.
+Additional checks (schema 2.1/2.2/2.3): every `status: blocked` HU has ≥1
+`blockers[]` entry; every `hu/HU-xxx/assets/` has a `.gitkeep`; no two ACTIVE HUs
+share identity (`feature`+`capability`+intent); every `depends_on` id exists and
+there are no cycles; a `seeded`/`closed` HU that was re-derived has a
+`superseded_by` successor (its body unchanged); `initiative/glossary.md` exists if
+any artifact links to it. Each violation is a `validation_errors` entry.
 
 ### Step 4: Determine Next Phase
 

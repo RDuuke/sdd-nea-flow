@@ -109,12 +109,31 @@ inventes cifras, umbrales, nombres de personas/sistemas, ni expansiones de sigla
 que no estén en las fuentes. Lo desconocido se marca `[sin confirmar]` o va a
 `## Vacíos detectados` — nunca se rellena con suposiciones.
 
-### Step 3.5: Build the Glossary
+### Step 3.5: Build the External Glossary
 
-Extract a glossary of domain terms and acronyms used across the sources. For each
-acronym, give its **full name SOLO si aparece en las fuentes**; if the sources
-never expand it, write `[sin confirmar]` — do NOT guess the expansion. Use these
-canonical full names consistently downstream (SPEC/HU).
+Extract a glossary of domain terms and acronyms used across the sources and write
+it to **`initiative/glossary.md`** (external file, NOT inline in intake.md). One
+section per term so it has a stable anchor:
+
+```markdown
+# Glosario — {Iniciativa}
+
+## SFC
+- **Nombre completo:** [sin confirmar]
+- **Definición:** {si la fuente la define, si no "[sin confirmar]"}
+- **Fuente:** (06-docs-tecnicos/...)
+
+## CUIF
+- **Nombre completo:** {...}
+...
+```
+
+For each acronym, give its **full name SOLO si aparece en las fuentes**; if the
+sources never expand it, write `[sin confirmar]` — do NOT guess. The heading
+`## SFC` yields the anchor `#sfc` that SPEC/HU link to
+(`initiative/glossary.md#sfc`). In `intake.md`, keep only a one-line pointer:
+`> Glosario: ver initiative/glossary.md`. These canonical names are reused
+downstream.
 
 ### Step 4: Write the Digest (initiative mode only)
 
@@ -126,10 +145,7 @@ Write `initiative/intake/intake.md`:
 ## Resumen ejecutivo
 {3-6 líneas: de qué trata la iniciativa, según las fuentes}
 
-## Glosario
-| Término / Sigla | Nombre completo | Definición breve | Fuente |
-|---|---|---|---|
-| SFC | [sin confirmar] | {si la fuente la define} | (06-docs-tecnicos/...) |
+> Glosario: ver [initiative/glossary.md](../glossary.md)
 
 ## Negocio
 - {objetivo / restricción}  (fuente)
@@ -154,7 +170,8 @@ Write `initiative/intake/intake.md`:
 - {gap normal: insumo faltante para specs}
 ```
 
-`## Glosario` is mandatory (aunque tenga pocas filas). `## Vacíos detectados` is
+The external `initiative/glossary.md` is mandatory (aunque tenga pocas entradas).
+`## Vacíos detectados` is
 mandatory: prefix con `[CRITICAL]` los gaps que bloquean historias (ej. una
 query/insumo no documentado), con su acción de resolución; el resto son gaps
 normales (subcarpetas vacías, docs ilegibles, scope indefinido, sin
@@ -201,6 +218,7 @@ the orchestrator can stop at the human-review gate.
   "detailed_report": "Per-subfolder counts and gaps.",
   "artifacts": [
     { "name": "intake", "path": "initiative/intake/intake.md", "type": "markdown" },
+    { "name": "glossary", "path": "initiative/glossary.md", "type": "markdown" },
     { "name": "source-index", "path": "initiative/intake/source-index.md", "type": "markdown" },
     { "name": "needs-review", "path": "initiative/intake/needs-review.md", "type": "markdown" }
   ],

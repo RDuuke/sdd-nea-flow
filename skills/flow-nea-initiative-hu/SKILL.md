@@ -9,7 +9,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "2.2"
+  version: "2.3"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -83,13 +83,19 @@ For each capability (`CAP-xxx`), derive one or more User Stories.
 **Create vs Update on re-run (no duplicates).** A HU's IDENTITY is
 (`feature` + `capability` + normalized intent/title). Before creating, look up an
 existing HU with the same identity in the impact-map / `hu/` folders:
-- **Match found -> UPDATE in place.** Keep its `id`, `enrichment`, `status`,
-  `blockers`. Refresh the body/criteria, bump `revision` (integer, +1) and set
-  `last_updated` in both the HU header and its impact-map entry. Log it.
+- **Match + status is LOCKED (`seeded` or `closed`) -> CREATE A SUCCESSOR.** A
+  locked HU was already sent to / developed in the cl00xx project; never modify its
+  body. Create a NEW HU (next global id, `revision: 1`) with `supersedes: HU-old`,
+  and on the OLD entry set only `superseded_by: HU-new` (the sole allowed change to
+  a locked HU). The successor carries the refreshed content.
+- **Match + status NOT locked (`proposed`/`blocked`) -> UPDATE in place.** Keep its
+  `id`, `enrichment`, `blockers`. Refresh body/criteria, bump `revision` (+1), set
+  `last_updated` in the HU header and impact-map entry, append a `## Historial` line.
 - **No match (new scope) -> CREATE** a new `HU-xxx` (next global id), `revision: 1`.
 - **Capability removed from the spec** -> mark the orphaned HU `status: rejected`
   with a note (do NOT delete the file).
-- HARD RULE: never two HUs with the same identity. The Step 7 validation enforces it.
+- HARD RULES: never two HUs with the same identity AND non-rejected/non-superseded
+  status; a `seeded`/`closed` HU never changes body between runs. Step 7 enforces it.
 
 Pick each HU's `target_project` from `config.target_projects`. **If the only
 entries are placeholders** (`status: placeholder` or id `cl0000`), still map to it
@@ -135,14 +141,19 @@ For each HU write `initiative/specs/{domain}/hu/HU-xxx/HU-xxx.md` AND create its
 
 > Feature: FEAT-{dominio} · Capacidad: CAP-001 · Proyecto: {cl00xx}
 > Azure: work_item_type=User Story · area_path={...} · parent_feature=FEAT-{dominio} · story_id=—
-> Prioridad: {Alta|Media|Baja} · status: {proposed|blocked|rejected} · revisión: {N} · actualizado: {YYYY-MM-DD}
+> Prioridad: {Alta|Media|Baja} · status: {proposed|blocked|seeded|closed|rejected} · revisión: {N} · actualizado: {YYYY-MM-DD}
 > Enriquecimiento: arquitectura={not-required|pending} · diseño={not-required|pending}
+> Sucesión: {supersedes HU-x | superseded_by HU-y | —}
 
 ## Historia
 Como {rol} quiero {capacidad} para {beneficio}.
 
 ## Descripción
 {3-6 renglones de contexto y detalle de negocio}
+
+## Dependencias y orden
+- **Orden:** {N}  <!-- secuencia sugerida dentro de la Feature/iniciativa -->
+- **Depende de:** {HU-x, FEAT-y | "ninguna"}
 
 ## Alcance funcional
 - {punto concreto}
@@ -169,7 +180,15 @@ _{Pendiente de diseño}_ | _No requiere diseño_
 
 ## Fuera de alcance
 - {opcional}
+
+## Historial
+- {YYYY-MM-DD} rev 1: creación de la HU.
 ```
+
+**Glosario (link).** On the first use of a glossary term in the HU body, link it
+relative to this file. The HU lives at `initiative/specs/{domain}/hu/HU-xxx/HU-xxx.md`
+(4 levels under `initiative/`), so link `[SFC](../../../../glossary.md#sfc)`.
+Use canonical names from `initiative/glossary.md`; never invent expansions.
 
 Quality bar for HU bodies:
 - Real `Descripción` + ≥3 acceptance criteria (happy + borde + error).
@@ -204,13 +223,15 @@ Write/merge `initiative/impact-map.yaml` (keep prior entries, `status` and
 `enrichment` state):
 
 ```yaml
-schema_version: "2.2"
+schema_version: "2.3"
 initiative: {slug}
 generated_from:
   intake: initiative/intake/intake.md
 features:
   - id: FEAT-parametrizacion
     spec: initiative/specs/parametrizacion/spec.md
+    order: 1                  # suggested execution sequence
+    depends_on: []            # [FEAT-otra, ...] features that must precede
     azure: { work_item_type: "Feature", area_path: "{area}", parent_epic: "{epic|}", feature_id: "" }
 user_stories:
   - id: HU-001
@@ -221,6 +242,8 @@ user_stories:
     assets_dir: "initiative/specs/parametrizacion/hu/HU-001/assets"
     target_project: { id: cl0095, path: ../cl0095, status: confirmed }  # confirmed | placeholder
     proposed_change_name: "{slug ^[a-z0-9][a-z0-9-]*[a-z0-9]$}"
+    order: 1                  # suggested execution sequence
+    depends_on: []            # [HU-x, FEAT-y, ...] must precede this HU
     azure:
       work_item_type: "User Story"
       area_path: "{area}"
@@ -230,15 +253,21 @@ user_stories:
     priority: high
     revision: 1               # +1 each time this HU is updated on re-run
     last_updated: ""          # YYYY-MM-DD of last write
+    supersedes: ""            # HU-id this one replaces (when predecessor was locked)
+    superseded_by: ""         # HU-id that replaced this one (set on the locked old HU)
     enrichment:
       architecture: { required: false, status: not-required }   # required:true -> pending|in-progress|done
       design:       { required: false, status: not-required }
-    status: proposed          # proposed | blocked | created-in-azure | seeded | rejected
+    status: proposed          # proposed | blocked | created-in-azure | seeded | closed | rejected
     blockers: []              # if status: blocked, list entries (schema below)
 unmapped_scope:
   - capability: "{Dominio}/{CAP-id} — {detalle}"
     reason: "{por qué no se pudo mapear}"
 ```
+
+LOCKED statuses = `seeded`, `closed` (HU already in the cl00xx project): never
+modify the HU body; on a re-run match, create a successor (`supersedes` /
+`superseded_by`) per Step 2.
 
 `blockers[]` entry shape (schema 2.2, optional; present when `status: blocked`):
 ```yaml
@@ -250,8 +279,9 @@ unmapped_scope:
 ```
 
 Rules:
-- `schema_version: "2.2"`. Honor `gates.hu.require_impact_map`: if `true` and no
+- `schema_version: "2.3"`. Honor `gates.hu.require_impact_map`: if `true` and no
   map was produced, return `status: warning`.
+- `order` + `depends_on` on every Feature and HU. `depends_on` ids must exist; no cycles.
 - One `user_stories` entry per HU folder — no more, no less.
 - `spec_ref` MUST resolve to the HU file; `assets_dir` to its assets folder.
 - `target_project.id` only from `config.target_projects`; carry `status`
@@ -275,8 +305,14 @@ Any failure -> `status: warning`, list under `risks`:
 6. HU body: each HU has `Descripción` + ≥3 testable acceptance criteria.
 7. Blocked integrity: every `status: blocked` HU has ≥1 `blockers[]` entry; every
    `[CRITICAL]` gap in intake maps to at least one blocked HU (or is resolved).
-8. Identity uniqueness: no two HUs share identity (`feature`+`capability`+intent).
-   On re-run, an existing identity was UPDATED (revision bumped), not duplicated.
+8. Identity uniqueness: no two ACTIVE HUs share identity (`feature`+`capability`+
+   intent). On re-run, a non-locked identity was UPDATED (revision++); a LOCKED
+   (`seeded`/`closed`) one got a SUCCESSOR (`supersedes`/`superseded_by`), and the
+   locked HU's body is unchanged. Never duplicated.
+9. Dependencies: every `depends_on` id exists; no cycles. `order` present per
+   Feature and HU.
+10. History: every HU/Feature has a `## Historial` with an entry for this run's
+    create/update/supersede/reject.
 
 ### Step 8: Persist State (initiative mode only)
 
@@ -297,6 +333,9 @@ Return the JSON envelope with a per-Feature table AND the HUs flagged for
 - `impact-map.yaml` is a lean routing index; `spec_ref` points to the HU file.
 - HU bodies stay at business altitude; technical detail -> architect notes, UX/UI -> design notes.
 - Merge-safe and idempotent: never renumber or drop existing HUs.
+- LOCKED (`seeded`/`closed`) HUs are immutable: re-run creates a successor, never edits the body.
+- Every HU has `## Dependencias y orden` + `## Historial`; impact-map carries `order`/`depends_on`.
+- Link glossary terms to `initiative/glossary.md#term` on first use (relative path per depth).
 - Every HU `assets/` has a `.gitkeep`. `status: blocked` HUs carry `blockers[]`.
 - Use glossary canonical names; never invent — unknown is `[sin confirmar]`/gap.
 - Decide `design.required` per HU (UI/report/API => true; data-only => not-required);

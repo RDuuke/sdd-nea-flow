@@ -41,9 +41,11 @@ If mode is unknown, treat it as `none` and report it as unresolved.
   initiative/
     config.yaml             # identity + Azure mapping + gates + target_projects
     .status.yaml            # initiative-layer state (schema 1.0)
+    glossary.md             # external glossary; SPEC/HU link terms by anchor (#sigla)
     intake/
       intake.md             # consolidated digest of the 6 source subfolders
       source-index.md       # auditable inventory of files + readability
+      needs-review.md       # files a human must fix (encoding/format)
     specs/
       {domain}/
         spec.md             # Azure Feature + capabilities (CAP-xxx) + HU table of contents
@@ -179,5 +181,14 @@ to determine flow state (use `.status.yaml`).
   or a supuesto. Never invent figures, thresholds, names, or acronym expansions.
   Acronyms expand to their full name only if the sources define it; the intake
   `## Glosario` is the canonical reference reused downstream.
+- **HU lifecycle:** `status ∈ {proposed, blocked, seeded, closed, rejected}`
+  (+`created-in-azure` metadata). `seeded` and `closed` are LOCKED — the HU lives
+  in/was developed in the cl00xx project; never modify its body on a re-run, create
+  a successor (`supersedes`/`superseded_by`) instead.
+- **Glossary:** the canonical glossary is the external `initiative/glossary.md`
+  (one `## Term` per entry → anchor `#term`). Artifacts link terms to it on first
+  use with a path relative to their own depth.
+- **History:** each Feature spec and HU keeps a `## Historial` (dated revision
+  lines). `impact-map` carries `revision`/`last_updated` per HU.
 - The change pipeline that consumes `impact-map.yaml` (a future DECOMPOSE phase)
   is OUT OF SCOPE here. These skills only produce the seam, never seed cl00xx.
