@@ -9,7 +9,7 @@
 > Un orquestador + sub-agentes especializados para desarrollo estructurado.
 > Cero dependencias. Solo Markdown. Funciona en cualquier lugar.
 
-Version: 2.1.0 (capa de iniciativa: experimental)
+Version: 2.3.0
 
 Links rapidos: [Instalacion](#instalacion) • [Herramientas](#herramientas) • [Documentacion tecnica](#documentacion-tecnica)
 
