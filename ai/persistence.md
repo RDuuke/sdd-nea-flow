@@ -1,117 +1,105 @@
-# Persistencia y OpenSpec
+# Persistencia del flujo de desarrollo
 
-## Modelo dual: OpenSpec + NeaBrain
+OpenSpec conserva contratos y estado versionables. NeaBrain es memoria opcional
+entre cambios; no sustituye los artefactos ni decide si una fase puede avanzar.
 
-OpenSpec y NeaBrain son complementarios. No se reemplazan.
+## Estado por cambio
 
-| Responsabilidad | OpenSpec | NeaBrain |
-|---|---|---|
-| Artefactos de flujo (proposal, specs, design, tasks) | ✅ fuente de verdad | ❌ |
-| Coordinacion de fase (.status.yaml) | ✅ | ❌ |
-| Git-versionable, human-readable | ✅ | ❌ SQLite binario |
-| Memoria cross-change (patrones, ADRs) | ❌ aislado por cambio | ✅ |
-| Busqueda semantica entre cambios anteriores | ❌ | ✅ FTS5 |
-| Contexto persistente entre sesiones | ❌ | ✅ sessions + observations |
+`openspec/changes/.status.yaml` es un selector con schema 2.0 y `active_change`.
+Cada cambio tiene su propio `.status.yaml`: ultima fase intentada, resultado,
+fases completadas, pendientes, aprobaciones tipadas, hashes e intentos FIX.
+Un cambio explicito nunca hereda el estado de otro. SPEC y DESIGN son
+independientes; sus escrituras de estado se serializan y fusionan.
 
-Activar NeaBrain: `experimental.neabrain: true` en `openspec/config.yaml`.
-Ver protocolo completo en `skills/_shared/persistence-contract.md`.
+STATUS solo lee. CONTINUE recupera el cambio seleccionado cuando falta estado,
+preserva snapshots/JSON/YAML anteriores y no interpreta existencia como exito.
+Un resultado VERIFY fallido o una aprobacion desconocida nunca habilita archivo.
+Cambios archivados se consultan por su ubicacion sin repetir fases.
 
-Instalacion: `neabrain setup claude-code --install`
+Contrato operativo: [state-contract.md](../skills/_shared/state-contract.md).
 
-## Rol de OpenSpec
-
-OpenSpec es el backend de artefactos recomendado por `nea-flow`. Se usa para:
-
-- mantener specs base del sistema actual
-- registrar cambios activos
-- guardar artefactos intermedios por fase
-- permitir reanudacion, verificacion y archivo
-
-Este repo define como usar OpenSpec, pero no lo implementa.
-
-## Estructura esperada
+## Artefactos y auditoria
 
 ```text
 openspec/
-├── config.yaml
-├── specs/
-│   └── {domain}/spec.md
-└── changes/
-    ├── {change-name}/
-    │   ├── exploration.md
-    │   ├── proposal.md
-    │   ├── quick.md
-    │   ├── specs/
-    │   │   └── {domain}/spec.md
-    │   ├── design.md
-    │   ├── tasks.md
-    │   ├── verify-report.md
-    │   └── .execution-log.md
-    ├── .status.yaml
-    └── archive/
+  config.yaml
+  specs/{domain}/spec.md
+  changes/
+    .status.yaml                 # seleccion del activo
+    {change-name}/
+      .status.yaml               # estado canonico del cambio
+      exploration.md
+      proposal.md                # o quick.md
+      specs/{domain}/spec.md
+      design.md
+      tasks.md
+      validation-plan.yaml
+      apply-progress.yaml
+      verify-report.yaml
+      fix-report.yaml
+      .execution-log.yaml
+    archive/YYYY-MM-DD-{change-name}/
+      archive-report.yaml
 ```
 
-## Artefactos canonicos
+La planeacion permanece en Markdown. Auditoria nueva en YAML: registros breves,
+identidades estables, fechas con zona y referencias a evidencia. No se duplica
+la misma auditoria en Markdown. Salidas extensas y capturas van por separado.
+El log es historico; el estado del cambio gobierna continuidad.
 
-### `proposal.md`
+FIX consume hallazgos estructurados y conserva hasta dos intentos entre sesiones.
+VERIFY combina el informe anterior: mantiene IDs, evidencia e historial de los
+hallazgos. `resolution` distingue open, resolved, dismissed y superseded; una
+reparacion declarada por APPLY no demuestra resolucion. Los cierres incluyen
+evidencia y hashes pertinentes; las sustituciones conservan las obligaciones
+pendientes. Un informe antiguo sin resolution se interpreta como abierto.
+No hay otro ledger ni autoridad de estado. Contrato:
+[findings-contract.md](../skills/_shared/findings-contract.md).
 
-Explica por que existe el cambio, su alcance y el enfoque propuesto.
+Ausencia de una seccion en un informe antiguo no demuestra verificacion aprobada.
+Informes Markdown antiguos se leen solo cuando falta el YAML, sin borrarlos ni
+convertir archivos historicos masivamente.
 
-### `quick.md`
+Contrato y ejemplos: [audit-contract.md](../skills/_shared/audit-contract.md),
+[audit-examples.md](../skills/_shared/audit-examples.md).
 
-Artefacto minimo para la via rapida. Resume objetivo, area afectada, blueprint,
-riesgos y verificacion de un fix pequeno y de bajo riesgo.
+## Especificaciones consolidadas
 
-### `design.md`
+`changes/{change}/specs/` contiene el delta; `openspec/specs/{domain}/spec.md`
+describe el comportamiento actual completo de ese dominio. Al cerrar, ARCHIVE
+integra altas, reemplaza requisitos modificados y retira los eliminados.
+Preserva requisitos ajenos, identidades y escenarios no afectados.
 
-Explica como se implementara el cambio a nivel tecnico.
+La base no acumula copias por cambio ni secciones ADDED/MODIFIED/REMOVED.
+Los deltas originales quedan en el cambio archivado. Una spec completa nueva
+no autoriza reemplazar contenido previo de un dominio existente.
 
-### `tasks.md`
+ARCHIVE prepara y valida todos los dominios antes de escribir, registra hashes,
+operaciones y respaldos en `.archive-transaction.yaml`, y permite recuperar una
+fusion parcial. Ante conflictos se detiene; no sobrescribe ni declara cerrado.
+Solo despues de consolidar, verificar referencias y mover se marca completado.
 
-Descompone el trabajo en una lista ejecutable de implementacion.
+## Escrituras verificadas y documentos concisos
 
-### `verify-report.md`
+Leer, combinar y validar antes de reemplazar; despues comprobar lo persistido
+antes de declarar exito. Un fallo de lectura posterior requiere reconciliar
+el contenido real, sin repetir a ciegas una escritura ni perder progreso previo.
+No se usa Engram ni un espejo de tareas en memoria.
 
-Registra validaciones, pruebas y fallos detectados.
+No hay limites universales de palabras. Propuestas, quick, diseno, tareas y deltas
+deben ser concisos y completos. Nunca se recortan criterios, dependencias ni
+requisitos vigentes para reducir longitud. Los ejemplos se cargan cuando ayudan
+desde [planning-examples.md](../skills/_shared/planning-examples.md).
+Registros YAML y referencias separan detalle y resumen sin perder trazabilidad.
 
-### `.status.yaml`
+## Invalidacion
 
-Coordina estado global del cambio. Debe representar al menos:
-
-- cambio activo
-- fase actual
-- tareas pendientes
-- artefactos modificados fuera del flujo
-- necesidad de aprobacion
-
-## Specs base vs specs delta
-
-- `openspec/specs/`: describen como funciona HOY el sistema
-- `openspec/changes/{change-name}/specs/`: describen solo la diferencia del cambio
-
-Cuando el cambio se archiva, las delta specs se fusionan con las specs base.
-
-## Presupuesto de tamano documental
-
-Los budgets del repo siguen siendo:
-
-| Artefacto | Limite |
-| --- | --- |
-| `tasks.md` | 530 palabras |
-| `design.md` | 800 palabras |
-| `proposal.md` | 500 palabras |
-| `quick.md` | 350 palabras |
-| `specs/` por dominio | 650 palabras |
-
-## Cambios que fuerzan regresion de fase
-
-Si se modifica fuera de la skill correspondiente:
-
-- `proposal.md` -> forzar nueva fase `SPEC`
-- `quick.md` -> forzar nueva fase `APPLY`
-- `specs/` -> forzar nueva fase `APPLY`
-- `design.md` -> forzar nueva fase `APPLY`
-- `tasks.md` -> forzar nueva fase `APPLY`
+Modificar propuesta invalida SPEC, DESIGN y fases dependientes; modificar specs
+o diseno invalida TASKS y posteriores. Cambiar definicion de tareas o quick
+invalida implementacion/verificacion dependiente. Cambiar codigo o entradas de
+validacion invalida la evidencia afectada. Actualizar un checkbox no equivale a
+redefinir tareas. Correcciones acotadas pueden preservar trabajo ya reconciliado.
+Solo cambios materiales renuevan aprobaciones; se conserva autorizacion vigente.
 
 ## Persistencia de la capa de iniciativa
 

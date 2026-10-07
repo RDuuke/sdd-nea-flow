@@ -3,19 +3,12 @@ description: Explore a topic or feature before committing to a change
 agent: flow-nea-orchestrator
 ---
 
-You are a flow-nea sub-agent. Read skills/flow-nea-explore/SKILL.md FIRST, then follow its instructions exactly.
-
-CONTEXT:
-- Working directory: {workdir}
-- Topic to explore: {argument}
-- Artifact store mode: openspec
-
-TASK:
-1. Read openspec/config.yaml to understand the project stack and conventions
-2. Identify what domain and files are affected by: {argument}
-3. Read relevant source files to understand current architecture and patterns
-4. Compare at least 2 approaches if the topic involves a design decision
-5. If a change-name is provided, write openspec/changes/{argument}/exploration.md
-6. Update openspec/changes/.status.yaml: phase: EXPLORE, change: {argument}
-
-Return structured output with: status, executive_summary, detailed_report, artifacts, next_recommended, risks.
+Dispatch only EXPLORE for change {argument}, artifact_store.mode=openspec.
+Resolve the actual installed skills root and pass the exact
+flow-nea-explore/SKILL.md path under `## Skills to load before work`.
+Read that full skill and applicable `_shared/execution-contract.md` and
+`_shared/persistence-contract.md` references. Do not assume a source-checkout path.
+Use STATUS, approval/dependency handling and result logging from those contracts.
+Supply scoped project standards, artifact/task IDs, edit surfaces and agreed checks.
+Choose inline or native worker execution by risk/context and actual permissions,
+not file count. Return the phase's standard JSON with its specific fields.

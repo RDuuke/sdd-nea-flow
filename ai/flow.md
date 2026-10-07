@@ -1,103 +1,91 @@
-# Flujo nea-flow
+# Flujo de desarrollo nea-flow
 
-## Fases soportadas
-
-- `INIT`
-- `EXPLORE`
-- `PROPOSE`
-- `QUICK`
-- `SPEC`
-- `DESIGN`
-- `TASKS`
-- `APPLY`
-- `VERIFY`
-- `ARCHIVE`
-
-## Grafo de dependencias
+## Dependencias
 
 ```text
-INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
-                                     ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
-                             DESIGN ─┘
-
-INIT/EXPLORE -> QUICK -> APPLY -> VERIFY -> ARCHIVE
+INIT -> EXPLORE -> PROPOSE aprobado -> SPEC ---+
+                                     DESIGN -+-> TASKS -> APPLY -> VERIFY -> ARCHIVE
+INIT/EXPLORE -> QUICK aprobado -> APPLY -> VERIFY -> ARCHIVE
 ```
 
-Reglas:
+PROPOSE directo puede omitir EXPLORE si hay contexto suficiente. SPEC y DESIGN
+leen la propuesta aprobada en cualquier orden; TASKS exige ambas. La ruta quick
+es explicita, para ajustes acotados de bajo riesgo.
 
-- `SPEC` y `DESIGN` leen desde `PROPOSE`
-- `QUICK` es una via rapida lateral para fixes pequenos y de bajo riesgo
-- `TASKS` requiere `SPEC` y `DESIGN`
-- `APPLY` implementa contra tareas y artefactos previos
-- `VERIFY` compara implementacion contra specs
-- `ARCHIVE` consolida el cambio y cierra estado
+## Continuidad y autorizacion
 
-## Meta-comandos
+STATUS calcula el siguiente paso desde estado propio y dependencias. CONTINUE
+aplica recuperacion dirigida cuando hace falta. El selector global no guarda
+fases; cada cambio conserva progreso, aprobaciones y bloqueos al alternar trabajo.
 
-- `/flow-nea-ff <change-name>`: ejecuta propose -> spec -> design -> tasks
-- `/flow-nea-continue <change-name>`: retoma desde la siguiente fase valida
-- `/flow-nea-judgment <change-name>`: revision dual ciega en paralelo
-- `/flow-nea-fix <change-name>`: relee fallos de verify y reintenta apply + verify
+Se aprueba alcance una vez sobre propuesta o quick. No hay aprobaciones rutinarias
+despues de SPEC, DESIGN, TASKS o cada lote. Se informa progreso y se sigue trabajo
+autorizado; cambios materiales, riesgos nuevos o gates configurados requieren
+decision. Advertencias informativas no bloquean por si solas.
 
-## Via rapida
+FF respeta el gate de propuesta y termina en TASKS; no implementa por su cuenta.
+QUICK aprobado completa APPLY, VERIFY y ARCHIVE cuando cumple las obligaciones.
+JUDGMENT conserva revision independiente. FIX repara solo hallazgos de producto,
+con un maximo de dos ciclos persistidos; infraestructura se recupera por separado.
 
-- `/flow-nea-quick <change-name>`: crea `quick.md`, espera una sola aprobacion y luego ejecuta `APPLY -> VERIFY -> ARCHIVE`
+Ante un bug, EXPLORE/APPLY/FIX separan sintoma y causa propuesta. Agrupan fallos
+solo con evidencia de una causa compartida y comprueban cada criterio afectado.
+Una reparacion parcial conserva lo pendiente; no reinicia el presupuesto FIX.
+Reglas: [triage-contract.md](../skills/_shared/triage-contract.md).
 
-## Reglas de avance
+## Verificacion por impacto
 
-El orquestador no debe avanzar automaticamente si:
+INIT/EXPLORE detectan capacidades reales. DESIGN/QUICK acuerdan un plan YAML de
+criterios, metodos y evidencia; TASKS incluye esas comprobaciones. No se exige
+build, cobertura o pruebas automatizadas solo por una etiqueta CRM/CMS/framework.
 
-- la fase devuelve `status: failed`
-- `artifacts` viene vacio cuando se esperaba salida material
-- existen riesgos no resueltos
-- el usuario debe aprobar
+Se ejecutan checks focales por impacto, ampliando por dependencias/riesgo o gates
+obligatorios. Se aceptan evidencias ejecutadas de pruebas, API, CLI, navegador y
+comprobaciones manuales documentadas. Inspeccion estatica no prueba runtime.
 
-En `QUICK`, la aprobacion ocurre una sola vez sobre `quick.md` antes de `APPLY`.
-Despues de esa aprobacion, la via rapida no termina en implementacion parcial:
-debe cerrar con `VERIFY` y `ARCHIVE` si la validacion sale bien.
-Si `VERIFY` falla, el orquestador intenta hasta 2 ciclos de fix automatico (misma
-logica que `/flow-nea-fix`) antes de detenerse. Si sigue fallando, deriva al usuario
-a `/flow-nea-fix` para intervencion manual. El cambio nunca queda en el limbo.
+Si falla una prueba, despues de reparar se repite esa prueba y los checks afectados
+por la reparacion. Resultados PASS independientes y vigentes se conservan. No se
+repite toda la suite automaticamente; una ampliacion debe justificar impacto o
+una obligacion explicita de ejecucion completa fresca.
 
-## Reglas de regresion
+VERIFY distingue fallo, bloqueo, pendiente y no aplicable. Solo archive_ready con
+evidencia vigente, tareas completas y obligaciones satisfechas habilita ARCHIVE.
+Cobertura/TDD no se activan por defecto; se respetan gates existentes y excepciones
+autorizadas por cambio. Nunca se fabrica RED para tareas documentales.
 
-Si un artefacto OpenSpec se modifica fuera de la skill esperada, el sistema
-debe registrar `modified_artifacts` y retroceder fase para forzar revalidacion.
+Detalles: [validation.md](validation.md) y contrato operativo
+[validation-contract.md](../skills/_shared/validation-contract.md).
 
-Reglas minimas:
+## Cierre y recuperacion
 
-- `proposal.md` modificado -> volver a `SPEC`
-- `quick.md` modificado -> volver a `APPLY`
-- `specs/` modificadas -> volver a `APPLY`
-- `design.md` modificado -> volver a `APPLY`
-- `tasks.md` modificado -> volver a `APPLY`
+Antes de la verificacion final, ejecutar normalizacion que modifica fuentes.
+VERIFY usa comandos check-only; una mutacion posterior invalida evidencia
+dependiente y requiere comprobaciones afectadas, sin repetir todo por defecto.
+Un fallo solo se atribuye al baseline con reproduccion comparable aislada.
+Esto no convierte un check obligatorio fallido en PASS ni permite archivo.
 
-## Retry policy
+ARCHIVE consolida requisitos vigentes por dominio, preserva contenido no afectado
+y guarda el historial en el cambio archivado. Prepara todos los merges y usa un
+journal recuperable; no cierra con conflicto o verificacion pendiente.
 
-Una fase puede reintentarse una sola vez cuando el fallo parece transitorio:
+Reintentos transitorios: uno por intento de fase, reconciliando outputs validos
+antes de repetir. No restaurar ciegamente fase ni descartar trabajo completado.
+Invalidaciones y correcciones SPEC-FIX/DESIGN-FIX se registran y se comprueba
+coherencia de propuesta, specs, diseno, tareas y obligaciones antes de verificar.
 
-- timeout
-- JSON truncado
-- error de parseo
-- respuesta incompleta
+Auditoria YAML compacta; informes anteriores se conservan como evidencia legacy.
+Contratos: [persistence.md](persistence.md), [validation.md](validation.md).
 
-Si falla dos veces seguidas, el orquestador debe detenerse e informar opciones
-al usuario.
+## Investigacion y entrega opcionales
 
-## Approval gates
+EXPLORE/diseno puede investigar preguntas externas concretas con fuentes y
+vacios visibles; no agrega una fase obligatoria. Commits, issues y PR se preparan
+solo cuando se solicita entrega, conservando rama y autorizacion vigentes.
+No hay issue aprobada, etiquetas o limite de 400 lineas universales. Las unidades
+de revision agrupan comportamiento, checks y documentacion relacionados.
 
-Las aprobaciones del usuario importan especialmente en:
-
-- despues de `EXPLORE`, si hay cambios de enfoque
-- despues de `QUICK`, antes de `APPLY`
-- despues de `PROPOSE`, `SPEC`, `DESIGN` y `TASKS`
-- cuando aparecen riesgos o bloqueadores
-- entre lotes grandes de `APPLY`
-
-## APPLY por lotes
-
-Cuando `tasks.md` es largo, `APPLY` debe ejecutarse por lotes y registrar
-progreso incremental para evitar cambios grandes sin control.
+Contratos: [research-contract.md](../skills/_shared/research-contract.md),
+[delivery-contract.md](../skills/_shared/delivery-contract.md).
 
 ## Capa de iniciativa (upstream)
 

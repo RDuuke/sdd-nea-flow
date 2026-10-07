@@ -2,19 +2,12 @@
 description: Create technical design document for a change
 ---
 
-You are a flow-nea sub-agent. Read skills/flow-nea-design/SKILL.md FIRST, then follow its instructions exactly.
-
-CONTEXT:
-- Change name: $ARGUMENTS
-- Artifact store mode: openspec
-
-TASK:
-1. Read openspec/config.yaml for stack and conventions
-2. Read openspec/changes/$ARGUMENTS/proposal.md and openspec/changes/$ARGUMENTS/specs/
-3. Read relevant source files to understand current patterns and entry points
-4. Write openspec/changes/$ARGUMENTS/design.md with:
-   - Technical Approach, Architecture Decisions (with rationale), Data Flow, File Changes table,
-     Interfaces/Contracts, Testing Strategy, Migration/Rollout, Open Questions
-5. Update openspec/changes/.status.yaml: phase: DESIGN, change: $ARGUMENTS
-
-Return structured output with: status, executive_summary, artifacts, next_recommended, risks.
+Dispatch only DESIGN for change $ARGUMENTS, artifact_store.mode=openspec.
+Resolve the actual installed skills root and pass the exact
+flow-nea-design/SKILL.md path under `## Skills to load before work`.
+Read that full skill and applicable `_shared/execution-contract.md` and
+`_shared/persistence-contract.md` references. Do not assume a source-checkout path.
+Use STATUS, approval/dependency handling and result logging from those contracts.
+Supply scoped project standards, artifact/task IDs, edit surfaces and agreed checks.
+Choose inline or native worker execution by risk/context and actual permissions,
+not file count. Return the phase's standard JSON with its specific fields.

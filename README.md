@@ -9,7 +9,7 @@
 > Un orquestador + sub-agentes especializados para desarrollo estructurado.
 > Cero dependencias. Solo Markdown. Funciona en cualquier lugar.
 
-Version: 2.3.0
+Version: 2.4.0
 
 Links rapidos: [Instalacion](#instalacion) • [Herramientas](#herramientas) • [Documentacion tecnica](#documentacion-tecnica)
 
@@ -72,6 +72,7 @@ Principios:
 
 - contexto minimo en el hilo principal
 - delegacion cuando leer o escribir infla demasiado el contexto
+- ejecucion inline acotada cuando corresponde, sin umbrales por cantidad de archivos
 - artefactos persistidos para no depender del chat
 - validacion fase por fase
 
@@ -260,19 +261,36 @@ Estructura resumida:
 
 ```text
 openspec/
-├── config.yaml
-├── specs/
-└── changes/
-    ├── {change-name}/
-    │   ├── proposal.md
-    │   ├── quick.md
-    │   ├── specs/
-    │   ├── design.md
-    │   ├── tasks.md
-    │   └── verify-report.md
-    ├── .status.yaml
-    └── archive/
+  config.yaml
+  specs/{domain}/spec.md       # comportamiento vigente consolidado
+  changes/
+    .status.yaml              # selector del cambio activo
+    {change-name}/
+      .status.yaml            # estado propio
+      proposal.md             # o quick.md
+      specs/{domain}/spec.md  # delta del cambio
+      design.md
+      tasks.md
+      validation-plan.yaml
+      apply-progress.yaml
+      verify-report.yaml
+      .execution-log.yaml
+    archive/
 ```
+
+Cada cambio conserva su progreso al alternar trabajo. La auditoria nueva usa
+YAML compacto; los informes Markdown anteriores se conservan. Al cerrar, las
+specs se consolidan por dominio, sin copiar cada cambio en la base.
+
+La validacion usa capacidades reales y pruebas focales por impacto. Si falla una
+prueba, se repite esa y las afectadas por la reparacion; se conserva PASS vigente.
+Build, cobertura y TDD no se imponen si no aplican; gates existentes se respetan.
+Ver [validacion proporcional](ai/validation.md).
+
+La investigacion externa y la entrega por commits/PR son opcionales. Se conserva
+la rama elegida y cada unidad agrupa comportamiento, checks y docs relacionados.
+El cierre no publica cambios automaticamente. No se usa Engram. Ver
+[reglas de ejecucion y entrega](ai/flow.md#investigacion-y-entrega-opcionales).
 
 Referencia completa: [`ai/persistence.md`](ai/persistence.md)
 
@@ -287,7 +305,7 @@ Referencia completa: [`ai/persistence.md`](ai/persistence.md)
 Problemas comunes:
 
 - comandos `/flow-nea-*` no aparecen -> revisa instalacion y reinicia la herramienta
-- `.status.yaml` inconsistente -> elimina el archivo y usa `/flow-nea-continue`
+- estado inconsistente -> usa `/flow-nea-continue <change-name>` para recuperacion dirigida; conserva los archivos originales
 - respuesta JSON incompleta -> reintenta la fase; el orquestador ya contempla un retry
 - flujo bloqueado -> revisa `awaiting_approval` y `pending_tasks`
 

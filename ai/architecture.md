@@ -14,13 +14,14 @@ La idea central es separar coordinacion de ejecucion:
 ### 1. Orquestador
 
 El agente principal decide si una accion va inline o delegada. Su contexto debe
-mantenerse pequeno y estable. No debe leer de mas ni implementar fases
-completas por si mismo salvo tareas triviales.
+mantenerse pequeno y estable. Decide por riesgo, independencia e incertidumbre,
+no por cantidad de archivos. Puede ejecutar una fase acotada inline cuando
+corresponde o no hay delegacion permitida, preservando limites y contratos.
 
 Responsabilidades:
 
 - detectar cuando conviene usar el flujo
-- delegar a `flow-nea-status` para conocer la fase actual y dependencias
+- ejecutar `flow-nea-status` para conocer la fase actual y dependencias
   (no lee `.status.yaml` directamente)
 - lanzar la fase correcta segun el envelope de status
 - validar respuestas de sub-agentes
@@ -59,7 +60,10 @@ La pregunta clave del orquestador es:
 
 **"Esto infla mi contexto sin necesidad?"**
 
-Si la respuesta es si, debe delegar. Este principio reduce:
+Si la respuesta es si y existe delegacion permitida, puede delegar con contexto
+acotado. Las reglas comunes viven en
+[execution-contract.md](../skills/_shared/execution-contract.md); los ejemplos
+conservan solo adaptacion y despacho por herramienta. Este principio reduce:
 
 - compresion de contexto
 - perdida de decisiones intermedias
@@ -77,8 +81,9 @@ integraciones deben preservar estas propiedades:
 - validacion estructurada por fase
 - posibilidad de retomar o retroceder estado
 
-Si una integracion no puede delegar sub-agentes reales, aun debe emular el
-comportamiento leyendo la skill correcta y ejecutando la fase de forma aislada.
+Si una integracion no puede delegar, ejecuta la fase de forma acotada leyendo la
+skill correcta. Esto preserva la semantica de fases, pero no equivale a revision
+independiente. La entrega por commits/issues/PR es opcional, fuera del grafo SDD.
 
 ## Mapa de componentes
 

@@ -23,7 +23,7 @@ Crea una nueva skill cuando el comportamiento:
 1. Leer el archivo completo antes de editar
 2. Confirmar que no cambie accidentalmente el contrato de salida
 3. Revisar si impacta examples, README o `AGENTS.md`
-4. Verificar consistencia con budgets y reglas de idioma
+4. Verificar contratos y reglas de idioma; la brevedad no debe truncar obligaciones
 
 ## Donde poner cada tipo de contenido
 
@@ -32,6 +32,21 @@ Crea una nueva skill cuando el comportamiento:
 - Regla global de contribucion del repo -> `AGENTS.md`
 - Onboarding, uso e instalacion -> `README.md`
 - Arquitectura o referencia tecnica para maintainers -> `ai/`
+
+Los cuerpos de skills deben contener decisiones y restricciones relevantes,
+sin tutoriales genericos ni limites rigidos de palabras. Ejemplos extensos se
+cargan bajo demanda desde referencias compartidas instalables. Los instaladores
+actuales copian `SKILL.md` y `_shared/*.md`: no introducir dependencias en assets
+o references por skill sin ampliar primero su distribucion.
+
+Guia operativa para `skill-creator`:
+[skill-authoring.md](../skills/_shared/skill-authoring.md).
+
+Para documentos humanos, explicar primero el resultado y enlazar el detalle
+necesario. La ruta de revision empieza en el contrato operativo, sigue sus
+consumidores y termina en la evidencia. No imponer una plantilla extensa a todo
+documento ni duplicar auditoria YAML en prosa. Guia compartida:
+[documentation-contract.md](../skills/_shared/documentation-contract.md).
 
 ## Reglas de idioma editoriales
 

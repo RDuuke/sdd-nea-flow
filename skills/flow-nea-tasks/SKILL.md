@@ -7,154 +7,50 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "2.0"
+  version: "3.1"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
 
 ## Purpose
 
-Create tasks.md with concrete, actionable steps organized by phase.
+Create a concrete task checklist organized by dependency and reviewable work
+units, retaining accepted criteria and the project's applicable validation.
 
-## What You Receive
+## Workflow
 
-- Change name
-- Artifact store mode (openspec | none)
+1. Read selected state, approved proposal, specs, design and validation-plan.yaml.
+   Require valid SPEC/DESIGN and resolved scope approval. Use actual project paths;
+   optional NeaBrain remains enrichment only under its availability protocol.
+2. Cross-check behavior, externally observable names/messages, quantities and
+   data contracts across artifacts. Design must implement, not override, accepted
+   outcomes. Do not require internal classes/methods to appear in WHAT-only specs.
+   Reconcile obligations and exceptions. On contradiction, return a blocking
+   warning with affected IDs and SPEC/DESIGN recommendation; do not write tasks.
+3. Write openspec/changes/{change-name}/tasks.md in Spanish. Group related behavior,
+   checks and docs into coherent dependency-ordered units; use only stages needed
+   by this change. Hierarchical stable IDs (1.1, 1.2, ...) identify checkboxes.
+   For each task identify the concrete action/paths, criterion and verification
+   method/check ID. Include dependencies when non-obvious. Split ambiguous or
+   unwieldy tasks rather than promising an arbitrary one-session deadline.
+4. Classify TDD applicability. Include real RED/GREEN steps only where configured
+   and behavioral; non-behavioral tasks need justified non-applicability. Include
+   agreed checks, not invented unit/integration/E2E layers or automatic suites.
+5. Merge updates without losing checked progress/evidence. Changed definitions
+   trigger shared invalidation; a checkbox alone does not redefine a task. Save
+   and read back the checklist, then merge local state and pending unchecked IDs.
+   Complete TASKS only for a coherent actionable plan. No circular dependencies.
+6. Return the standard envelope. Optional delivery planning can identify work
+   units, validation refs and rollback effects under
+   [delivery-contract.md](../_shared/delivery-contract.md); it creates no mandatory
+   commit task or publication gate. Keep prose concise without a fixed word/line
+   count or five-stage skeleton.
 
 ## Execution and Persistence Contract
 
-Read and follow: skills/_shared/persistence-contract.md
-
-## What to Do
-
-### Step 1: Analyze the Design
-
-Check `openspec/config.yaml` for `experimental.neabrain: true`.
-If enabled, consult the Neabrain index for paths and relationships before reading files.
-Otherwise, use direct relative paths from the project root.
-Read file bodies only when needed.
-Identify files to create/modify/delete and dependency order.
-
-### Step 1.5: Coherence Check (spec ↔ design)
-
-Before writing tasks, cross-read `specs/*/spec.md` and `design.md` and flag
-contradictions. Catching them upstream avoids a post-hoc SPEC-FIX cycle later.
-
-Run this checklist:
-
-1. **Behavior contract.** For each scenario in `specs/<domain>/spec.md`,
-   confirm that `design.md` does not override its expected outcome. If a spec
-   says "returns N for input X" and design implies a different algorithm with
-   a different N, that's a contradiction.
-2. **Naming.** Function/class names in design must match the names asserted
-   by spec scenarios.
-3. **Error messages.** When a spec demands a literal error message, design
-   must not propose a different phrasing.
-4. **Quantities and tolerances.** Specs that assert exact numbers (counts,
-   timeouts, fractions) must align with the design's algorithm precision
-   (e.g. integer steps vs fractional math).
-5. **Data shapes.** Input/output types in design must match spec assertions
-   (e.g. spec says `boolean`, design must not return a `Promise<boolean>`).
-
-If you find a contradiction:
-
-- Return `status: warning`, `next_recommended: "DESIGN"` (or `"SPEC"`
-  depending on which side is wrong), and list each contradiction in `risks`.
-- Do NOT write `tasks.md`.
-- Let the orchestrator decide which artifact to revise.
-
-If there are no contradictions, proceed to Step 2.
-
-### Step 2: Write tasks.md (openspec mode)
-
-openspec/changes/{change-name}/tasks.md
-
-Format:
-
-# Tasks: {Change Title}
-
-## Phase 1: Foundation
-- [ ] 1.1 ...
-- [ ] 1.2 ...
-
-## Phase 2: Core Implementation
-- [ ] 2.1 ...
-
-## Phase 3: Integration
-- [ ] 3.1 ...
-
-## Phase 4: Testing
-- [ ] 4.1 ...
-
-## Phase 5: Cleanup
-- [ ] 5.1 ...
-
-### Step 3: Persist (openspec mode)
-
-- Save tasks to openspec/changes/{change-name}/tasks.md
-- Extract all task IDs from the tasks.md file just created (e.g., ["1.1", "1.2",
-  "1.3", "2.1", etc.])
-- Update openspec/changes/.status.yaml:
-  ```yaml
-  phase: TASKS
-  change: "{change-name}"
-  awaiting_approval: false
-  completed: false
-  pending_tasks: ["1.1", "1.2", "1.3", "2.1", ...]
-  modified_artifacts: []
-  notes: ""
-  ```
-
-Note: `pending_tasks` should contain ALL task IDs at creation time. The
-orchestrator updates this list as tasks are completed in the APPLY phase.
-
-### Step 4: Return Summary
-
-Return a structured envelope with: status, executive_summary,
-detailed_report (optional), artifacts, next_recommended, risks.
-
-## Rules
-
-Each task MUST meet:
-
-| Criterion | Example ✅ | Anti-example ❌ |
-|-----------|-----------|----------------|
-| **Specific** | "Create `internal/auth/middleware.go` with JWT validation" | "Add auth" |
-| **Actionable** | "Add `ValidateToken()` method to `AuthService`" | "Handle tokens" |
-| **Verifiable** | "Test: `POST /login` returns 401 without token" | "Make sure it works" |
-| **Small** | One file or logical unit | "Implement the feature" |
-
-Phase organization guide:
-
-```
-Phase 1: Foundation / Infrastructure
-  └─ New types, interfaces, DB changes, config
-  └─ What other tasks depend on first
-
-Phase 2: Core Implementation
-  └─ Main logic, business rules, core behavior
-
-Phase 3: Integration / Wiring
-  └─ Connect components, routes, UI wiring
-
-Phase 4: Testing
-  └─ Unit, integration, e2e tests
-  └─ Verify against spec scenarios
-
-Phase 5: Cleanup (if applicable)
-  └─ Documentation, remove dead code, polish
-```
-
-- Always reference concrete file paths in tasks.
-- Order tasks by dependency.
-- Each task must be small enough for one session.
-- **Each task must be completable in ONE work session** — if it feels large or ambiguous when writing it, split it into smaller subtasks. A task that spans more than one session is a blocking risk.
-- **No circular dependencies** — a task cannot require results from a task in a later phase. If the ordering creates a cycle, redesign the task breakdown.
-- Use hierarchical numbering (1.1, 1.2, etc.).
-- If the project uses TDD, include RED -> GREEN -> REFACTOR tasks.
-- All artifact content MUST be written in Spanish.
-- **Size budget**: tasks.md artifact MUST be under 530 words. Each task: 1-2 lines max. Use checklist format, not paragraphs.
-- NEVER include vague tasks like "implement feature" or "add tests".
+Read the installed skills/_shared/persistence-contract.md and its applicable
+state, execution, validation and audit references. Mode none returns the plan
+inline without project writes. Preserve phase scope and existing authorization.
 
 ## Output Contract (JSON)
 
@@ -171,7 +67,18 @@ Phase 5: Cleanup (if applicable)
     }
   ],
   "next_recommended": "APPLY",
-  "risks": ["list of risks or blockers"],
-  "skill_resolution": "injected | fallback-registry | fallback-path | none"
+  "risks": [
+    "list of risks or blockers"
+  ],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none",
+  "action_context": {
+    "blocked": false,
+    "reason": null,
+    "requires_user_input": false
+  }
 }
 ```
+
+Return a single next_recommended phase from the state contract, not the literal
+union shown in examples. Set action_context.blocked=true for unresolved required
+inputs, material decisions or scope approval; optional warnings stay unblocked.

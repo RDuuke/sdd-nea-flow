@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "1.0"
+  version: "3.2"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -25,7 +25,7 @@ By default you research, report back, and persist the analysis when a change nam
 
 ## Execution and Persistence Contract
 
-Read and follow: skills/_shared/persistence-contract.md
+Read skills/_shared/persistence-contract.md and its state, execution, validation and audit references. Resolve them from the installed skills root.
 
 ## What to Do
 
@@ -33,6 +33,11 @@ Read and follow: skills/_shared/persistence-contract.md
 
 - Is it a new feature, bug fix, or refactor?
 - What domain does it touch?
+
+For bug reports load [triage-contract.md](../_shared/triage-contract.md).
+Reproduce the symptom, separate cause hypotheses from evidence and group only
+corroborated causes. Persist concise findings in the existing exploration artifact
+when authorized; no new mandatory triage document or remote issue operation.
 
 ### Step 1.5: NeaBrain Enrichment (if enabled)
 
@@ -51,26 +56,24 @@ Read relevant code only when needed to understand:
 - Files/modules affected
 - Existing behavior related to the request
 - Constraints or risks
+- Actual capabilities relevant to the change (tests, build, coverage, API, browser, CI and runtime), with sources and availability; refresh config observations without changing project gates
 
 ### Step 3: Analyze Options
 
-Compare multiple approaches if relevant.
+Compare multiple approaches if relevant. For unresolved questions that benefit
+from external evidence, load [research-contract.md](../_shared/research-contract.md).
+Distinguish sourced facts, assumptions and gaps. Workers return product
+decisions to the coordinator; missing optional research does not block
+independent work or create a new mandatory phase.
 
 ### Step 4: Save Exploration (openspec mode)
 
 If a valid change-name is provided (see Change Name Validation in
 persistence-contract.md), write:
 - openspec/changes/{change-name}/exploration.md
-- Update openspec/changes/.status.yaml:
-  ```yaml
-  phase: EXPLORE
-  change: "{change-name}"
-  awaiting_approval: false
-  completed: false
-  pending_tasks: []
-  modified_artifacts: []
-  notes: ""
-  ```
+- Merge `openspec/changes/{change-name}/.status.yaml` under state-contract.md;
+  record EXPLORE completion only for valid complete output, update input
+  hashes and preserve independent completed phases, approvals and pending work.
 
 If no change-name is provided or is invalid, return analysis inline only (no
 artifact). The topic itself is NOT used as a change-name for persistence
@@ -96,7 +99,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Do not modify code.
 - Always read real code, do not guess.
 - Keep analysis concise.
-- If request is too vague, ask for clarification.
+- If essential scope is unclear, return decision gaps to the coordinator; continue useful independent investigation.
 - All artifact content MUST be written in Spanish.
 
 ## Output Contract (JSON)
@@ -114,7 +117,18 @@ detailed_report (optional), artifacts, next_recommended, risks.
     }
   ],
   "next_recommended": "PROPOSE",
-  "risks": ["list of technical risks or blockers"],
-  "skill_resolution": "injected | fallback-registry | fallback-path | none"
+  "risks": [
+    "list of technical risks or blockers"
+  ],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none",
+  "action_context": {
+    "blocked": false,
+    "reason": null,
+    "requires_user_input": false
+  }
 }
 ```
+
+Return a single next_recommended phase from the state contract, not the literal
+union shown in examples. Set action_context.blocked=true for unresolved required
+inputs, material decisions or scope approval; optional warnings stay unblocked.

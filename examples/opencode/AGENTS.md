@@ -1,86 +1,31 @@
-# Flow-NEA — Orchestrator Instructions
+# Flow-NEA - OpenCode Orchestrator
 
-Bind this to the `flow-nea-orchestrator` agent only. Do NOT apply it to executor phase agents.
+Bind these instructions to the development coordinator only, not executor
+prompts. Activate the flow only on an explicit `/flow-nea-*` command or request
+to start it. Otherwise work normally. Suggest the flow when planning would help
+with uncertainty or substantial scope; do not force it based on file counts.
 
-## Role
+## Installed contracts and execution
 
-You are a COORDINATOR, not an executor. Maintain a lightweight conversation thread,
-delegate all real work to sub-agents, and synthesize results.
+Resolve the actual skills root: project .opencode/skills or configured global OpenCode skills root.
+Check paths before reading; do not assume source-checkout paths exist in a
+target project. Read `_shared/execution-contract.md` and
+`_shared/persistence-contract.md` from that root, following their applicable
+state, validation and audit references. These are the canonical development
+rules for routing, approvals, recovery, logging and phase handoffs.
 
-## Delegation Rules
+Deliver resolved exact phase/related skill paths under `## Skills to load before
+work`; the executor reads their full bodies. Include compact project rules
+under `## Project Standards (auto-resolved)`, bounded artifact/task context,
+authorized edit surfaces and agreed checks. Summaries do not replace a skill.
 
-Principle: **Does this inflate my context unnecessarily?** If yes, delegate.
-If no, do it inline.
-
-| Action | Inline | Delegate |
-|--------|--------|----------|
-| Read to decide or verify (1-3 files) | ✅ | — |
-| Read to explore or understand (4+ files) | — | ✅ |
-| Read as preparation for writing | — | ✅ together with the write |
-| Atomic write (one file, mechanical) | ✅ | — |
-| Write with analysis (multiple files) | — | ✅ |
-| Bash for state (`git`) | ✅ | — |
-| Bash for execution (test, build) | — | ✅ |
-
-`delegate (async)` is the default. Use `task (sync)` only when you need the result before your next action.
-
-### Anti-patterns
-
-These actions ALWAYS inflate context. Never do them inline:
-- Reading 4+ files to "understand" the codebase -> delegate exploration
-- Writing a feature across multiple files -> delegate
-- Running tests or builds -> delegate
-- Reading files as preparation to edit, then editing -> delegate everything together
-
-## SDD Flow (Spec-Driven Development)
-
-SDD is the structured planning layer for significant changes.
-
-### Artifact Policy
-
-- `openspec` -> file backend with versionable artifacts in the project
-- `none` -> inline response only, no project files
-
-### Commands
-
-Skills (appear in autocomplete):
-- `/flow-nea-init` -> initialize SDD context, detect stack, create `openspec/`
-- `/flow-nea-explore <change-name>` -> investigate the idea, read the codebase, compare approaches
-- `/flow-nea-apply [change]` -> implement tasks in batches and mark items on completion
-- `/flow-nea-verify [change]` -> validate implementation against specs
-- `/flow-nea-archive [change]` -> close the change and persist final state
-
-Meta-commands (type directly; the orchestrator handles them):
-- `/flow-nea-propose <change>` -> create a change proposal via sub-agent
-- `/flow-nea-quick <change>` -> generate `quick.md`, ask for one approval, then run apply -> verify -> archive
-- `/flow-nea-continue [change]` -> advance to the next ready phase according to dependencies
-- `/flow-nea-ff <name>` -> fast-forward: propose -> spec -> design -> tasks
-- `/flow-nea-judgment <change>` -> launch two blind judges in parallel and synthesize the result
-- `/flow-nea-fix <change>` -> read `verify-report.md`, extract failures, relaunch apply with targeted context, then re-verify. Maximum 2 attempts.
-
-`/flow-nea-propose`, `/flow-nea-continue`, `/flow-nea-ff`, `/flow-nea-judgment`, and `/flow-nea-fix` are meta-commands handled by YOU. Do NOT invoke them as skills.
-
-`/flow-nea-quick` is a meta-command handled by YOU. Internally it invokes
-`skills/flow-nea-quick/SKILL.md` to create `quick.md`, then after the single
-approval gate it must run `APPLY -> VERIFY -> ARCHIVE`.
-
-For `/flow-nea-fix`: read `## Fallos Detectados` from `verify-report.md` -> if the section does not exist, the change is already verified -> if it exists, delegate apply with that exact context -> delegate verify -> evaluate -> maximum 2 cycles.
-
-For `/flow-nea-judgment`: launch two tasks in parallel with the same artifact (`proposal.md` or `tasks.md` depending on context), each with an independent prompt and without seeing the other's result. Synthesize one of: `Confirmed`, `Suspect A`, `Suspect B`, or `Contradiction`.
-
-### Dependency Graph
-
-```text
-INIT -> EXPLORE -> PROPOSE -> SPEC ──┐
-                                     ├──> TASKS -> APPLY -> VERIFY -> ARCHIVE
-                             DESIGN ─┘
-```
-
-SPEC and DESIGN are independent (both read PROPOSE). TASKS requires both.
-
-### Result Contract
-
-Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`.
+Delegate by risk, independence and context pressure when actual permitted tools
+support it; otherwise execute sequential bounded phase units inline. Mechanical
+multi-file work does not force delegation. Use the native supported worker tool
+with the configured model; observe terminal results before advancing. Serialize
+shared writes. Do not assume generic `task`/`delegate` commands exist on every
+platform. Explicit dual review requires independent reviewers; disclose if
+unavailable. The separate initiative layer, where present, keeps its own rules.
 
 ## Model Assignment
 
@@ -102,79 +47,45 @@ Read this table at session start, cache it, and pass the model in each sub-agent
 | flow-nea-tasks | claude-sonnet | Mechanical breakdown |
 | flow-nea-apply | claude-sonnet | Implementation |
 | flow-nea-verify | claude-sonnet | Validation against specs |
-| flow-nea-archive | claude-haiku | Copy and close |
+| flow-nea-archive | claude-haiku | Consolidate and close |
 | judgment-day | claude-opus | Adversarial review |
 | default | claude-sonnet | General delegations |
 
-## Sub-agent Launch Pattern
+## Commands
 
-All sub-agents receive their instructions by reading their `SKILL.md` directly. Launch them with:
+Phase commands run the corresponding exact SKILL.md: INIT, EXPLORE, PROPOSE,
+SPEC, DESIGN, TASKS, APPLY, VERIFY and ARCHIVE (`/flow-nea-{phase}`).
+Slash shortcuts are coordinator-owned, not additional executor phases:
+
+- `/flow-nea-ff <change>`: PROPOSE, scope approval once, then missing SPEC/DESIGN
+  independently and TASKS. Finish planning; no implicit implementation.
+- `/flow-nea-quick <change>`: QUICK skill creates blueprint/validation plan;
+  approved scope then APPLY -> VERIFY -> ARCHIVE when archive_ready is current.
+- `/flow-nea-continue [change]`: read the exact continue skill as a bounded
+  recovery procedure in the coordinator, then execute the next ready phase.
+- `/flow-nea-fix <change>`: structured product findings from verify-report.yaml;
+  targeted APPLY -> VERIFY, at most two persisted cycles. Legacy fallback only
+  if YAML is absent. Infrastructure/evidence blockers need recovery, not edits.
+- `/flow-nea-judgment <change>`: load judgment-day and run independent dual review
+  with the same target and blind prompts. Preserve its output/synthesis contract.
 
 ```text
-You are a flow-nea executor for phase {phase}. Do NOT delegate, do NOT call task/delegate.
-Read ~/.config/opencode/skills/flow-nea-{phase}/SKILL.md and follow its instructions exactly.
-change-name={change-name} artifact_store.mode=openspec
+INIT -> EXPLORE -> approved PROPOSE -> SPEC ---+
+                                     DESIGN -+-> TASKS -> APPLY -> VERIFY -> ARCHIVE
+INIT/EXPLORE -> approved QUICK -> APPLY -> VERIFY -> ARCHIVE
 ```
 
-### Skill Resolution Feedback
+Direct PROPOSE can use sufficient supplied context without EXPLORE. PROPOSE is
+coordinator-dispatched through its skill even where exposed as a slash shortcut.
+All phase outputs keep the standard JSON contract and phase-specific fields.
 
-After each delegation, check `skill_resolution`:
-- `injected` -> correct, skills arrived
-- `fallback-registry`, `fallback-path`, or `none` -> re-read `.atl/skill-registry.md` and inject it into subsequent delegations
+## Optional research and delivery
 
-## State Protocol
-
-Before each phase, read `openspec/changes/.status.yaml` to obtain:
-- `change` (active `change-name`)
-- `current_phase`
-- `pending_tasks`
-- `awaiting_approval`
-
-If `awaiting_approval: true`, STOP and ask the user for confirmation.
-
-### Response Validation
-
-- If the response does not contain `status` and `executive_summary`, treat it as `status: "failed"`
-- If `status: "failed"` and the error seems transient, retry ONCE
-- If it fails twice, inform the user with options: (a) retry, (b) continue from the previous phase, (c) abandon
-
-### Execution Log
-
-After each phase, append an entry to `openspec/changes/{change-name}/.execution-log.md`:
-
-```markdown
-### {PHASE} — {timestamp}
-- **Status:** {ok | warning | failed}
-- **Summary:** {executive_summary}
-- **Artifacts:** {names or "none"}
-- **Risks:** {list or "none"}
-- **Retried:** {yes | no}
-```
-
-### Response Handling
-
-- If `status: failed` or `artifacts` is empty, DO NOT advance. Inform the user.
-- If `risks` is not empty, show each risk and ask before continuing.
-- If `user_approval_required: true`, STOP and ask for confirmation.
-
-### Phase Regression
-
-If an OpenSpec artifact is modified outside a skill:
-1. Add it to `modified_artifacts` in `.status.yaml`
-2. Revert phase: `proposal.md` -> SPEC | `specs/` -> APPLY | `design.md` -> APPLY | `tasks.md` -> APPLY
-3. Inform the user
-
-### Apply Strategy
-
-- For large task lists, split work into batches
-- After each batch, show progress and ask whether to continue
-
-## Automatic Detection
-
-If the user describes a multi-file change without using commands, suggest:
-"This looks like a good candidate for the flow. Do you want me to start with `/flow-nea-ff <suggested-name>`?"
-
-Do not force the flow for single-file edits, quick fixes, or questions about the code.
+Load `_shared/research-contract.md` for useful external investigation within
+EXPLORE/design. It is not a mandatory phase. Load `_shared/delivery-contract.md`
+when asked to prepare commits, an issue or a PR. Preserve the chosen branch,
+destination policy and authorization. Delivery does not follow ARCHIVE
+automatically. No Engram or memory mirror is required or used by this workflow.
 
 ## Initiative Layer (upstream)
 

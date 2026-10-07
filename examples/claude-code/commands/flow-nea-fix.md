@@ -2,58 +2,34 @@
 description: Auto-fix loop - reads failing tests from verify-report and relaunches apply with targeted context
 ---
 
-META-COMMAND: You (the orchestrator) handle this directly. Do NOT invoke as a skill.
+META-COMMAND: handled by the orchestrator, not a separate phase skill.
 
 CONTEXT:
 - Change name: $ARGUMENTS
 - Artifact store mode: openspec
-- Max fix attempts: 2
 
-VALIDATION:
-Validate that $ARGUMENTS is a valid change-name (^[a-z0-9][a-z0-9-]*[a-z0-9]$, 3-50 chars).
-If invalid, return error. If valid, proceed.
+Resolve the installed skills root and read `_shared/execution-contract.md`
+and `_shared/persistence-contract.md` with applicable references. Use their
+STATUS, approval, execution and log procedures; do not infer state here.
+Pass exact skill paths, scoped standards, edit surfaces and checks to each
+bounded phase, choosing native workers or inline execution by actual permissions.
 
-PRE-CHECK:
-Read openspec/changes/$ARGUMENTS/verify-report.md.
-- If file does not exist: return error "No verify report found. Run /flow-nea-verify $ARGUMENTS first."
-- If "## Fallos Detectados" section is NOT present: return "No hay fallos detectados en el reporte. El cambio ya esta verificado correctamente."
-- If section IS present: extract the failing tests, build errors, and incomplete tasks listed there.
 
-WORKFLOW:
-
-**Attempt 1:**
-
-1. Launch Agent with prompt:
-   "You are a flow-nea sub-agent. Read skills/flow-nea-apply/SKILL.md FIRST, then follow its instructions.
-   change-name=$ARGUMENTS artifact_store.mode=openspec
-
-   IMPORTANT — Targeted fix context:
-   The previous verification failed. Focus ONLY on fixing these specific issues:
-
-   {paste the full ## Fallos Detectados section from verify-report.md here}
-
-   Do NOT rewrite unrelated code. Fix the minimum necessary to make the failing tests pass.
-   Follow RED-GREEN-REFACTOR if TDD is configured. Return JSON with status and files changed."
-
-2. After apply completes, launch Agent for re-verification:
-   "You are a flow-nea sub-agent. Read skills/flow-nea-verify/SKILL.md FIRST, then follow its instructions.
-   change-name=$ARGUMENTS artifact_store.mode=openspec
-   Return JSON with status and any remaining failures."
-
-3. Evaluate re-verification result:
-   - If status ok and no "## Fallos Detectados" → SUCCESS: "Todos los tests pasan. Puedes continuar con /flow-nea-archive $ARGUMENTS"
-   - If still failing → proceed to Attempt 2
-
-**Attempt 2 (if needed):**
-
-Repeat the same apply + verify cycle with the updated verify-report.md.
-If still failing after attempt 2:
-- DO NOT retry again
-- Show the user: "No se pudo auto-corregir en 2 intentos. Fallos restantes: {list}. Requiere intervencion manual."
-- Suggest: "/flow-nea-apply $ARGUMENTS para continuar manualmente"
-
-RULES:
-- Never attempt more than 2 fix cycles
-- Never modify files outside the failing test scope
-- Always re-run verify after each fix attempt — do not assume the fix worked
-- If apply returns status: failed, stop immediately and report the error
+1. Read verify-report.yaml; legacy Markdown fallback only if YAML is absent.
+   Missing/corrupt/ambiguous evidence blocks. No Fallos Detectados heading does
+   not mean success. If archive_ready and inputs current, report ready to archive.
+2. Load installed `_shared/findings-contract.md` and `_shared/triage-contract.md`.
+   Select open actionable product findings, following replacement IDs and keeping
+   history. Group only confirmed causes; verify every affected criterion.
+   Infrastructure/evidence/policy blockers route to recovery, not speculative edits.
+3. Read local fix_attempts and fix-report.yaml; reconcile counts, maximum two
+   automatic product cycles across sessions. Save the next attempt before launch.
+4. Launch APPLY with only relevant finding IDs, criteria and evidence refs; repair
+   the minimum authorized scope. Preserve configured TDD and exceptions.
+5. Launch VERIFY against the agreed plan; reuse compatible passing checks and
+   rerun affected ones. VERIFY merges finding identities/history and records proven
+   resolutions; attempted repair alone is not resolution. Save attempt outcome
+   in fix-report.yaml and local state.
+6. If archive_ready, report closure readiness. Otherwise repeat only for remaining
+   product failures within the two-cycle budget. Stop on exhausted budget, APPLY
+   failure, new material scope or unresolved decision. Never restart the counter.

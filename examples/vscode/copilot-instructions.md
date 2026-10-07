@@ -1,8 +1,31 @@
-# SDD NEA FLOW - Copilot Instructions
+# Flow-NEA - VS Code / Copilot Orchestrator
 
-You are the NEA flow orchestrator (Spec-Driven Development). Your role is to coordinate
-phases and delegate work while maintaining minimal context and avoiding implementing
-everything at once.
+Bind these instructions to the development coordinator only, not executor
+prompts. Activate the flow only on an explicit `/flow-nea-*` command or request
+to start it. Otherwise work normally. Suggest the flow when planning would help
+with uncertainty or substantial scope; do not force it based on file counts.
+
+## Installed contracts and execution
+
+Resolve the actual skills root: project .vscode/skills or configured custom skills root.
+Check paths before reading; do not assume source-checkout paths exist in a
+target project. Read `_shared/execution-contract.md` and
+`_shared/persistence-contract.md` from that root, following their applicable
+state, validation and audit references. These are the canonical development
+rules for routing, approvals, recovery, logging and phase handoffs.
+
+Deliver resolved exact phase/related skill paths under `## Skills to load before
+work`; the executor reads their full bodies. Include compact project rules
+under `## Project Standards (auto-resolved)`, bounded artifact/task context,
+authorized edit surfaces and agreed checks. Summaries do not replace a skill.
+
+Delegate by risk, independence and context pressure when actual permitted tools
+support it; otherwise execute sequential bounded phase units inline. Mechanical
+multi-file work does not force delegation. Use the native supported worker tool
+with the configured model; observe terminal results before advancing. Serialize
+shared writes. Do not assume generic `task`/`delegate` commands exist on every
+platform. Explicit dual review requires independent reviewers; disclose if
+unavailable. The separate initiative layer, where present, keeps its own rules.
 
 ## Model Assignment
 
@@ -16,95 +39,40 @@ everything at once.
 | flow-nea-tasks | gpt-4o-mini | Mechanical breakdown |
 | flow-nea-apply | gpt-4o-mini | Implementation |
 | flow-nea-verify | gpt-4o-mini | Validation against specs |
-| flow-nea-archive | gpt-4o-mini | Copy and close |
+| flow-nea-archive | gpt-4o-mini | Consolidate and close |
 
-## Delegation
+## Commands
 
-Principle: **Does this inflate my context unnecessarily?** If yes, delegate.
-If no, do it inline.
+Phase commands run the corresponding exact SKILL.md: INIT, EXPLORE, PROPOSE,
+SPEC, DESIGN, TASKS, APPLY, VERIFY and ARCHIVE (`/flow-nea-{phase}`).
+Slash shortcuts are coordinator-owned, not additional executor phases:
 
-| Action | Inline | Delegate |
-|--------|--------|----------|
-| Read to decide or verify (1-3 files) | ✅ | — |
-| Read to explore or understand (4+ files) | — | ✅ |
-| Atomic write (one file, mechanical) | ✅ | — |
-| Write with analysis (multiple files) | — | ✅ |
-| Bash for state (`git`) | ✅ | — |
-| Bash for execution (test, build) | — | ✅ |
-
-### Anti-patterns
-
-These actions ALWAYS inflate context. Never do them inline:
-- Reading 4+ files to "understand" the codebase -> delegate exploration
-- Writing a feature across multiple files -> delegate
-- Running tests or builds -> delegate
-
-## Principles
-
-- Do not execute large work without going through proposal, specs, design, and tasks.
-- Split work into phases and ask for approval between phases.
-- Keep the main thread small: summaries and state, not extensive details.
-- Use OpenSpec as the default backend.
-- When launching a sub-agent for a phase, first read `openspec/changes/.status.yaml` (only phase, `pending_tasks`, and `modified_artifacts`) and build the task prompt including those values: `Read skills/flow-nea-{phase}/SKILL.md and execute it. change-name={change-name} artifact_store.mode={mode} current_phase={phase} pending_tasks={pending_tasks}`. Never launch a task with just the phase name and no `SKILL.md` path.
-- After receiving the JSON, if `status` is `failed` or `artifacts` is empty, DO NOT advance. Inform the user and ask for re-execution.
-- Check `skill_resolution` in every response: if it is not `injected`, re-inject the full `SKILL.md` in the next delegation.
-
-## Flow Commands
-
-- `/flow-nea-init`
-- `/flow-nea-explore <change-name>`
-- `/flow-nea-propose <change-name>`
-- `/flow-nea-spec <change-name>`
-- `/flow-nea-design <change-name>`
-- `/flow-nea-tasks <change-name>`
-- `/flow-nea-apply <change-name>`
-- `/flow-nea-verify <change-name>`
-- `/flow-nea-archive <change-name>`
-
-Meta-commands (handled by the orchestrator, do NOT invoke as skills):
-- `/flow-nea-ff <change-name>` — fast-forward: propose -> spec -> design -> tasks in sequence
-- `/flow-nea-quick <change-name>` — via rapida: crea `quick.md`, pide una sola aprobacion y luego ejecuta apply -> verify -> archive
-- `/flow-nea-continue <change-name>` — resume from the next pending phase
-- `/flow-nea-judgment <change-name>` — dual review with independent prompts, then synthesize the results
-- `/flow-nea-fix <change-name>` — auto-correction: extract failures from `verify-report.md`, relaunch apply with targeted context, then re-verify (maximum 2 cycles)
-
-Use `/flow-nea-quick` only for small, low-risk fixes that do not justify the
-full planning chain. It writes `quick.md`, waits for one approval, and then
-continues with `apply`, `verify`, and `archive`.
-
-## Persistence (OpenSpec)
-
-- Write and read artifacts inside `openspec/`
-- Avoid `.agents/` and other legacy stores
-
-Expected structure:
+- `/flow-nea-ff <change>`: PROPOSE, scope approval once, then missing SPEC/DESIGN
+  independently and TASKS. Finish planning; no implicit implementation.
+- `/flow-nea-quick <change>`: QUICK skill creates blueprint/validation plan;
+  approved scope then APPLY -> VERIFY -> ARCHIVE when archive_ready is current.
+- `/flow-nea-continue [change]`: read the exact continue skill as a bounded
+  recovery procedure in the coordinator, then execute the next ready phase.
+- `/flow-nea-fix <change>`: structured product findings from verify-report.yaml;
+  targeted APPLY -> VERIFY, at most two persisted cycles. Legacy fallback only
+  if YAML is absent. Infrastructure/evidence blockers need recovery, not edits.
+- `/flow-nea-judgment <change>`: load judgment-day and run independent dual review
+  with the same target and blind prompts. Preserve its output/synthesis contract.
 
 ```text
-openspec/
-  config.yaml
-  specs/
-  changes/
-    {change-name}/
-      exploration.md
-      proposal.md
-      specs/{domain}/spec.md
-      design.md
-      tasks.md
-      verify-report.md
-    .status.yaml
-    archive/
+INIT -> EXPLORE -> approved PROPOSE -> SPEC ---+
+                                     DESIGN -+-> TASKS -> APPLY -> VERIFY -> ARCHIVE
+INIT/EXPLORE -> approved QUICK -> APPLY -> VERIFY -> ARCHIVE
 ```
 
-## Output Rules
+Direct PROPOSE can use sufficient supplied context without EXPLORE. PROPOSE is
+coordinator-dispatched through its skill even where exposed as a slash shortcut.
+All phase outputs keep the standard JSON contract and phase-specific fields.
 
-- Summarize decisions and ask for approval before advancing phases.
-- If data is missing, ask specifically.
-- If the task is small, you may complete it in a single phase.
+## Optional research and delivery
 
-## State Update Outside the Flow
-
-When an OpenSpec artifact is modified outside a phase skill, whether inline or by a general sub-agent, the orchestrator MUST:
-1. Add the artifact to `modified_artifacts` in `.status.yaml`
-2. Revert `phase`: `proposal.md` -> SPEC | `specs/` -> APPLY | `design.md` -> APPLY | `tasks.md` -> APPLY
-3. Write in `notes` what changed and why
-4. Inform the user that the phase reverted and they must re-run the corresponding phase
+Load `_shared/research-contract.md` for useful external investigation within
+EXPLORE/design. It is not a mandatory phase. Load `_shared/delivery-contract.md`
+when asked to prepare commits, an issue or a PR. Preserve the chosen branch,
+destination policy and authorization. Delivery does not follow ARCHIVE
+automatically. No Engram or memory mirror is required or used by this workflow.

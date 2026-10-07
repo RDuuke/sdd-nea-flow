@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "2.0"
+  version: "3.1"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -24,7 +24,7 @@ Create a proposal that defines intent, scope, approach, risks, and rollback plan
 
 ## Execution and Persistence Contract
 
-Read and follow: skills/_shared/persistence-contract.md
+Read skills/_shared/persistence-contract.md and its state, execution, validation and audit references. Resolve them from the installed skills root.
 
 ## What to Do
 
@@ -38,63 +38,18 @@ Read and follow: skills/_shared/persistence-contract.md
 
 openspec/changes/{change-name}/proposal.md
 
-Format:
-
-# Proposal: {Change Title}
-
-## Intent
-{Problem and why}
-
-## Scope
-### In Scope
-- ...
-
-### Out of Scope
-- ...
-
-## Approach
-{High-level technical approach}
-
-## Affected Areas
-| Area | Impact | Description |
-|------|--------|-------------|
-| src/path/to/file.ts | New/Modified/Removed | descripcion concreta |
-
-> Use concrete file paths, not vague descriptions like "auth module".
-
-## Risks
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| ... | Low/Med/High | ... |
-
-## Rollback Plan
-> MANDATORY. Describe how to revert this change if it fails in production.
-> Minimum: which files to restore, which migrations to revert, whether feature flags are involved.
-
-{Como revertir}
-
-## Dependencies
-- ...
-
-## Success Criteria
-> MANDATORY. List of verifiable conditions that must be met to consider this change successful.
-> Each criterion must be checkable (test, metric, observable behavior).
-
-- [ ] ...
+Read the relevant PROPOSE example in
+[planning-examples.md](../_shared/planning-examples.md) when useful.
+Retain the agreed scope, criteria, risks and applicable rollback/validation
+details; adapt structure to the change.
 
 ### Step 3: Persist (openspec mode)
 
 - Save proposal to openspec/changes/{change-name}/proposal.md
-- Update openspec/changes/.status.yaml:
-  ```yaml
-  phase: PROPOSE
-  change: "{change-name}"
-  awaiting_approval: true
-  completed: false
-  pending_tasks: []
-  modified_artifacts: []
-  notes: ""
-  ```
+- Merge `openspec/changes/{change-name}/.status.yaml` under state-contract.md;
+  record PROPOSE completion and typed scope approval (pending unless already
+  explicitly approved for unchanged scope), update input
+  hashes and preserve independent completed phases, approvals and pending work.
 
 ### Step 4: Return Summary
 
@@ -103,18 +58,18 @@ detailed_report (optional), artifacts, next_recommended, risks.
 
 ## Rules
 
-- **Rollback plan is NON-NEGOTIABLE.** If it is not possible to define how to revert the change, do not advance — report as `status: blocked`.
-- **Success criteria is NON-NEGOTIABLE.** If verifiable criteria cannot be defined, do not advance — report as `status: blocked`.
+- **Rollback plan is NON-NEGOTIABLE.** If it is not possible to define how to revert the change, do not advance — report as `status: warning` with a blocking action_context.
+- **Success criteria is NON-NEGOTIABLE.** If verifiable criteria cannot be defined, do not advance — report as `status: warning` with a blocking action_context.
 - Use concrete file paths in Affected Areas, not vague descriptions.
 - Apply custom rules from `openspec/config.yaml → rules.proposal` if they exist.
 - All artifact content MUST be written in Spanish.
-- **Size budget**: proposal.md artifact MUST be under 400 words. Concise scope, not exhaustive.
+- Keep scope concise without truncating criteria, dependencies or rollback. No fixed word-count gate.
 
 ## Output Contract (JSON)
 
 ```json
 {
-  "status": "ok | warning | blocked",
+  "status": "ok | warning | failed",
   "executive_summary": "Summary of proposal and scope.",
   "detailed_report": "Reasoning or persistence notes.",
   "artifacts": [
@@ -124,8 +79,10 @@ detailed_report (optional), artifacts, next_recommended, risks.
       "type": "markdown"
     }
   ],
-  "next_recommended": "SPEC",
+  "next_recommended": null,
   "user_approval_required": true,
+  "risks": [],
+  "action_context": {"blocked": true, "reason": "scope_approval", "requires_user_input": true},
   "scope_summary": {
     "added": ["list of features"],
     "modified": ["list of existing features"],
@@ -134,3 +91,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
   "skill_resolution": "injected | fallback-registry | fallback-path | none"
 }
 ```
+
+The example represents a pending scope approval. For already approved unchanged
+scope, return user_approval_required=false, an unblocked action_context and the
+next ready phase from the state contract. Do not recreate a pending gate.

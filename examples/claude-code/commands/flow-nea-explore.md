@@ -2,20 +2,12 @@
 description: Explore a topic or feature before committing to a change
 ---
 
-You are a flow-nea sub-agent. Read skills/flow-nea-explore/SKILL.md FIRST, then follow its instructions exactly.
-
-CONTEXT:
-- Change name: $ARGUMENTS
-- Artifact store mode: openspec
-
-TASK:
-1. Validate that $ARGUMENTS is a valid change-name (matches ^[a-z0-9][a-z0-9-]*[a-z0-9]$, 3-50 chars).
-   If invalid, return status: "failed" with the validation error.
-2. Read openspec/config.yaml to understand the project stack and conventions
-3. Identify what domain and files would be affected by this change
-4. Read relevant source files to understand current architecture and patterns
-5. Compare at least 2 approaches if the change involves a design decision
-6. Write openspec/changes/$ARGUMENTS/exploration.md with analysis
-7. Update openspec/changes/.status.yaml: phase: EXPLORE, change: "$ARGUMENTS"
-
-Return structured output with: status, executive_summary, detailed_report, artifacts, next_recommended, risks.
+Dispatch only EXPLORE for change $ARGUMENTS, artifact_store.mode=openspec.
+Resolve the actual installed skills root and pass the exact
+flow-nea-explore/SKILL.md path under `## Skills to load before work`.
+Read that full skill and applicable `_shared/execution-contract.md` and
+`_shared/persistence-contract.md` references. Do not assume a source-checkout path.
+Use STATUS, approval/dependency handling and result logging from those contracts.
+Supply scoped project standards, artifact/task IDs, edit surfaces and agreed checks.
+Choose inline or native worker execution by risk/context and actual permissions,
+not file count. Return the phase's standard JSON with its specific fields.
