@@ -8,151 +8,79 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "1.0"
+  version: "3.1"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
 
 ## Purpose
 
-You initialize the flow-nea context, detect stack and conventions, and bootstrap
-the selected persistence backend.
-
-## Execution and Persistence Contract
-
-Read and follow: skills/_shared/persistence-contract.md
+Detect the actual project and initialize persistence without resetting existing
+changes or imposing tooling that the project does not use.
 
 ## What to Do
 
-### Step 1: Detect Project Context
-
-- Tech stack (package.json, go.mod, pyproject.toml, etc.)
-- Conventions (linters, test frameworks, CI)
-- Architecture patterns
-
-### Step 2: Initialize Persistence Backend
-
-If mode is openspec, ensure this structure exists:
-
-openspec/
-  config.yaml
-  specs/
-  changes/
-    archive/
-
-If mode is none, do not create project files.
-
-### Step 3: Generate Config (openspec mode only)
-
-If openspec/config.yaml is missing, create it with agnostic placeholders, then
-fill the context with the detected values in the same run.
-
-**REQUIRED:** the generated `config.yaml` MUST contain ALL top-level blocks
-from the template below, including `gates:` and `experimental:`. Do NOT
-omit blocks because their defaults are "disabled" — downstream skills rely
-on the presence of `gates.apply.tdd`, `gates.apply.review_budget` and
-`gates.verify.coverage_threshold`. Missing blocks = misconfigured project.
-
-Validate after writing: if any of these keys is absent, rewrite the file
-with the full template before returning.
-
-Base template:
+1. Inspect project instructions, manifests, CI and existing command wrappers.
+   Identify product context (CRM/CMS/framework app/docs/etc.), architecture,
+   conventions and capabilities under the validation contract. Do not guess a
+   build, test runner, API, runtime or coverage command from a product label.
+2. In openspec mode, ensure config, specs, changes and archive directories exist.
+   Never create placeholder specs. Preserve all existing changes and state.
+3. For a new config use the template below, replacing context and capability
+   observations with actual findings. For existing config, update concise context
+   and verified capability observations, preserving rules, gates, custom blocks,
+   commands, thresholds and experimental settings. Add missing safe defaults
+   only; missing disabled keys are not a project failure.
+4. Create a global 2.0 selector only if none exists. Do not reset selection,
+   migrate unrelated changes, overwrite legacy global state or delete JSON.
+   Report legacy recovery needs for CONTINUE using the state contract.
+5. Validate generated YAML and refs, return initialization artifacts. INIT is
+   project setup; it does not mark any existing change's phases complete.
 
 ```yaml
 schema: flow-nea
-
 context: |
-  Tech stack: not assessed
-  Architecture: not assessed
-  Testing: not assessed
-  Style: not assessed
-
+  Contexto: por detectar
 rules:
-  proposal:
-    - Include rollback plan for risky changes
-    - Identify affected modules/packages
-  specs:
-    - Use Given/When/Then format for scenarios
-    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
-  design:
-    - Document architecture decisions with rationale
-  tasks:
-    - Group tasks by phase
-    - Use hierarchical numbering (1.1, 1.2, etc.)
-  apply:
-    - Follow existing code patterns and conventions
-  verify:
-    - Run tests if test infrastructure exists
-  archive:
-    - Warn before destructive merges
-
+  proposal: ["Identificar alcance y reversion proporcional al riesgo"]
+  specs: ["Escenarios verificables Dado/Cuando/Entonces"]
+  design: ["Justificar decisiones y validacion por impacto"]
+  tasks: ["Tareas concretas con numeracion jerarquica"]
+  apply: ["Seguir convenciones existentes"]
+  verify: ["Ejecutar comprobaciones aplicables acordadas"]
+  archive: ["Consolidar especificaciones vigentes por dominio"]
+capabilities: {}  # populate observed entries from validation-contract.md
+validation:
+  default_scope: impact
 gates:
   apply:
-    tdd: false                 # false | true | "strict" — enables RED/GREEN evidence gate
+    tdd: false
     review_budget:
-      max_diff_lines: 0        # 0 disables the diff size gate
-      sensitive_paths: []      # e.g. ["**/auth/**", "**/payments/**", "**/.env*"]
+      max_diff_lines: 0
+      sensitive_paths: []
   verify:
-    coverage_threshold: 80     # only used when a coverage command is detected
-
+    coverage_threshold: null
 experimental:
   neabrain: false
 ```
 
-> **Note:** `rules.<phase>` keeps free-form prose guidance for each phase.
-> `gates.<phase>` carries the structured, machine-read flags (TDD, review
-> budget, coverage). Skills MUST read gates from `gates.<phase>` and ignore
-> `rules` for behavior decisions.
+Artifact descriptions and config values are Spanish; keys and paths are English.
+Keep context under ten lines. Do not run full suites as initialization.
 
-### Step 4: Persist Context (openspec mode only)
+## Execution and Persistence Contract
 
-- Save detected context into openspec/config.yaml.
-- **Post-write validation:** re-read the file and assert that all of the
-  following keys exist:
-  - `schema`
-  - `context`
-  - `rules.proposal`, `rules.specs`, `rules.design`, `rules.tasks`,
-    `rules.apply`, `rules.verify`, `rules.archive`
-  - `gates.apply.tdd`, `gates.apply.review_budget.max_diff_lines`,
-    `gates.apply.review_budget.sensitive_paths`
-  - `gates.verify.coverage_threshold`
-  - `experimental.neabrain`
-
-  If ANY key is missing, rewrite the file with the full template and add a
-  warning to `risks` describing which keys were missing on the first pass.
-- Write openspec/changes/.status.yaml:
-  ```yaml
-  schema_version: "1.3"
-  phase: INIT
-  change: null
-  awaiting_approval: false
-  completed: false
-  pending_tasks: []
-  modified_artifacts: []
-  notes: ""
-  ```
-
-### Step 5: Return Summary
-
-Return a structured envelope with: status, executive_summary,
-detailed_report (optional), artifacts, next_recommended, risks.
-
-## Rules
-
-- Never create placeholder specs.
-- Always detect real stack, do not guess.
-- If openspec/ already exists, report what exists before writing config.
-- If config.yaml exists, update only the context block; preserve rules.
-- Keep config.yaml context concise (no more than 10 lines).
-- All artifact content MUST be written in Spanish.
+Read `skills/_shared/persistence-contract.md` and its development state,
+execution, validation and audit references. Resolve these relative to the installed skills
+root, not the target project's source directory. Follow the contracts in mode
+`none` using supplied context, without file writes.
 
 ## Output Contract (JSON)
 
 ```json
 {
   "status": "ok | warning | failed",
-  "executive_summary": "Initialization summary and persistence mode.",
-  "detailed_report": "Optional notes.",
+  "executive_summary": "Brief phase result.",
+  "detailed_report": "Optional concise details or report reference.",
   "artifacts": [
     {
       "name": "config",
@@ -161,7 +89,12 @@ detailed_report (optional), artifacts, next_recommended, risks.
     }
   ],
   "next_recommended": "EXPLORE",
-  "risks": ["list of risks or blockers"],
-  "skill_resolution": "injected | fallback-registry | fallback-path | none"
+  "risks": [],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none",
+  "action_context": {
+    "blocked": false,
+    "reason": null,
+    "requires_user_input": false
+  }
 }
 ```

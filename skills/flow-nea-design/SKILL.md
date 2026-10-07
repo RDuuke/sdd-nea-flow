@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "2.0"
+  version: "3.1"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -23,9 +23,11 @@ Produce design.md describing how the change will be implemented.
 
 ## Execution and Persistence Contract
 
-Read and follow: skills/_shared/persistence-contract.md
+Read skills/_shared/persistence-contract.md and its state, execution, validation and audit references. Resolve them from the installed skills root.
 
 ## What to Do
+
+Read approved proposal and selected change state first. DESIGN does not require SPEC to exist.
 
 ### Step 1: Read the Codebase
 
@@ -37,53 +39,18 @@ Identify patterns, entry points, and dependencies relevant to the change.
 
 openspec/changes/{change-name}/design.md
 
-Format:
-
-# Design: {Change Title}
-
-## Technical Approach
-{Overall strategy}
-
-## Architecture Decisions
-### Decision: {Title}
-Choice: ...
-Alternatives: ...
-Rationale: ...
-
-## Data Flow
-{ASCII diagram if helpful}
-
-## File Changes
-| File | Action | Description |
-|------|--------|-------------|
-| path/to/file | Create/Modify/Delete | ... |
-
-## Interfaces / Contracts
-{New interfaces, APIs, types}
-
-## Testing Strategy
-| Layer | What to Test | Approach |
-|------|-------------|----------|
-
-## Migration / Rollout
-{Plan or "No migration required"}
-
-## Open Questions
-- [ ] ...
+Read the relevant DESIGN example in
+[planning-examples.md](../_shared/planning-examples.md) when useful.
+Retain the agreed scope, criteria, risks and applicable rollback/validation
+details; adapt structure to the change.
 
 ### Step 3: Persist (openspec mode)
 
 - Save design to openspec/changes/{change-name}/design.md
-- Update openspec/changes/.status.yaml:
-  ```yaml
-  phase: DESIGN
-  change: "{change-name}"
-  awaiting_approval: false
-  completed: false
-  pending_tasks: []
-  modified_artifacts: []
-  notes: ""
-  ```
+- Write validation-plan.yaml under the audit and validation contracts, with criteria, methods, required checks, commands and expected evidence. Preserve existing project gates and record approved local exceptions.
+- Merge `openspec/changes/{change-name}/.status.yaml` under state-contract.md;
+  record DESIGN completion only for valid complete output, update input
+  hashes and preserve independent completed phases, approvals and pending work.
 
 ### Step 3.5: NeaBrain Capture (if enabled)
 
@@ -110,7 +77,7 @@ detailed_report (optional), artifacts, next_recommended, risks.
 - Follow existing patterns unless the change is about refactoring them.
 - **If you don't know how to solve something, write it in Open Questions — never guess or invent a solution.** An honest open question is better than an incorrect architecture decision. If there are blocking questions without answers, report as `status: warning`.
 - All artifact content MUST be written in Spanish.
-- **Size budget**: design.md artifact MUST be under 800 words. Architecture decisions as tables (option | tradeoff | decision). Code snippets only for non-obvious patterns.
+- Keep design concise; use tables or snippets only when they clarify decisions. No fixed word-count gate. Load research-contract.md for useful unresolved external questions.
 
 ## Output Contract (JSON)
 
@@ -126,8 +93,19 @@ detailed_report (optional), artifacts, next_recommended, risks.
       "type": "markdown"
     }
   ],
-  "next_recommended": "TASKS",
-  "risks": ["list of risks or blockers"],
-  "skill_resolution": "injected | fallback-registry | fallback-path | none"
+  "next_recommended": "SPEC | TASKS",
+  "risks": [
+    "list of risks or blockers"
+  ],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none",
+  "action_context": {
+    "blocked": false,
+    "reason": null,
+    "requires_user_input": false
+  }
 }
 ```
+
+Return a single next_recommended phase from the state contract, not the literal
+union shown in examples. Set action_context.blocked=true for unresolved required
+inputs, material decisions or scope approval; optional warnings stay unblocked.

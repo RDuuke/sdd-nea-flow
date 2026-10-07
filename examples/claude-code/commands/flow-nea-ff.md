@@ -2,42 +2,26 @@
 description: Fast-forward all planning phases - propose, spec, design, tasks in sequence
 ---
 
-META-COMMAND: You (the orchestrator) handle this by launching sub-agents in sequence.
-Do NOT invoke this as a skill. Launch individual Agent tool calls for each phase.
+META-COMMAND: handled by the orchestrator, not a separate phase skill.
 
 CONTEXT:
 - Change name: $ARGUMENTS
 - Artifact store mode: openspec
 
-VALIDATION:
-Before proceeding, validate that $ARGUMENTS is a valid change-name:
-- MUST match pattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$ (lowercase alphanumeric + hyphens only, 3-50 chars)
-- If INVALID: return error to user: "Invalid change name. Use lowercase letters, numbers, and hyphens only (3-50 chars)"
-- If VALID: proceed to WORKFLOW below
+Resolve the installed skills root and read `_shared/execution-contract.md`
+and `_shared/persistence-contract.md` with applicable references. Use their
+STATUS, approval, execution and log procedures; do not infer state here.
+Pass exact skill paths, scoped standards, edit surfaces and checks to each
+bounded phase, choosing native workers or inline execution by actual permissions.
 
-WORKFLOW - run in sequence, do NOT show intermediate results to user:
-1. Launch Agent with prompt:
-   "You are a flow-nea sub-agent. Read skills/flow-nea-propose/SKILL.md FIRST.
-   change-name=$ARGUMENTS artifact_store.mode=openspec
-   Write openspec/changes/$ARGUMENTS/proposal.md. Return JSON."
 
-2. Launch Agent with prompt:
-   "You are a flow-nea sub-agent. Read skills/flow-nea-spec/SKILL.md FIRST.
-   change-name=$ARGUMENTS artifact_store.mode=openspec
-   Read openspec/changes/$ARGUMENTS/proposal.md first. Write delta specs. Return JSON."
-
-3. Launch Agent with prompt:
-   "You are a flow-nea sub-agent. Read skills/flow-nea-design/SKILL.md FIRST.
-   change-name=$ARGUMENTS artifact_store.mode=openspec
-   Read proposal.md and specs/. Write openspec/changes/$ARGUMENTS/design.md. Return JSON."
-
-4. Launch Agent with prompt:
-   "You are a flow-nea sub-agent. Read skills/flow-nea-tasks/SKILL.md FIRST.
-   change-name=$ARGUMENTS artifact_store.mode=openspec
-   Read design.md and specs/. Write openspec/changes/$ARGUMENTS/tasks.md. Return JSON."
-
-After ALL 4 phases complete, show the user a combined summary:
-- Proposal scope (in/out)
-- Key design decisions
-- Number of tasks by phase
-Then ask: "Planning complete for $ARGUMENTS. Ready to implement? Run /flow-nea-apply $ARGUMENTS"
+1. Create/update PROPOSE via its phase executor, unless unchanged valid output
+   already exists. Show concrete scope and request its approval only if pending.
+   FF does not bypass scope approval; record authorization already supplied.
+2. Once approved, complete missing SPEC and DESIGN independently from proposal.
+   Serialize state writes; neither depends on the other.
+3. Run TASKS after both outputs and validation-plan.yaml are valid and coherent.
+4. Return the combined planning summary and task count. Do not ask approval after
+   every planning phase. FF ends at TASKS; do not implement without a user request.
+Stop on unresolved blockers/material decisions. Resume without recreating valid
+artifacts or resetting approvals.

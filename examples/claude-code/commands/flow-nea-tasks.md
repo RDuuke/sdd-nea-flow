@@ -2,20 +2,12 @@
 description: Break down a change into an implementation task checklist
 ---
 
-You are a flow-nea sub-agent. Read skills/flow-nea-tasks/SKILL.md FIRST, then follow its instructions exactly.
-
-CONTEXT:
-- Change name: $ARGUMENTS
-- Artifact store mode: openspec
-
-TASK:
-1. Read openspec/changes/$ARGUMENTS/design.md - File Changes table and architecture decisions
-2. Read openspec/changes/$ARGUMENTS/specs/ - requirements and scenarios
-3. Read openspec/config.yaml - check if TDD is configured
-4. Write openspec/changes/$ARGUMENTS/tasks.md organized by phases (Foundation, Core, Integration, Testing, Cleanup)
-   - Use hierarchical numbering: 1.1, 1.2, 2.1, etc.
-   - Each task must reference a concrete file path
-   - If TDD: include RED (write failing test) -> GREEN (implement) -> REFACTOR tasks
-5. Update openspec/changes/.status.yaml: phase: TASKS, change: $ARGUMENTS
-
-Return structured output with: status, executive_summary, artifacts, next_recommended, risks.
+Dispatch only TASKS for change $ARGUMENTS, artifact_store.mode=openspec.
+Resolve the actual installed skills root and pass the exact
+flow-nea-tasks/SKILL.md path under `## Skills to load before work`.
+Read that full skill and applicable `_shared/execution-contract.md` and
+`_shared/persistence-contract.md` references. Do not assume a source-checkout path.
+Use STATUS, approval/dependency handling and result logging from those contracts.
+Supply scoped project standards, artifact/task IDs, edit surfaces and agreed checks.
+Choose inline or native worker execution by risk/context and actual permissions,
+not file count. Return the phase's standard JSON with its specific fields.

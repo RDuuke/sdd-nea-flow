@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "2.0"
+  version: "3.1"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -24,13 +24,15 @@ Write delta specs describing what is added, modified, or removed.
 
 ## Execution and Persistence Contract
 
-Read and follow: skills/_shared/persistence-contract.md
+Read skills/_shared/persistence-contract.md and its state, execution, validation and audit references. Resolve them from the installed skills root.
 
 ## What to Do
 
+Before writing, resolve the selected change state and scope approval. Never clear a pending approval by writing SPEC.
+
 ### Step 1: Identify Affected Domains
 
-From proposal "Affected Areas", group by domain (auth, payments, ui, etc.).
+From proposal "Affected Areas", reuse existing domain identities before adding new ones. Do not create a domain per change. Retain existing requirement IDs or exact names and identify delta operations unambiguously for consolidation.
 
 ### Step 2: Read Existing Specs
 
@@ -40,46 +42,24 @@ From proposal "Affected Areas", group by domain (auth, payments, ui, etc.).
 
 openspec/changes/{change-name}/specs/{domain}/spec.md
 
-Delta format:
-
-# Delta for {Domain}
-
-## ADDED Requirements
-
-### Requirement: {Name}
-The system MUST/SHALL/SHOULD/MAY ...
-
-#### Scenario: {Happy path}
-- GIVEN ...
-- WHEN ...
-- THEN ...
-
-#### Scenario: {Edge case}
-- GIVEN ...
-- WHEN ...
-- THEN ...
-
-## MODIFIED Requirements
-...
-
-## REMOVED Requirements
-...
+Read the relevant SPEC example in
+[planning-examples.md](../_shared/planning-examples.md) when useful.
+Retain the agreed scope, criteria, risks and applicable rollback/validation
+details; adapt structure to the change.
 
 If no existing spec exists, write a FULL spec instead of delta.
+
+When replacing a requirement, include its complete resulting contract and
+scenarios, retaining unaffected scenarios. REMOVED names the exact identity;
+renames explicitly identify old and new names. Do not use a full spec to imply
+deletion of unrelated base requirements. This makes ARCHIVE consolidation safe.
 
 ### Step 4: Persist (openspec mode)
 
 - Save delta specs under openspec/changes/{change-name}/specs/{domain}/spec.md
-- Update openspec/changes/.status.yaml:
-  ```yaml
-  phase: SPEC
-  change: "{change-name}"
-  awaiting_approval: false
-  completed: false
-  pending_tasks: []
-  modified_artifacts: []
-  notes: ""
-  ```
+- Merge `openspec/changes/{change-name}/.status.yaml` under state-contract.md;
+  record SPEC completion only for valid complete output, update input
+  hashes and preserve independent completed phases, approvals and pending work.
 
 ### Step 5: Return Summary
 
@@ -99,13 +79,13 @@ Include a summary table per domain:
 - Use Given/When/Then format for scenarios.
 - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY).
 - Every requirement must have at least one scenario.
-- Include both happy path and edge case scenarios.
+- Include applicable happy, edge and error cases; no fixed scenario quota.
 - Do not include implementation details.
 - **Specs describe WHAT, never HOW** — no mention of classes, methods, libraries, or implementation decisions. If you are describing how, move it to design.md.
-- **Each requirement MUST have: at least one happy path + one edge case + one error state.** If any is missing, the spec is incomplete — do not advance to DESIGN.
-- **Every scenario MUST be testable.** If an automated test cannot be written for the scenario, rewrite it until it is verifiable. Non-testable scenarios = `status: warning`.
+- Include relevant happy, edge and error cases; do not invent an error state for a documentary or non-behavioral requirement. SPEC and DESIGN are independent after approved PROPOSE.
+- Every scenario must be verifiable with an appropriate observable method. Automated tests are one option; use the validation contract for direct/manual checks. Unverifiable criteria remain a blocker.
 - All artifact content MUST be written in Spanish.
-- **Size budget**: Each spec artifact MUST be under 650 words per domain. Each scenario: 3-5 lines max (Given / When / Then).
+- Keep deltas concise while preserving the complete resulting contract and unaffected scenarios. No fixed word or scenario-line limit.
 
 ## Output Contract (JSON)
 
@@ -121,8 +101,19 @@ Include a summary table per domain:
       "type": "markdown"
     }
   ],
-  "next_recommended": "DESIGN",
-  "risks": ["list of risks or blockers"],
-  "skill_resolution": "injected | fallback-registry | fallback-path | none"
+  "next_recommended": "DESIGN | TASKS",
+  "risks": [
+    "list of risks or blockers"
+  ],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none",
+  "action_context": {
+    "blocked": false,
+    "reason": null,
+    "requires_user_input": false
+  }
 }
 ```
+
+Return a single next_recommended phase from the state contract, not the literal
+union shown in examples. Set action_context.blocked=true for unresolved required
+inputs, material decisions or scope approval; optional warnings stay unblocked.

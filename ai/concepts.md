@@ -5,7 +5,8 @@
 ### Orquestador
 
 Agente principal que coordina el flujo. Mantiene contexto minimo, delega trabajo
-pesado y nunca deberia implementar fases complejas directamente.
+cuando riesgo, independencia o volumen de contexto lo justifican. Sin delegacion
+permitida ejecuta fases acotadas inline, conservando sus contratos.
 
 ### Sub-agente
 
@@ -40,7 +41,7 @@ privilegia `openspec`.
 
 ### Execution log
 
-Registro por fase que permite auditar que ejecuto cada sub-agente, con que
+Registro YAML por fase, informativo e independiente del estado, que permite auditar que ejecuto cada sub-agente, con que
 resultado y con que riesgos.
 
 ### Phase
@@ -63,8 +64,8 @@ especial. Ejemplos: `/flow-nea-ff`, `/flow-nea-continue`, `/flow-nea-fix`.
 
 - Skills de fase: `flow-nea-{phase}`
 - Carpeta de cambios en OpenSpec: `openspec/changes/{change-name}`
-- Artefactos canonicos: `proposal.md`, `design.md`, `tasks.md`, `verify-report.md`
-- Estado compartido: `.status.yaml`
+- Artefactos canonicos: `proposal.md`, `design.md`, `tasks.md`, `verify-report.yaml`
+- Estado por cambio: `changes/{change-name}/.status.yaml`; selector global en `changes/.status.yaml`
 
 ## Regla editorial
 

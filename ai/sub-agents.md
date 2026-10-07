@@ -19,12 +19,21 @@ sub-agentes especializados por fase. Cada sub-agente debe:
 - resume resultados
 - pide aprobacion
 
-## Que no debe hacer el orquestador
+## Cuando delegar
 
-- leer muchos archivos para explorar el codebase si puede delegarlo
-- implementar una feature multiarchivo inline
-- escribir specs, design o tasks fuera de sus fases
-- ocultar riesgos de sub-agentes
+Decidir por riesgo, incertidumbre, independencia y presion de contexto, no por
+numero de archivos. Una edicion mecanica de varios archivos puede ejecutarse
+inline; una revision sensible puede justificar otro agente aunque afecte uno.
+Sin delegacion permitida, ejecutar unidades de fase secuenciales conservando
+contratos. No simular independencia cuando se solicita revision dual.
+
+El coordinador entrega rutas exactas de skills, reglas pertinentes del proyecto,
+artefactos necesarios, superficies de escritura y checks acordados. El ejecutor
+lee la skill completa; un resumen del registro no la sustituye. Se observa su
+resultado terminal antes de avanzar y se serializan escrituras compartidas.
+No escribir specs, diseno o tareas fuera de sus fases ni ocultar riesgos.
+
+Contrato canonico: [execution-contract.md](../skills/_shared/execution-contract.md).
 
 ## Skills de soporte
 
@@ -43,13 +52,13 @@ Ademas de las fases, existen skills auxiliares:
 Dos compuertas viven en `openspec/config.yaml -> gates.apply`:
 
 - `tdd`: cuando es `true` o `"strict"`, `flow-nea-apply` recorre
-  RED -> GREEN -> TRIANGULATE -> REFACTOR por tarea y registra evidencia en
-  `apply-progress.md`. `flow-nea-verify` audita esa evidencia.
+  RED -> GREEN -> TRIANGULATE -> REFACTOR por tarea de comportamiento aplicable y registra evidencia en
+  `apply-progress.yaml`. `flow-nea-verify` audita esa evidencia.
 - `review_budget`: limita el tamano del diff (`max_diff_lines`) y/o
   bloquea rutas sensibles (`sensitive_paths`). Si se excede, `apply` deja
   `awaiting_approval: true` y el orquestador pregunta antes de avanzar.
 
-Ambos gates estan desactivados por defecto. Cambios existentes siguen
+Ambos gates estan desactivados por defecto. La cobertura tampoco recibe umbral por defecto en nuevos proyectos. Gates existentes se preservan. Cambios existentes siguen
 funcionando sin tocar nada.
 
 ## Diferencias por herramienta

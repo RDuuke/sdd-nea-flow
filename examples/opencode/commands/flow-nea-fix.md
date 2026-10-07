@@ -2,53 +2,34 @@
 description: Auto-fix loop - reads failing tests from verify-report and relaunches apply with targeted context
 ---
 
-META-COMMAND: You (the orchestrator) handle this directly. Do NOT invoke as a skill.
+META-COMMAND: handled by the orchestrator, not a separate phase skill.
 
 CONTEXT:
-- Change name: $ARGUMENTS
+- Change name: {argument}
 - Artifact store mode: openspec
-- Max fix attempts: 2
 
-VALIDATION:
-Validate $ARGUMENTS (^[a-z0-9][a-z0-9-]*[a-z0-9]$, 3-50 chars). If invalid, return error.
+Resolve the installed skills root and read `_shared/execution-contract.md`
+and `_shared/persistence-contract.md` with applicable references. Use their
+STATUS, approval, execution and log procedures; do not infer state here.
+Pass exact skill paths, scoped standards, edit surfaces and checks to each
+bounded phase, choosing native workers or inline execution by actual permissions.
 
-PRE-CHECK:
-Read openspec/changes/$ARGUMENTS/verify-report.md.
-- No file → error "No verify report found. Run /flow-nea-verify $ARGUMENTS first."
-- No "## Fallos Detectados" section → "No hay fallos. El cambio esta verificado correctamente."
-- Section present → extract failing tests, build errors, incomplete tasks.
 
-WORKFLOW (max 2 attempts):
-
-**Attempt N:**
-
-1. Delegate to apply agent:
-   "Eres un ejecutor flow-nea para la fase APPLY. Lee ~/.config/opencode/skills/flow-nea-apply/SKILL.md.
-   change-name=$ARGUMENTS artifact_store.mode=openspec
-
-   CONTEXTO DE FIX DIRIGIDO:
-   La verificacion anterior fallo. Corrige SOLO estos problemas especificos:
-
-   {seccion ## Fallos Detectados del verify-report.md}
-
-   No reescribas codigo no relacionado. Aplica el minimo cambio para que los tests pasen.
-   Sigue RED-GREEN-REFACTOR si TDD esta configurado. Retorna JSON."
-
-2. Delegate to verify agent:
-   "Eres un ejecutor flow-nea para la fase VERIFY. Lee ~/.config/opencode/skills/flow-nea-verify/SKILL.md.
-   change-name=$ARGUMENTS artifact_store.mode=openspec
-   Retorna JSON con status y fallos restantes si los hay."
-
-3. Evaluar:
-   - Status ok + sin "## Fallos Detectados" → SUCCESS: "Tests pasan. Continua con /flow-nea-archive $ARGUMENTS"
-   - Aun con fallos → si intentos < 2, repetir con nuevo verify-report.md
-
-**Si falla despues de 2 intentos:**
-- STOP. No reintentar.
-- Reportar: "No se pudo auto-corregir en 2 intentos. Fallos: {lista}. Requiere intervencion manual."
-- Sugerir: "/flow-nea-apply $ARGUMENTS para continuar manualmente"
-
-REGLAS:
-- Maximo 2 ciclos fix
-- Siempre re-verificar despues de cada apply — nunca asumir que el fix funciono
-- Si apply retorna status: failed, detener inmediatamente
+1. Read verify-report.yaml; legacy Markdown fallback only if YAML is absent.
+   Missing/corrupt/ambiguous evidence blocks. No Fallos Detectados heading does
+   not mean success. If archive_ready and inputs current, report ready to archive.
+2. Load installed `_shared/findings-contract.md` and `_shared/triage-contract.md`.
+   Select open actionable product findings, following replacement IDs and keeping
+   history. Group only confirmed causes; verify every affected criterion.
+   Infrastructure/evidence/policy blockers route to recovery, not speculative edits.
+3. Read local fix_attempts and fix-report.yaml; reconcile counts, maximum two
+   automatic product cycles across sessions. Save the next attempt before launch.
+4. Launch APPLY with only relevant finding IDs, criteria and evidence refs; repair
+   the minimum authorized scope. Preserve configured TDD and exceptions.
+5. Launch VERIFY against the agreed plan; reuse compatible passing checks and
+   rerun affected ones. VERIFY merges finding identities/history and records proven
+   resolutions; attempted repair alone is not resolution. Save attempt outcome
+   in fix-report.yaml and local state.
+6. If archive_ready, report closure readiness. Otherwise repeat only for remaining
+   product failures within the two-cycle budget. Stop on exhausted budget, APPLY
+   failure, new material scope or unresolved decision. Never restart the counter.

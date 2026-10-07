@@ -36,7 +36,7 @@ behavior changes, update the operative source too.
 ## Language rules
 
 - Flow artifacts such as `proposal.md`, `design.md`, `tasks.md`, and
-  `verify-report.md` must be in Spanish
+  `verify-report.yaml` must be in Spanish
 - File names and paths must be in English
 - AI-facing instructions in this repo must be in English
 - Human-facing documentation in this repo should be in Spanish by default

@@ -7,7 +7,7 @@ trigger: >
 license: MIT
 metadata:
   author: juan-duque
-  version: "1.0"
+  version: "3.1"
   scope: [root]
   invoker: flow-nea-orchestrator
 ---
@@ -25,14 +25,14 @@ normal flow.
 
 ## Execution and Persistence Contract
 
-Read and follow: skills/_shared/persistence-contract.md
+Read skills/_shared/persistence-contract.md and its state, execution, validation and audit references. Resolve them from the installed skills root.
 
 ## Eligibility Rules
 
 Quick mode is allowed only when all of these are true:
 
 - the change is a small fix, validation tweak, local rename, null check, tiny UI adjustment, or similarly bounded task
-- the likely implementation stays within 1-2 files or one tightly scoped area
+- the implementation has one tightly scoped impact and direct validation; file count alone does not determine eligibility
 - there is no architecture change
 - there is no need for a substantial `SPEC` or `DESIGN` discussion
 - risk is low and verification is direct
@@ -67,44 +67,22 @@ If openspec mode is enabled and the change qualifies:
 
 - Create `openspec/changes/{change-name}/quick.md`
 - The file MUST be written in Spanish
-- Use this structure:
+Read the relevant QUICK example in
+[planning-examples.md](../_shared/planning-examples.md) when useful.
+Retain the agreed scope, criteria, risks and applicable rollback/validation
+details; adapt structure to the change.
 
-```markdown
-# Quick Fix: {titulo breve}
-
-## Objetivo
-
-## Archivos afectados
-
-## Blueprint
-
-## Riesgos
-
-## Verificacion
-```
-
-Content rules:
-
-- `## Objetivo`: explain the user-visible or behavior-level outcome
-- `## Archivos afectados`: list probable files, folders, or modules to touch
-- `## Blueprint`: concrete implementation steps, concise but actionable
-- `## Riesgos`: short list of risks, assumptions, or fallback triggers
-- `## Verificacion`: specific checks, commands, or expected outcomes
+Include outcome, affected files/area, actionable blueprint steps, risks and
+repeatable verification criteria. The referenced example does not replace these
+required inputs to APPLY and the validation plan.
 
 ### Step 4: Persist State
 
-If openspec mode is enabled and the quick blueprint was created, update
-`openspec/changes/.status.yaml` with:
-
-```yaml
-phase: QUICK
-change: "{change-name}"
-awaiting_approval: true
-completed: false
-pending_tasks: []
-modified_artifacts: []
-notes: "quick"
-```
+If the blueprint was created, merge the selected local .status.yaml using
+state-contract.md, set path: quick, record QUICK completion, input hashes and
+a typed scope approval. Preserve already approved unchanged scope. Write
+validation-plan.yaml from the Verificacion criteria under validation-contract.md.
+Do not enable build/tests/coverage that are absent or not applicable.
 
 ### Step 5: Return Summary
 
@@ -123,6 +101,7 @@ Return the standard envelope with:
 - Never create `proposal.md`, `specs/`, `design.md`, or `tasks.md` in this skill
 - If the change is not clearly eligible, reject quick mode and recommend the normal flow
 - All artifact content MUST be written in Spanish
+- Keep quick.md concise without a fixed word ceiling; execution evidence belongs in YAML records and refs.
 
 ## Output Contract (JSON)
 
@@ -138,8 +117,21 @@ Return the standard envelope with:
       "type": "markdown"
     }
   ],
-  "next_recommended": "APPLY | PROPOSE",
-  "risks": ["list of risks or blockers"],
-  "skill_resolution": "injected | fallback-registry | fallback-path | none"
+  "next_recommended": null,
+  "risks": [
+    "list of risks or blockers"
+  ],
+  "skill_resolution": "injected | fallback-registry | fallback-path | none",
+  "action_context": {
+    "blocked": true,
+    "reason": "scope_approval",
+    "requires_user_input": true
+  }
 }
 ```
+
+Return a single next_recommended phase from the state contract, not the literal
+union shown in examples. Set action_context.blocked=true for unresolved required
+inputs, material decisions or scope approval; optional warnings stay unblocked.
+The example shows a created blueprint awaiting approval; after unchanged
+approved scope, retain authorization and recommend APPLY without another gate.
