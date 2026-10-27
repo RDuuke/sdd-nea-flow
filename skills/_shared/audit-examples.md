@@ -1,6 +1,10 @@
 # Development Audit Examples
 
-Illustrative documents, not evidence of actual execution. Read the audit contract
+Illustrative documents, not evidence of actual execution. They show the
+required block style and omit optional fields with empty or default values
+(`risks: []`, `attempt: 1`, `retried: false`, `reused_from: null`, a strict-TDD
+`tdd` block when TDD is off); `input_hashes` uses `commit` for committed inputs
+plus per-file hashes only for dirty ones. Read the audit contract
 for required fields. Refs below are relative to the report's target directory;
 the examples do not create these files. Use actual observations/times/hashes in
 real records. Each fenced YAML block is one independent file.
@@ -23,9 +27,6 @@ events:
     status: ok
     summary: "Comprobacion directa aprobada."
     artifact_refs: [verify-report.yaml]
-    risks: []
-    attempt: 1
-    retried: false
 ```
 
 ## apply-progress.yaml
@@ -43,9 +44,6 @@ tasks:
     status: complete
     summary: "Enlace actualizado."
     evidence_refs: [evidence/browser-check.txt]
-    tdd:
-      applicability: not_applicable
-      reason: "Ajuste declarativo sin logica nueva; comprobacion directa acordada."
 ```
 
 ## validation-plan.yaml
@@ -87,7 +85,7 @@ summary: "Destino aprobado y tareas completas."
 artifact_refs: [quick.md, validation-plan.yaml, apply-progress.yaml]
 archive_ready: true
 input_hashes:
-  quick.md: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  commit: 0123456789abcdef0123456789abcdef01234567
   navigation.html: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 criteria:
   - id: quick-link-target
@@ -109,11 +107,6 @@ evidence:
     started_at: "2026-10-06T15:42:00-05:00"
     finished_at: "2026-10-06T15:43:00-05:00"
     refs: [evidence/browser-check.txt]
-    input_hashes:
-      navigation.html: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    environment:
-      browser: "Version registrada en evidencia separada."
-    reused_from: null
 findings:
   - id: nav-destination-001
     category: product
@@ -170,11 +163,13 @@ status: ok
 summary: "Cambio archivado sin delta contractual."
 artifact_refs: [verify-report.yaml]
 archive_path: openspec/changes/archive/2026-10-06-example-change/
+original_path: openspec/changes/example-change/
 verification_ref: verify-report.yaml
 domains: []
 ```
 
 When contracts change, domains lists the actual added/modified/removed requirement
 IDs and before/after hashes. Domain operation records also describe unchanged
-requirements. Transaction backup refs stay with the archived change. No domains
+requirements. The transaction journal and backups are removed after a verified
+close when version control holds the before-state. No domains
 are invented for an implementation-only fix with unchanged behavior.

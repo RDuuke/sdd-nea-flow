@@ -2,7 +2,45 @@
 
 New operational records are YAML, with English keys and Spanish summaries,
 reasons and observations. Planning remains Markdown. Applies only to development
-changes; initiative logs retain their own contract.
+changes; initiative logs retain their own contract. The YAML style and size
+rules below also apply to `.status.yaml`, the selector and `openspec/config.yaml`.
+
+## YAML style
+
+- Write block-style YAML: one `key: value` per line, nested mappings by
+  indentation, sequence items with `- `. Never write a JSON document, a
+  top-level `{`, or a flow mapping `{...}` anywhere (`{}` for an empty
+  required mapping is the only exception). Flow sequences are allowed only for
+  short scalar lists that fit on one line, such as `[]` or `[SPEC, DESIGN]`.
+- Quote strings only where YAML requires it (timestamps, `: `, ` #`, leading
+  special characters, values that would parse as another type). Use `|` for
+  multi-line text instead of `\n` escapes.
+- Serialize with a YAML emitter in block style (e.g. PyYAML
+  `safe_dump(..., sort_keys=False, allow_unicode=True, default_flow_style=False)`)
+  or write the text directly. Do not use a JSON serializer to produce `.yaml`.
+- Existing JSON-styled `.yaml` files remain valid input (JSON is YAML). The next
+  write to a file of an active change rewrites that file in block style with
+  the same meaning. Never bulk-convert archived changes.
+
+## Size: record only what a later decision needs
+
+- Each entry holds identity, status, a short reason and refs. Omit optional
+  fields whose value is empty, null, false or a documented default.
+- Do not restate what already lives elsewhere: git history, `tasks.md`,
+  planning Markdown, project test logs or another record. Reference it by ID,
+  commit or relative path.
+- Summaries, reasons and observations: one sentence, about 200 characters at
+  most. Test results are counts plus failing IDs, for example
+  `"314 passed, 0 failed, 1 ignored"`; never test lists or output.
+- Input identity: when the relevant inputs are committed and clean, record
+  `commit: <sha>` in the `input_hashes` mapping. Add per-file SHA-256 entries
+  only for relevant inputs that are uncommitted or dirty. Never hash generated
+  files, logs, reports, state or archive copies.
+- Soft budgets: `.status.yaml` about 60 lines; `.execution-log.yaml` one event
+  per phase attempt (APPLY batches are tasks, not events); other records about
+  150 lines. Past a budget, compact closed entries to `id`, `status`, `summary`
+  and refs; evidence stays reachable through its commit or ref. Never compact
+  open or blocking entries, pending approvals or unresolved findings.
 
 For concrete file examples read [audit-examples.md](audit-examples.md). They are
 illustrative schemas, not execution evidence; never copy their sample observations
@@ -39,7 +77,8 @@ Never embed secrets, full stdout, source code or repeated narrative in records.
 | `archive-report.yaml` | `archive_path`, `verification_ref`, `domains` |
 
 An execution event contains `id`, `phase`, `started_at`, `finished_at`, `status`,
-`summary`, `artifact_refs`, `risks`, `attempt`, `retried`. Timestamp strings use
+`summary`; add `artifact_refs` and `risks` only when non-empty, `attempt` only
+when above 1 (default 1) and `retried` only when true. Timestamp strings use
 ISO 8601 with timezone; capture actual time, never invent time to satisfy shape.
 Maintain events in order. Repeated delivery of the same event ID is a no-op;
 conflicting payload for an existing ID is a blocker. New attempts get new IDs
@@ -48,9 +87,12 @@ does not justify rerunning successful product work. Append the final ARCHIVE
 event at the archived path, never recreate the moved active folder.
 
 Task records: `id`, `status: pending | in_progress | complete | blocked`,
-`summary`, `evidence_refs`, `tdd` (applicability, reason, red/green refs where
-required). Quick uses stable step IDs `q1`, `q2`, etc. Preserve previous evidence
-when updating a task; completion must agree with Markdown checkboxes.
+`summary`, `evidence_refs` (commit, log path or evidence ID). Add `tdd`
+(applicability, reason, red/green refs) only when strict TDD is configured.
+When tasks run in batches, one record per batch with its task ID range is
+enough; `tasks.md` checkboxes keep per-task completion. Quick uses stable step
+IDs `q1`, `q2`, etc. Preserve previous evidence when updating a task;
+completion must agree with Markdown checkboxes.
 
 VERIFY criteria: `id`, `source_ref`, `status` (compliance label from validation
 contract), `check_ids`, `evidence_ids`. Results in `checks` include `id`,
@@ -67,7 +109,9 @@ FIX attempts: `number` (1 or 2), `finding_ids`, `started_at`, `finished_at`,
 `status`, `apply_ref`, `verify_ref`, `summary`. Preserve attempts across sessions.
 ARCHIVE domains: `domain`, `base_ref`, `before_hash`, `after_hash`, `added`,
 `modified`, `removed`, `unchanged_count`, `status`. Counts alone do not prove a
-merge: retain requirement identities and before/after hashes.
+merge: retain requirement identities and before/after hashes. Record the
+pre-move location once as `original_path`; no separate relocation or
+provenance file.
 
 ## Safe persistence and compact reads
 

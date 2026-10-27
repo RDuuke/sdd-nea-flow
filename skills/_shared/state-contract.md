@@ -60,8 +60,11 @@ record these identities alongside content hashes in the verification provenance.
 Updating
 an audit summary does not invalidate executed behavior. Store input paths from
 the project root; artifact/evidence refs in reports are relative to their file.
-Relocation during ARCHIVE preserves original input provenance and records the
-new location; it is not a product change requiring repeated tests.
+Relocation during ARCHIVE records the original location once and the new
+location; it is not a product change requiring repeated tests. State and
+records follow the YAML style and size rules in
+[audit-contract.md](audit-contract.md): block style, no JSON, no empty optional
+fields; `notes` stays one short sentence or empty.
 
 ## Approval and blockers
 

@@ -47,6 +47,19 @@ identidades estables, fechas con zona y referencias a evidencia. No se duplica
 la misma auditoria en Markdown. Salidas extensas y capturas van por separado.
 El log es historico; el estado del cambio gobierna continuidad.
 
+Desde 2.5.0 todo `.yaml` del flujo (estado, selector, config y auditoria) se
+escribe en estilo bloque; un `.yaml` con JSON sigue siendo legible y se
+reescribe en bloque en la siguiente escritura del cambio activo, sin convertir
+archivos archivados. Cada registro guarda solo identidad, estado, motivo breve
+y referencias: se omiten campos vacios o por defecto, una evidencia por comando
+ejecutado (no por escenario), `commit` cuando las entradas estan confirmadas y
+hashes por archivo solo para entradas sucias. Presupuestos orientativos: estado
+~60 lineas, un evento por intento de fase, demas registros ~150 lineas; al
+superarlos se compactan entradas cerradas. ARCHIVE registra `original_path` en
+vez de un archivo de reubicacion y elimina diario y copias de respaldo cuando
+git conserva el estado previo. Contrato:
+[audit-contract.md](../skills/_shared/audit-contract.md).
+
 FIX consume hallazgos estructurados y conserva hasta dos intentos entre sesiones.
 VERIFY combina el informe anterior: mantiene IDs, evidencia e historial de los
 hallazgos. `resolution` distingue open, resolved, dismissed y superseded; una
