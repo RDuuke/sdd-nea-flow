@@ -81,9 +81,13 @@ as not_applicable merely because no automated infrastructure exists.
 
 Evidence records include `id`, `method`, `command` or manual `steps`,
 `observed`, `started_at`, `finished_at`, optional `exit_code`, `refs`,
-`input_hashes`, `environment`, and `reused_from` when reused. Do not claim an
-unexecuted or cancelled suite passed. Capture raw output separately, redact
-credentials, use relative refs from the containing report directory.
+`input_hashes`, `environment`, and `reused_from` when reused. Write one evidence
+record per executed command or manual session, not per scenario; criteria point
+to it by ID. Omit `input_hashes` and `environment` when they equal the
+report-level values or the config capability. Do not claim an
+unexecuted or cancelled suite passed. Capture raw output separately (or point
+to the project's existing log file), redact credentials, use relative refs
+from the containing report directory.
 
 Reuse passing evidence when relevant source/test/configuration hashes and runtime
 identity match. Record the original execution and current compatibility check;

@@ -181,5 +181,30 @@ class AuditValidationTests(unittest.TestCase):
             qa.audit_document(data)
 
 
+class YamlStyleTests(unittest.TestCase):
+    def test_json_document_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "block style"):
+            qa.block_style('{\n  "schema_version": "2.0",\n  "active_change": null\n}\n')
+
+    def test_nested_flow_mapping_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "line 2"):
+            qa.block_style('change: demo\ninput_hashes: {"a.md": "ff"}\n')
+        with self.assertRaisesRegex(ValueError, "line 2"):
+            qa.block_style('events:\n  - {id: e1, phase: VERIFY}\n')
+
+    def test_block_style_with_short_lists_and_empty_mapping_passes(self):
+        qa.block_style('completed_phases: [EXPLORE, PROPOSE]\nartifact_hashes: {}\n'
+                       'summary: "Texto con {llaves} citado."\nnotes: |\n  {libre}\n')
+
+    def test_event_defaults_may_be_omitted(self):
+        data = deepcopy(EXAMPLES["execution_log"])
+        for key in ("risks", "attempt", "retried"):
+            data["events"][0].pop(key, None)
+        qa.audit_document(data)
+        data["events"][0]["attempt"] = 0
+        with self.assertRaisesRegex(ValueError, "retry metadata"):
+            qa.audit_document(data)
+
+
 if __name__ == "__main__":
     unittest.main()

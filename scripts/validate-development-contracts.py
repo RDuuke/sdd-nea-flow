@@ -131,6 +131,25 @@ def finding_continuity(data):
         visit(identity)
 
 
+FLOW_MAPPING = re.compile(r"^\s*(?:-\s*|[^\s\"'#][^:#]*:\s+)?\{(?!\})")
+BLOCK_SCALAR = re.compile(r"[:-]\s*[|>][-+0-9]*\s*(?:#.*)?$")
+
+
+def block_style(text):
+    """Reject JSON-styled YAML: a top-level or nested flow mapping ({...})."""
+    scalar_indent = None
+    for number, line in enumerate(text.splitlines(), 1):
+        indent = len(line) - len(line.lstrip())
+        if scalar_indent is not None:
+            if not line.strip() or indent > scalar_indent:
+                continue
+            scalar_indent = None
+        if FLOW_MAPPING.match(line):
+            raise ValueError(f"YAML must be block style, flow mapping on line {number}")
+        if BLOCK_SCALAR.search(line):
+            scalar_indent = indent
+
+
 def audit_document(data):
     required = {"schema_version", "kind", "change", "updated_at", "status",
                 "summary", "artifact_refs"} | AUDIT_FIELDS[data["kind"]]
@@ -144,7 +163,8 @@ def audit_document(data):
         for event in data["events"]:
             timestamp(event["started_at"])
             timestamp(event["finished_at"])
-            if not isinstance(event["retried"], bool) or event["attempt"] < 1:
+            if (not isinstance(event.get("retried", False), bool) or
+                    event.get("attempt", 1) < 1):
                 raise ValueError("Invalid event retry metadata")
     elif data["kind"] == "verify_report":
         checks = unique_ids(data["checks"])
@@ -199,6 +219,8 @@ def main():
             blocks = re.findall(r"^```(json|yaml)\s*\n(.*?)^```\s*$", text, re.M | re.S)
             responses = 0
             for kind, block in blocks:
+                if kind == "yaml":
+                    block_style(block)
                 data = json.loads(block) if kind == "json" else yaml.load(block, Loader=UniqueKeyLoader)
                 counts[kind] += 1
                 if path in skills and kind == "json" and isinstance(data, dict) and "executive_summary" in data:

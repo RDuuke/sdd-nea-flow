@@ -60,6 +60,8 @@ Atomically replace each prepared base file and update journal progress. On failu
 do not mark closed or move the change. Resume only when each current base hash
 matches its recorded before or after hash; otherwise stop for conflict resolution.
 This makes partial multi-domain consolidation recoverable without duplicate merges.
+The journal is a recovery aid, not history: keep it minimal (no copies of
+requirement text, no per-file hashes beyond the affected base specs).
 
 ### 4. Move and close
 
@@ -67,7 +69,9 @@ After all domains match prepared results, move the change to
 openspec/changes/archive/YYYY-MM-DD-{change-name}/. Validate resolved source and
 destination, never overwrite an existing archive. Verify hashes and refs after
 moving; rewrite relative refs in new structured reports for the new location,
-preserving raw historical evidence bytes. Record original provenance separately.
+preserving raw historical evidence bytes. Record the original location once as
+`original_path` in archive-report.yaml; do not write a relocation or provenance
+file listing every moved file.
 Quick changes without specs still close; if they change documented behavior,
 update the affected base contract from the approved quick criteria with the same
 merge safeguards. Pure implementation fixes require no invented domain.
@@ -77,7 +81,12 @@ operations/hashes. Persist archived local state with completed=true, ARCHIVE
 complete, archive_path set. Update selector only if it selected this change;
 never reset another active change. Append final event to archived execution log.
 If interrupted after move, recover using the journal at the exact archive path;
-never recreate the active folder. NeaBrain capture remains optional.
+never recreate the active folder. After the close report and completed state
+are written and read back, remove `.archive-transaction.yaml`,
+`.archive-backups/` and `.archive-prepared/` when the base specs' before-state
+is recoverable from version control (tracked and committed before ARCHIVE);
+archive-report.yaml keeps the before/after hashes. Otherwise keep the backups.
+NeaBrain capture remains optional.
 
 ## Rules
 

@@ -34,7 +34,8 @@ changes or imposing tooling that the project does not use.
 4. Create a global 2.0 selector only if none exists. Do not reset selection,
    migrate unrelated changes, overwrite legacy global state or delete JSON.
    Report legacy recovery needs for CONTINUE using the state contract.
-5. Validate generated YAML and refs, return initialization artifacts. INIT is
+5. Write config and selector in block-style YAML (audit-contract.md: no JSON),
+   validate generated YAML and refs, return initialization artifacts. INIT is
    project setup; it does not mark any existing change's phases complete.
 
 ```yaml

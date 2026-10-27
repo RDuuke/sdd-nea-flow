@@ -9,7 +9,7 @@
 > Un orquestador + sub-agentes especializados para desarrollo estructurado.
 > Cero dependencias. Solo Markdown. Funciona en cualquier lugar.
 
-Version: 2.4.0
+Version: 2.5.0
 
 Links rapidos: [Instalacion](#instalacion) • [Herramientas](#herramientas) • [Documentacion tecnica](#documentacion-tecnica)
 
@@ -278,9 +278,13 @@ openspec/
     archive/
 ```
 
-Cada cambio conserva su progreso al alternar trabajo. La auditoria nueva usa
-YAML compacto; los informes Markdown anteriores se conservan. Al cerrar, las
-specs se consolidan por dominio, sin copiar cada cambio en la base.
+Cada cambio conserva su progreso al alternar trabajo. Estado y auditoria usan
+YAML en estilo bloque (nunca JSON) y solo lo que una fase posterior necesita:
+sin campos vacios, sin copiar lo que ya esta en git, `tasks.md` o los logs, y
+`commit` en lugar de hashes por archivo cuando el arbol esta limpio. Los
+informes Markdown anteriores se conservan. Al cerrar, las specs se consolidan
+por dominio, sin copiar cada cambio en la base, y el diario de archivo se
+elimina cuando git conserva el estado previo.
 
 La validacion usa capacidades reales y pruebas focales por impacto. Si falla una
 prueba, se repite esa y las afectadas por la reparacion; se conserva PASS vigente.
